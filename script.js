@@ -7,9 +7,10 @@ const dropLetter = document.querySelector(".drop-letter");
 const GRID = 22;
 const REVEAL_RADIUS = 64;
 const BLOOM_RADIUS = 72;
-const BLOOM_DELAY = 820;
+const BLOOM_DELAY = 1280;
 const SPRAWL_STAGGER = 2100;
-const STEM_LEAD = 360;
+const STEM_LEAD = 260;
+const GRID_REVEAL_MS = 920;
 const BLOOM_SPEED = 0.0034;
 const FADE_SPEED = 0.003;
 const PERSIST_MS = 3600;
@@ -18,6 +19,7 @@ const PHI = (1 + Math.sqrt(5)) / 2;
 
 const mouse = { x: -9999, y: -9999, inside: false };
 const lastMouse = { x: -9999, y: -9999 };
+const pointerField = { since: 0, leftAt: 0 };
 const blooms = new Map();
 const dust = [];
 const gust = [];
@@ -197,41 +199,95 @@ function tangentOnPath(pts, t) {
   return { x: dx / len, y: dy / len };
 }
 
-function drawGrid(ctx) {
-  if (!mouse.inside) return;
+function updatePointerField(now) {
+  if (mouse.inside) {
+    if (!pointerField.since || pointerField.leftAt) {
+      pointerField.since = now;
+      pointerField.leftAt = 0;
+    }
+    return;
+  }
+  if (pointerField.since && !pointerField.leftAt) pointerField.leftAt = now;
+  if (pointerField.leftAt && now - pointerField.leftAt > 480) {
+    pointerField.since = 0;
+    pointerField.leftAt = 0;
+  }
+}
+
+function gridProgress(now) {
+  if (!pointerField.since) return 0;
+  const grown = easeOutCubic(Math.min(1, (now - pointerField.since) / GRID_REVEAL_MS));
+  if (!pointerField.leftAt) return grown;
+  return grown * (1 - Math.min(1, (now - pointerField.leftAt) / 420));
+}
+
+function cellAppear(progress, dist) {
+  const ring = dist / REVEAL_RADIUS;
+  return easeOutCubic(Math.max(0, Math.min(1, (progress - ring * 0.72) / 0.28)));
+}
+
+function drawGrid(ctx, now) {
+  const progress = gridProgress(now);
+  if (progress < 0.01) return;
 
   const width = window.innerWidth;
   const height = window.innerHeight;
   const originX = gridOrigin(GRID, width);
   const originY = gridOrigin(GRID, height);
-  const mx = mouse.x;
-  const my = mouse.y;
-  const minX = mx - REVEAL_RADIUS;
-  const maxX = mx + REVEAL_RADIUS;
-  const minY = my - REVEAL_RADIUS;
-  const maxY = my + REVEAL_RADIUS;
+  const mx = mouse.inside ? mouse.x : lastMouse.x;
+  const my = mouse.inside ? mouse.y : lastMouse.y;
+  const radius = REVEAL_RADIUS * (0.16 + 0.84 * progress);
+  const minX = mx - radius;
+  const maxX = mx + radius;
+  const minY = my - radius;
+  const maxY = my + radius;
 
   ctx.save();
-  ctx.beginPath();
-  ctx.arc(mx, my, REVEAL_RADIUS, 0, Math.PI * 2);
-  ctx.clip();
-  ctx.strokeStyle = "rgba(214, 196, 132, 0.34)";
-  ctx.lineWidth = 0.65;
+  ctx.lineCap = "round";
+  ctx.lineWidth = 0.7;
 
   for (let x = originX; x <= width + GRID; x += GRID) {
     if (x < minX || x > maxX) continue;
-    ctx.beginPath();
-    ctx.moveTo(x, minY);
-    ctx.lineTo(x, maxY);
-    ctx.stroke();
+    for (let y = originY; y <= height; y += GRID) {
+      const y2 = y + GRID;
+      if (y2 < minY || y > maxY) continue;
+      const midY = y + GRID * 0.5;
+      const dist = Math.hypot(x - mx, midY - my);
+      const local = cellAppear(progress, dist);
+      if (local < 0.02) continue;
+      const reach = falloff(dist, radius);
+      if (reach < 0.04) continue;
+      const grown = GRID * local;
+      const from = midY - grown * 0.5;
+      ctx.globalAlpha = local * reach * 0.85;
+      ctx.strokeStyle = "rgba(214, 196, 132, 0.42)";
+      ctx.beginPath();
+      ctx.moveTo(x, from);
+      ctx.lineTo(x, from + grown);
+      ctx.stroke();
+    }
   }
 
   for (let y = originY; y <= height + GRID; y += GRID) {
     if (y < minY || y > maxY) continue;
-    ctx.beginPath();
-    ctx.moveTo(minX, y);
-    ctx.lineTo(maxX, y);
-    ctx.stroke();
+    for (let x = originX; x <= width; x += GRID) {
+      const x2 = x + GRID;
+      if (x2 < minX || x > maxX) continue;
+      const midX = x + GRID * 0.5;
+      const dist = Math.hypot(midX - mx, y - my);
+      const local = cellAppear(progress, dist);
+      if (local < 0.02) continue;
+      const reach = falloff(dist, radius);
+      if (reach < 0.04) continue;
+      const grown = GRID * local;
+      const from = midX - grown * 0.5;
+      ctx.globalAlpha = local * reach * 0.85;
+      ctx.strokeStyle = "rgba(214, 196, 132, 0.42)";
+      ctx.beginPath();
+      ctx.moveTo(from, y);
+      ctx.lineTo(from + grown, y);
+      ctx.stroke();
+    }
   }
 
   ctx.restore();
@@ -989,22 +1045,28 @@ function updateHoverBlooms(now) {
   return { originX, originY };
 }
 
-function drawHoverNodes(ctx, originX, originY) {
-  if (!mouse.inside) return;
-  const minX = mouse.x - REVEAL_RADIUS;
-  const maxX = mouse.x + REVEAL_RADIUS;
-  const minY = mouse.y - REVEAL_RADIUS;
-  const maxY = mouse.y + REVEAL_RADIUS;
+function drawHoverNodes(ctx, originX, originY, now) {
+  const progress = gridProgress(now);
+  if (progress < 0.01) return;
+  const mx = mouse.inside ? mouse.x : lastMouse.x;
+  const my = mouse.inside ? mouse.y : lastMouse.y;
+  const radius = REVEAL_RADIUS * (0.16 + 0.84 * progress);
+  const minX = mx - radius;
+  const maxX = mx + radius;
+  const minY = my - radius;
+  const maxY = my + radius;
 
   for (let x = originX; x <= maxX + GRID; x += GRID) {
     if (x < minX) continue;
     for (let y = originY; y <= maxY + GRID; y += GRID) {
       if (y < minY) continue;
-      const intensity = falloff(Math.hypot(x - mouse.x, y - mouse.y), REVEAL_RADIUS);
+      const dist = Math.hypot(x - mx, y - my);
+      const local = cellAppear(progress, dist);
+      const intensity = falloff(dist, radius) * local;
       if (intensity < 0.05) continue;
       ctx.beginPath();
-        ctx.fillStyle = `rgba(232, 215, 150, ${0.18 + intensity * 0.5})`;
-      ctx.arc(x, y, 0.7, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(232, 215, 150, ${0.16 + intensity * 0.55})`;
+      ctx.arc(x, y, 0.45 + local * 0.45, 0, Math.PI * 2);
       ctx.fill();
     }
   }
@@ -1332,9 +1394,10 @@ function frame(now) {
 
   drawArrakis(fieldCtx, width, height, now);
   drawDuneMatrix(fieldCtx, width, height, now);
+  updatePointerField(now);
   const { originX, originY } = updateHoverBlooms(now);
-  drawGrid(fieldCtx);
-  drawHoverNodes(fieldCtx, originX, originY);
+  drawGrid(fieldCtx, now);
+  drawHoverNodes(fieldCtx, originX, originY, now);
 
   for (const node of blooms.values()) {
     if (node.stem < 0.02 && node.bloom < 0.02) continue;
