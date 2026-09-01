@@ -5,8 +5,8 @@ const illumCtx = illum.getContext("2d", { alpha: true });
 const dropLetter = document.querySelector(".drop-letter");
 
 const GRID = 28;
-const REVEAL_RADIUS = 148;
-const BLOOM_RADIUS = 136;
+const REVEAL_RADIUS = 46;
+const BLOOM_RADIUS = 40;
 const BLOOM_DELAY = 780;
 const SPRAWL_STAGGER = 1400;
 const STEM_LEAD = 340;
@@ -17,7 +17,9 @@ const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 const PHI = (1 + Math.sqrt(5)) / 2;
 
 const mouse = { x: -9999, y: -9999, inside: false };
+const lastMouse = { x: -9999, y: -9999 };
 const blooms = new Map();
+const dust = [];
 
 function resizeCanvas(canvas, ctx) {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -951,16 +953,63 @@ function drawHoverNodes(ctx, originX, originY) {
   }
 }
 
+function spawnDust(x, y, amount) {
+  for (let i = 0; i < amount; i += 1) {
+    const gilt = Math.random() < 0.32;
+    dust.push({
+      x: x + (Math.random() - 0.5) * 7,
+      y: y + 2 + (Math.random() - 0.4) * 5,
+      vx: (Math.random() - 0.5) * 0.32,
+      vy: 0.12 + Math.random() * 0.48,
+      life: 1,
+      decay: 0.0035 + Math.random() * 0.0055,
+      r: 0.35 + Math.random() * 1.15,
+      hue: gilt ? 36 + Math.random() * 10 : 22 + Math.random() * 14,
+      sat: gilt ? 48 + Math.random() * 22 : 32 + Math.random() * 20,
+      light: gilt ? 42 + Math.random() * 18 : 26 + Math.random() * 16,
+    });
+  }
+}
+
+function updateDust() {
+  if (mouse.inside) {
+    const speed = Math.hypot(mouse.x - lastMouse.x, mouse.y - lastMouse.y);
+    spawnDust(mouse.x, mouse.y, 1 + Math.min(7, Math.floor(speed * 0.4)));
+  }
+  lastMouse.x = mouse.x;
+  lastMouse.y = mouse.y;
+
+  for (let i = dust.length - 1; i >= 0; i -= 1) {
+    const grain = dust[i];
+    grain.x += grain.vx;
+    grain.y += grain.vy;
+    grain.vy += 0.014;
+    grain.vx *= 0.985;
+    grain.life -= grain.decay;
+    if (grain.life <= 0 || grain.y > window.innerHeight + 8) dust.splice(i, 1);
+  }
+  if (dust.length > 420) dust.splice(0, dust.length - 420);
+}
+
+function drawDust(ctx) {
+  for (const grain of dust) {
+    ctx.beginPath();
+    ctx.fillStyle = `hsla(${grain.hue}, ${grain.sat}%, ${grain.light}%, ${grain.life * 0.72})`;
+    ctx.arc(grain.x, grain.y, grain.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
 function drawCursor(ctx) {
   if (!mouse.inside) return;
   ctx.beginPath();
   ctx.strokeStyle = "rgba(232, 215, 150, 0.45)";
   ctx.lineWidth = 1;
-  ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI * 2);
+  ctx.arc(mouse.x, mouse.y, 3.2, 0, Math.PI * 2);
   ctx.stroke();
   ctx.beginPath();
-  ctx.fillStyle = "rgba(242, 220, 140, 0.85)";
-  ctx.arc(mouse.x, mouse.y, 1.4, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(196, 148, 72, 0.9)";
+  ctx.arc(mouse.x, mouse.y, 1.05, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -1038,6 +1087,8 @@ function frame(now) {
     drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 1.65);
   }
 
+  updateDust();
+  drawDust(fieldCtx);
   drawCursor(fieldCtx);
   drawDropcap(illumCtx, now);
   requestAnimationFrame(frame);
