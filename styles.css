@@ -27,14 +27,15 @@ body {
   left: 3.5vw;
   bottom: 16vh;
   z-index: 3;
-  height: 280px;
+  height: 240px;
   width: auto;
   object-fit: contain;
   object-position: left bottom;
   pointer-events: none;
   user-select: none;
-  opacity: 1;
-  filter: grayscale(1) brightness(0.82) contrast(1.08) drop-shadow(0 0 10px rgba(200, 200, 206, 0.2));
+  opacity: 0.62;
+  mix-blend-mode: screen;
+  filter: brightness(1.15) contrast(1.05);
 }
 
 #field,
@@ -99,7 +100,7 @@ body {
   .sister {
     left: 4vw;
     bottom: 14vh;
-    height: 210px;
+    height: 180px;
   }
 
   .drop {
