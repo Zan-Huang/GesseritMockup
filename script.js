@@ -323,35 +323,35 @@ function mapleAutumnPalette(random) {
   let h;
   let sat;
   let lit;
-  if (roll < 0.2) {
-    h = 44 + j() * 10;
-    sat = 88 + j() * 12;
-    lit = 46 + j() * 10;
-  } else if (roll < 0.42) {
-    h = 28 + j() * 12;
-    sat = 84 + j() * 14;
-    lit = 42 + j() * 10;
-  } else if (roll < 0.68) {
-    h = 8 + j() * 14;
-    sat = 78 + j() * 16;
-    lit = 38 + j() * 8;
-  } else if (roll < 0.84) {
-    h = random() < 0.5 ? 2 + j() * 8 : 348 + j() * 10;
-    sat = 62 + j() * 16;
-    lit = 28 + j() * 8;
+  if (roll < 0.28) {
+    h = 46 + j() * 10;
+    sat = 92 + j() * 8;
+    lit = 52 + j() * 10;
+  } else if (roll < 0.6) {
+    h = 26 + j() * 10;
+    sat = 90 + j() * 10;
+    lit = 46 + j() * 8;
+  } else if (roll < 0.82) {
+    h = 2 + j() * 8;
+    sat = 88 + j() * 10;
+    lit = 42 + j() * 8;
+  } else if (roll < 0.94) {
+    h = 16 + j() * 8;
+    sat = 86 + j() * 10;
+    lit = 40 + j() * 8;
   } else {
-    h = 16 + j() * 12;
-    sat = 70 + j() * 14;
-    lit = 34 + j() * 8;
+    h = 66 + j() * 12;
+    sat = 78 + j() * 12;
+    lit = 46 + j() * 8;
   }
   return {
-    umber: hsla(h - 8, sat * 0.55, Math.max(10, lit - 22), 0.86),
-    body: hsla(h, sat, lit, 0.96),
-    mid: hsla(h + 6, Math.min(100, sat + 6), lit + 12, 0.92),
-    light: hsla(h + 12, Math.min(100, sat + 8), lit + 24, 0.74),
-    gleam: hsla(48, 100, 82, 0.5),
-    vein: hsla(h - 6, 42, 18, 0.48),
-    gilt: hsla(42, 92, 62, 0.62),
+    umber: hsla(h - 6, Math.max(72, sat - 12), Math.max(22, lit - 18), 0.9),
+    body: hsla(h, sat, lit, 0.98),
+    mid: hsla(h + 5, Math.min(100, sat + 4), lit + 10, 0.94),
+    light: hsla(h + 10, Math.min(100, sat + 6), lit + 18, 0.8),
+    gleam: hsla(50, 100, 78, 0.55),
+    vein: hsla(h - 4, 58, 24, 0.52),
+    gilt: hsla(48, 96, 58, 0.7),
   };
 }
 
@@ -689,7 +689,7 @@ function tilt(ctx, random, amount = 0.1) {
 function drawBay(ctx, open, random) {
   const length = (18.5 + random() * 2.2) * open;
   const width = length * 0.34;
-  const colors = leafPalette(random);
+  const colors = mapleAutumnPalette(random);
   ctx.save();
   tilt(ctx, random);
   paintModeledLeaf(ctx, () => bayPath(ctx, length, width), colors, length, width);
@@ -699,7 +699,7 @@ function drawBay(ctx, open, random) {
 function drawOlive(ctx, open, random) {
   const length = (17 + random() * 2) * open;
   const width = length * 0.2;
-  const colors = leafPalette(random);
+  const colors = mapleAutumnPalette(random);
   ctx.save();
   tilt(ctx, random);
   paintModeledLeaf(ctx, () => olivePath(ctx, length, width), colors, length, width);
@@ -709,7 +709,7 @@ function drawOlive(ctx, open, random) {
 function drawWillow(ctx, open, random) {
   const length = (22 + random() * 3) * open;
   const width = length * 0.145;
-  const colors = leafPalette(random);
+  const colors = mapleAutumnPalette(random);
   ctx.save();
   tilt(ctx, random, 0.16);
   paintModeledLeaf(ctx, () => willowPath(ctx, length, width), colors, length, width, "crasp");
@@ -719,7 +719,7 @@ function drawWillow(ctx, open, random) {
 function drawOak(ctx, open, random) {
   const length = (19 + random() * 2.4) * open;
   const width = length * 0.46;
-  const colors = leafPalette(random);
+  const colors = mapleAutumnPalette(random);
   ctx.save();
   tilt(ctx, random);
   paintModeledLeaf(ctx, () => oakPath(ctx, length, width), colors, length, width, "crasp");
@@ -729,7 +729,7 @@ function drawOak(ctx, open, random) {
 function drawHolly(ctx, open, random) {
   const length = (17.5 + random() * 2) * open;
   const width = length * 0.4;
-  const colors = leafPalette(random);
+  const colors = mapleAutumnPalette(random);
   ctx.save();
   tilt(ctx, random);
   paintModeledLeaf(ctx, () => hollyPath(ctx, length, width), colors, length, width, "crasp");
@@ -738,7 +738,7 @@ function drawHolly(ctx, open, random) {
 
 function drawIvy(ctx, open, random) {
   const size = (16.5 + random() * 2) * open;
-  const colors = leafPalette(random);
+  const colors = mapleAutumnPalette(random);
   ctx.save();
   tilt(ctx, random);
   paintModeledLeaf(ctx, () => ivyPath(ctx, size), colors, size, size * 0.7, "palmate");
@@ -766,7 +766,7 @@ function drawMaple(ctx, open, random, simple = false) {
 
 function drawFig(ctx, open, random) {
   const size = (17 + random() * 2) * open;
-  const colors = leafPalette(random);
+  const colors = mapleAutumnPalette(random);
   ctx.save();
   tilt(ctx, random);
   paintModeledLeaf(ctx, () => figPath(ctx, size), colors, size, size * 0.62, "palmate");
@@ -775,7 +775,7 @@ function drawFig(ctx, open, random) {
 
 function drawHawthorn(ctx, open, random) {
   const size = (16.5 + random() * 2) * open;
-  const colors = leafPalette(random);
+  const colors = mapleAutumnPalette(random);
   ctx.save();
   tilt(ctx, random);
   paintModeledLeaf(ctx, () => hawthornPath(ctx, size), colors, size, size * 0.55, "crasp");
@@ -784,7 +784,7 @@ function drawHawthorn(ctx, open, random) {
 
 function drawGinkgo(ctx, open, random) {
   const radius = (14.5 + random() * 2) * open;
-  const colors = leafPalette(random);
+  const colors = mapleAutumnPalette(random);
   ctx.save();
   tilt(ctx, random, 0.08);
   paintModeledLeaf(ctx, () => ginkgoPath(ctx, radius), colors, radius, radius * 0.85, "fan");
@@ -792,7 +792,7 @@ function drawGinkgo(ctx, open, random) {
 }
 
 function drawRoseSprig(ctx, open, random) {
-  const colors = leafPalette(random);
+  const colors = mapleAutumnPalette(random);
   ctx.save();
   const pairs = [
     { y: -4.2 * open, x: 5.4 * open, s: 0.48, rot: 1.05 },
