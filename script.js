@@ -246,62 +246,102 @@ function drawGrid(ctx) {
 
 function leafPalette(random) {
   const mix = random();
-  if (mix < 0.38) {
+  if (mix < 0.48) {
     return {
-      inner: `hsla(${40 + random() * 10}, ${68 + random() * 16}%, ${40 + random() * 12}%, 0.94)`,
-      outer: `hsla(${48 + random() * 8}, ${74 + random() * 12}%, ${56 + random() * 12}%, 0.9)`,
-      vein: "hsla(34, 42%, 28%, 0.55)",
-    };
-  }
-  if (mix < 0.72) {
-    return {
-      inner: `hsla(${104 + random() * 18}, ${34 + random() * 16}%, ${24 + random() * 8}%, 0.93)`,
-      outer: `hsla(${92 + random() * 16}, ${42 + random() * 14}%, ${38 + random() * 10}%, 0.9)`,
-      vein: "hsla(96, 28%, 20%, 0.5)",
+      inner: `hsla(${38 + random() * 6}, ${90 + random() * 8}%, ${38 + random() * 6}%, 0.96)`,
+      outer: `hsla(${46 + random() * 5}, ${96 + random() * 4}%, ${66 + random() * 8}%, 0.95)`,
+      gleam: "hsla(48, 100%, 84%, 0.88)",
+      vein: "hsla(34, 72%, 26%, 0.7)",
+      rim: "hsla(45, 100%, 74%, 0.92)",
     };
   }
   return {
-    inner: `hsla(${98 + random() * 12}, ${38 + random() * 12}%, ${28 + random() * 8}%, 0.93)`,
-    outer: `hsla(${44 + random() * 10}, ${70 + random() * 12}%, ${52 + random() * 10}%, 0.9)`,
-    vein: "hsla(40, 36%, 26%, 0.5)",
+    inner: `hsla(${152 + random() * 6}, ${58 + random() * 8}%, ${12 + random() * 4}%, 0.96)`,
+    outer: `hsla(${148 + random() * 6}, ${46 + random() * 8}%, ${22 + random() * 5}%, 0.93)`,
+    gleam: "hsla(46, 92%, 62%, 0.45)",
+    vein: "hsla(43, 88%, 52%, 0.72)",
+    rim: "hsla(44, 94%, 58%, 0.8)",
   };
+}
+
+function fractalBranch(ctx, x, y, angle, length, depth, color) {
+  if (depth <= 0 || length < 0.85) return;
+  const x2 = x + Math.cos(angle) * length;
+  const y2 = y + Math.sin(angle) * length;
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(0.16, depth * 0.2);
+  ctx.moveTo(x, y);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  const spread = 0.46 + depth * 0.03;
+  fractalBranch(ctx, x2, y2, angle - spread, length * 0.62, depth - 1, color);
+  fractalBranch(ctx, x2, y2, angle + spread, length * 0.62, depth - 1, color);
+  if (depth > 2) fractalBranch(ctx, x2, y2, angle, length * 0.48, depth - 2, color);
+}
+
+function fractalTendril(ctx, x, y, angle, length, depth, side, color) {
+  if (depth <= 0 || length < 1.1) return;
+  const curl = angle + side * 0.72;
+  const x2 = x + Math.cos(curl) * length;
+  const y2 = y + Math.sin(curl) * length;
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(0.2, depth * 0.22);
+  ctx.moveTo(x, y);
+  ctx.quadraticCurveTo(
+    x + Math.cos(angle) * length * 0.55,
+    y + Math.sin(angle) * length * 0.55,
+    x2,
+    y2,
+  );
+  ctx.stroke();
+  fractalTendril(ctx, x2, y2, curl + side * 0.48, length * 0.64, depth - 1, side, color);
+  if (depth > 2) {
+    fractalTendril(ctx, x2, y2, curl - side * 0.95, length * 0.42, depth - 2, -side, color);
+  }
 }
 
 function fillSimpleLeaf(ctx, length, width, colors) {
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(width, -length * 0.2, width * 1.08, -length * 0.62, 0, -length);
-  ctx.bezierCurveTo(-width * 1.08, -length * 0.62, -width, -length * 0.2, 0, 0);
+  const teeth = 11;
+  for (let i = 1; i <= teeth; i += 1) {
+    const t = i / teeth;
+    const y = -length * t;
+    const base = width * (0.35 + Math.sin(t * Math.PI) * 0.75);
+    const notch = i % 2 === 0 ? 0.7 : 1;
+    ctx.lineTo(base * notch, y);
+  }
+  ctx.lineTo(0, -length);
+  for (let i = teeth; i >= 1; i -= 1) {
+    const t = i / teeth;
+    const y = -length * t;
+    const base = width * (0.35 + Math.sin(t * Math.PI) * 0.75);
+    const notch = i % 2 === 0 ? 0.7 : 1;
+    ctx.lineTo(-base * notch, y);
+  }
   ctx.closePath();
   const grad = ctx.createLinearGradient(-width * 0.4, 0, width * 0.6, -length);
   grad.addColorStop(0, colors.inner);
-  grad.addColorStop(0.55, colors.outer);
-  grad.addColorStop(1, colors.inner);
+  grad.addColorStop(0.45, colors.outer);
+  grad.addColorStop(0.78, colors.gleam);
+  grad.addColorStop(1, colors.outer);
   ctx.fillStyle = grad;
   ctx.fill();
-  ctx.strokeStyle = "rgba(36, 30, 16, 0.32)";
-  ctx.lineWidth = 0.35;
+  ctx.strokeStyle = colors.rim;
+  ctx.lineWidth = 0.7;
   ctx.stroke();
 }
 
 function drawVeinsOnLeaf(ctx, length, width, color) {
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 0.5;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.quadraticCurveTo(0, -length * 0.52, 0, -length * 0.94);
-  ctx.stroke();
-  ctx.lineWidth = 0.32;
-  for (let i = 1; i <= 5; i += 1) {
-    const t = i / 6.2;
+  fractalBranch(ctx, 0, 0, -Math.PI / 2, length * 0.92, 4, color);
+  for (let i = 1; i <= 4; i += 1) {
+    const t = i / 5;
     const y = -length * t;
-    const reach = width * (1 - t * 0.55) * 0.78;
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.quadraticCurveTo(reach * 0.45, y - length * 0.05, reach, y - length * 0.09);
-    ctx.moveTo(0, y);
-    ctx.quadraticCurveTo(-reach * 0.45, y - length * 0.05, -reach, y - length * 0.09);
-    ctx.stroke();
+    const reach = width * (1 - t * 0.45) * 0.72;
+    fractalBranch(ctx, 0, y, -0.35, reach, 3, color);
+    fractalBranch(ctx, 0, y, Math.PI + 0.35, reach, 3, color);
   }
 }
 
@@ -336,12 +376,13 @@ function drawOak(ctx, open, random) {
   ctx.closePath();
   const grad = ctx.createLinearGradient(-width, 0, width, -length);
   grad.addColorStop(0, colors.inner);
-  grad.addColorStop(0.5, colors.outer);
-  grad.addColorStop(1, colors.inner);
+  grad.addColorStop(0.45, colors.outer);
+  grad.addColorStop(0.8, colors.gleam);
+  grad.addColorStop(1, colors.outer);
   ctx.fillStyle = grad;
   ctx.fill();
-  ctx.strokeStyle = "rgba(36, 30, 16, 0.32)";
-  ctx.lineWidth = 0.35;
+  ctx.strokeStyle = colors.rim;
+  ctx.lineWidth = 0.7;
   ctx.stroke();
   drawVeinsOnLeaf(ctx, length, width * 0.7, colors.vein);
   ctx.restore();
@@ -371,20 +412,17 @@ function drawMaple(ctx, open, random) {
   ctx.closePath();
   const grad = ctx.createLinearGradient(-length * 0.4, 0, length * 0.3, -length);
   grad.addColorStop(0, colors.inner);
-  grad.addColorStop(0.6, colors.outer);
-  grad.addColorStop(1, colors.inner);
+  grad.addColorStop(0.5, colors.outer);
+  grad.addColorStop(0.82, colors.gleam);
+  grad.addColorStop(1, colors.outer);
   ctx.fillStyle = grad;
   ctx.fill();
-  ctx.strokeStyle = "rgba(36, 30, 16, 0.32)";
-  ctx.lineWidth = 0.35;
+  ctx.strokeStyle = colors.rim;
+  ctx.lineWidth = 0.7;
   ctx.stroke();
-  ctx.strokeStyle = colors.vein;
-  ctx.lineWidth = 0.45;
   lobes.forEach((lobe) => {
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(lobe[0] * length * 0.25, lobe[1] * length * 0.45, lobe[0] * length * 0.62, lobe[1] * length * 0.92);
-    ctx.stroke();
+    const angle = Math.atan2(lobe[1] * length, lobe[0] * length * 0.72);
+    fractalBranch(ctx, 0, 0, angle, length * 0.86, 4, colors.vein);
   });
   ctx.restore();
 }
@@ -403,19 +441,15 @@ function drawGinkgo(ctx, open, random) {
   const grad = ctx.createLinearGradient(-radius, 0, radius, -radius);
   grad.addColorStop(0, colors.inner);
   grad.addColorStop(0.5, colors.outer);
-  grad.addColorStop(1, "hsla(46, 78%, 58%, 0.92)");
+  grad.addColorStop(1, colors.gleam);
   ctx.fillStyle = grad;
   ctx.fill();
-  ctx.strokeStyle = "rgba(36, 30, 16, 0.3)";
-  ctx.lineWidth = 0.35;
+  ctx.strokeStyle = colors.rim;
+  ctx.lineWidth = 0.7;
   ctx.stroke();
-  ctx.strokeStyle = colors.vein;
-  ctx.lineWidth = 0.32;
-  for (let i = -4; i <= 4; i += 1) {
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(i * radius * 0.08, -radius * 0.4, i * radius * 0.18, -radius * 0.86);
-    ctx.stroke();
+  for (let i = -5; i <= 5; i += 1) {
+    const angle = -Math.PI / 2 + i * 0.16;
+    fractalBranch(ctx, 0, 0, angle, radius * 0.9, 3, colors.vein);
   }
   ctx.restore();
 }
@@ -430,7 +464,7 @@ function drawWillow(ctx, open, random) {
   ctx.restore();
 }
 
-function drawSpray(ctx, open, random) {
+function drawSpray(ctx, open, random, depth = 2) {
   const count = 5;
   ctx.save();
   for (let i = 0; i < count; i += 1) {
@@ -438,6 +472,10 @@ function drawSpray(ctx, open, random) {
     ctx.rotate((-0.7 + i * 0.35) * open);
     ctx.translate(0, -2.2 * open);
     drawLaurel(ctx, open * (0.55 + (i % 2) * 0.18), random);
+    if (depth > 0 && i % 2 === 1) {
+      ctx.translate(0, -8 * open);
+      drawSpray(ctx, open * 0.42, random, depth - 1);
+    }
     ctx.restore();
   }
   ctx.restore();
@@ -448,22 +486,21 @@ const FLOWER_TYPES = [drawLaurel, drawOak, drawMaple, drawGinkgo, drawWillow, dr
 function drawLeaf(ctx, scale, side) {
   ctx.save();
   ctx.scale(side, 1);
+  const colors = leafPalette(() => (side > 0 ? 0.7 : 0.2));
   const grad = ctx.createLinearGradient(0, 0, 5 * scale, -6 * scale);
-  grad.addColorStop(0, "hsla(102, 28%, 26%, 0.86)");
-  grad.addColorStop(1, "hsla(44, 62%, 48%, 0.78)");
+  grad.addColorStop(0, colors.inner);
+  grad.addColorStop(0.6, colors.outer);
+  grad.addColorStop(1, colors.gleam);
   ctx.fillStyle = grad;
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.bezierCurveTo(3.4 * scale, -1.2 * scale, 5.2 * scale, -4.2 * scale, 0.3 * scale, -6.8 * scale);
   ctx.bezierCurveTo(1.4 * scale, -3.6 * scale, 0.5 * scale, -1.6 * scale, 0, 0);
   ctx.fill();
-  ctx.strokeStyle = "rgba(30, 24, 16, 0.35)";
-  ctx.lineWidth = 0.28;
+  ctx.strokeStyle = colors.rim;
+  ctx.lineWidth = 0.45;
   ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(0.2 * scale, 0);
-  ctx.quadraticCurveTo(1.6 * scale, -2.6 * scale, 0.35 * scale, -6.2 * scale);
-  ctx.stroke();
+  fractalBranch(ctx, 0.15 * scale, 0, -1.15, 6.2 * scale, 3, colors.vein);
   ctx.restore();
 }
 
@@ -476,9 +513,33 @@ function drawFlowStem(ctx, pts, stem, seed) {
   ctx.beginPath();
   ctx.moveTo(pts[0].x, pts[0].y);
   for (let i = 1; i < visible; i += 1) ctx.lineTo(pts[i].x, pts[i].y);
-  ctx.strokeStyle = "hsla(105, 16%, 24%, 0.72)";
-  ctx.lineWidth = 1.45;
+  ctx.strokeStyle = "hsla(152, 48%, 16%, 0.82)";
+  ctx.lineWidth = 1.7;
   ctx.stroke();
+  ctx.strokeStyle = "hsla(44, 92%, 58%, 0.35)";
+  ctx.lineWidth = 0.55;
+  ctx.stroke();
+
+  if (stem > 0.2) {
+    const vineCount = 3;
+    for (let i = 1; i <= vineCount; i += 1) {
+      const t = (i / (vineCount + 1)) * stem;
+      const p = pointOnPath(pts, t);
+      const tan = tangentOnPath(pts, t);
+      const heading = Math.atan2(tan.y, tan.x);
+      const side = i % 2 === 0 ? 1 : -1;
+      fractalTendril(
+        ctx,
+        p.x,
+        p.y,
+        heading + side * 0.9,
+        7 + stem * 6,
+        4,
+        side,
+        side > 0 ? "hsla(44, 90%, 56%, 0.7)" : "hsla(150, 50%, 18%, 0.75)",
+      );
+    }
+  }
 
   if (stem > 0.28) {
     const a = pointOnPath(pts, 0.38 * stem);
@@ -637,8 +698,8 @@ function drawGoldenSpiral(ctx, cx, cy, scale, now) {
     if (a === 0.2) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
-  ctx.strokeStyle = "rgba(141, 107, 50, 0.42)";
-  ctx.lineWidth = 0.9;
+  ctx.strokeStyle = "rgba(242, 201, 76, 0.72)";
+  ctx.lineWidth = 1.15;
   ctx.stroke();
 
   ctx.beginPath();
@@ -649,8 +710,8 @@ function drawGoldenSpiral(ctx, cx, cy, scale, now) {
     if (a === 0.4) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
-  ctx.strokeStyle = "rgba(58, 42, 24, 0.28)";
-  ctx.lineWidth = 0.65;
+  ctx.strokeStyle = "rgba(10, 61, 44, 0.45)";
+  ctx.lineWidth = 0.7;
   ctx.stroke();
   ctx.restore();
 }

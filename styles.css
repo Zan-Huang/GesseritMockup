@@ -49,7 +49,7 @@ body {
   user-select: none;
   font-family: "Herman Decanus AH", "Palatino Linotype", Palatino, serif;
   font-weight: 400;
-  color: #14110e;
+  color: #083528;
   overflow: visible;
 }
 
@@ -60,12 +60,16 @@ body {
   margin-right: 0.04em;
   font-size: clamp(7.2rem, 24vw, 22rem);
   line-height: 0.72;
-  color: #16110d;
+  color: #05291e;
 }
 
 .drop-letter {
   position: relative;
   z-index: 1;
+  color: #05291e;
+  text-shadow:
+    0 0 0.02em #f6d56a,
+    0.012em 0.01em 0 #c9a227;
 }
 
 .drop-filigree {
@@ -79,27 +83,28 @@ body {
 }
 
 .drop-filigree .gold {
-  stroke: #8d6b32;
-  stroke-width: 1.15;
-  opacity: 0.72;
+  stroke: #f2c94c;
+  stroke-width: 1.35;
+  opacity: 0.95;
 }
 
 .drop-filigree .ink {
-  stroke: #2a2018;
-  stroke-width: 0.9;
-  opacity: 0.4;
+  stroke: #063022;
+  stroke-width: 1;
+  opacity: 0.7;
 }
 
 .drop-filigree .vine {
-  stroke: #3a4a30;
-  stroke-width: 1.05;
-  opacity: 0.55;
+  stroke: #0a4a36;
+  stroke-width: 1.2;
+  opacity: 0.85;
 }
 
 .rest {
   font-size: clamp(3.6rem, 12vw, 11rem);
   line-height: 1.2;
   letter-spacing: 0.02em;
+  color: #083528;
 }
 
 @media (max-width: 640px) {
