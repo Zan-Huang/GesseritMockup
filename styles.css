@@ -1,0 +1,113 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #ffffff;
+  cursor: none;
+}
+
+body {
+  position: relative;
+}
+
+#field,
+#illumination {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#field {
+  z-index: 1;
+}
+
+#illumination {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.wordmark {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  padding: 12vh 6vw 8vh;
+  pointer-events: none;
+  user-select: none;
+  font-family: "Herman Decanus AH", "Palatino Linotype", Palatino, serif;
+  font-weight: 400;
+  color: #14110e;
+  overflow: visible;
+}
+
+.drop {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-end;
+  margin-right: 0.04em;
+  font-size: clamp(7.2rem, 24vw, 22rem);
+  line-height: 0.72;
+  color: #16110d;
+}
+
+.drop-letter {
+  position: relative;
+  z-index: 1;
+}
+
+.drop-filigree {
+  position: absolute;
+  left: -28%;
+  top: -18%;
+  width: 156%;
+  height: 136%;
+  overflow: visible;
+  z-index: 0;
+}
+
+.drop-filigree .gold {
+  stroke: #8d6b32;
+  stroke-width: 1.15;
+  opacity: 0.72;
+}
+
+.drop-filigree .ink {
+  stroke: #2a2018;
+  stroke-width: 0.9;
+  opacity: 0.4;
+}
+
+.drop-filigree .vine {
+  stroke: #3a4a30;
+  stroke-width: 1.05;
+  opacity: 0.55;
+}
+
+.rest {
+  font-size: clamp(3.6rem, 12vw, 11rem);
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 640px) {
+  .drop {
+    font-size: clamp(5rem, 32vw, 10rem);
+  }
+
+  .rest {
+    font-size: clamp(2.4rem, 16vw, 5.2rem);
+  }
+}
