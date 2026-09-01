@@ -389,7 +389,29 @@ function leafPalette(random) {
 
 function mapleAutumnPalette(random) {
   const roll = random();
-  if (roll < 0.28) {
+  if (roll < 0.12) {
+    return {
+      umber: "#1b5e20",
+      body: "#2e7d32",
+      mid: "#43a047",
+      light: "#81c784",
+      gleam: "rgba(165, 214, 167, 0.5)",
+      vein: "#145218",
+      gilt: "#66bb6a",
+    };
+  }
+  if (roll < 0.2) {
+    return {
+      umber: "#4a6b12",
+      body: "#827717",
+      mid: "#afb42b",
+      light: "#d4e157",
+      gleam: "rgba(220, 231, 117, 0.5)",
+      vein: "#3d4f0e",
+      gilt: "#c0ca33",
+    };
+  }
+  if (roll < 0.42) {
     return {
       umber: "#c39b0a",
       body: "#f1c40f",
@@ -400,7 +422,7 @@ function mapleAutumnPalette(random) {
       gilt: "#ffd54a",
     };
   }
-  if (roll < 0.58) {
+  if (roll < 0.66) {
     return {
       umber: "#b85c10",
       body: "#e67e22",
@@ -411,7 +433,7 @@ function mapleAutumnPalette(random) {
       gilt: "#ffb347",
     };
   }
-  if (roll < 0.8) {
+  if (roll < 0.86) {
     return {
       umber: "#8e1b1b",
       body: "#d32f2f",
