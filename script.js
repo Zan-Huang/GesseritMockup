@@ -267,36 +267,145 @@ function leafPalette(random) {
   };
 }
 
-function ovalLeafPath(ctx, length, width, lean) {
+function profilePath(ctx, length, widthAt, samples = 36) {
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(width * 0.18, -length * 0.06, width + lean, -length * 0.3, width * 0.7 + lean, -length * 0.66);
-  ctx.bezierCurveTo(width * 0.22 + lean * 0.4, -length * 1.02, -width * 0.08, -length, lean * 0.12, -length);
-  ctx.bezierCurveTo(-width * 0.5 + lean, -length * 0.74, -width * 0.95, -length * 0.32, -width * 0.12, -length * 0.07);
-  ctx.quadraticCurveTo(-width * 0.04, -length * 0.02, 0, 0);
+  for (let i = 1; i <= samples; i += 1) {
+    const t = i / samples;
+    ctx.lineTo(widthAt(t), -length * t);
+  }
+  for (let i = samples - 1; i >= 1; i -= 1) {
+    const t = i / samples;
+    ctx.lineTo(-widthAt(t), -length * t);
+  }
   ctx.closePath();
 }
 
-function ivyLeafPath(ctx, size) {
+function ellipticWidth(t, width) {
+  return width * Math.sin(Math.PI * Math.max(0, Math.min(1, t)));
+}
+
+function ovateWidth(t, width) {
+  const peak = 0.36;
+  const u = t <= peak ? t / peak : (1 - t) / (1 - peak);
+  return width * Math.sin((Math.PI * 0.5) * Math.max(0, Math.min(1, u)));
+}
+
+function lanceWidth(t, width) {
+  return width * Math.pow(Math.sin(Math.PI * Math.max(0, Math.min(1, t))), 1.45);
+}
+
+function bayPath(ctx, length, width) {
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(size * 0.95, size * 0.12, size * 1.2, -size * 0.28, size * 0.42, -size * 0.68);
-  ctx.quadraticCurveTo(size * 0.08, -size * 0.92, 0, -size);
-  ctx.quadraticCurveTo(-size * 0.08, -size * 0.92, -size * 0.42, -size * 0.68);
-  ctx.bezierCurveTo(-size * 1.2, -size * 0.28, -size * 0.95, size * 0.12, 0, 0);
+  ctx.bezierCurveTo(width * 0.12, -length * 0.03, width * 0.98, -length * 0.24, width, -length * 0.5);
+  ctx.bezierCurveTo(width * 0.9, -length * 0.78, width * 0.26, -length * 0.97, 0, -length);
+  ctx.bezierCurveTo(-width * 0.26, -length * 0.97, -width * 0.9, -length * 0.78, -width, -length * 0.5);
+  ctx.bezierCurveTo(-width * 0.98, -length * 0.24, -width * 0.12, -length * 0.03, 0, 0);
   ctx.closePath();
 }
 
-function acanthusLobePath(ctx, length, width, flip) {
+function olivePath(ctx, length, width) {
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(flip * width * 0.3, -length * 0.1, flip * width * 1.15, -length * 0.28, flip * width * 0.85, -length * 0.55);
-  ctx.bezierCurveTo(flip * width * 1.05, -length * 0.78, flip * width * 0.25, -length * 0.95, 0, -length);
-  ctx.bezierCurveTo(-flip * width * 0.15, -length * 0.7, -flip * width * 0.35, -length * 0.35, 0, 0);
+  ctx.bezierCurveTo(width * 0.2, -length * 0.04, width * 0.92, -length * 0.28, width * 0.88, -length * 0.55);
+  ctx.bezierCurveTo(width * 0.72, -length * 0.86, width * 0.22, -length * 0.98, 0, -length * 0.99);
+  ctx.bezierCurveTo(-width * 0.22, -length * 0.98, -width * 0.72, -length * 0.86, -width * 0.88, -length * 0.55);
+  ctx.bezierCurveTo(-width * 0.92, -length * 0.28, -width * 0.2, -length * 0.04, 0, 0);
   ctx.closePath();
 }
 
-function paintModeledLeaf(ctx, pathFn, colors, length, width) {
+function oakPath(ctx, length, width) {
+  profilePath(ctx, length, (t) => {
+    if (t < 0.03 || t > 0.97) return 0;
+    const envelope = Math.sin(Math.PI * t);
+    const lobe = 0.2 + 0.8 * Math.pow(0.5 + 0.5 * Math.sin(t * Math.PI * 7.2 + 0.55), 1.65);
+    return width * envelope * lobe;
+  }, 48);
+}
+
+function hollyPath(ctx, length, width) {
+  profilePath(ctx, length, (t) => {
+    if (t < 0.04 || t > 0.97) return t > 0.97 ? 0 : width * 0.12;
+    const envelope = ovateWidth(t, 1);
+    const spine = 0.62 + 0.38 * Math.abs(Math.sin(t * Math.PI * 8));
+    return width * envelope * spine;
+  }, 52);
+}
+
+function willowPath(ctx, length, width) {
+  profilePath(ctx, length, (t) => lanceWidth(t, width), 40);
+}
+
+function ivyPath(ctx, size) {
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.bezierCurveTo(size * 0.42, size * 0.06, size * 1.02, -size * 0.02, size * 0.98, -size * 0.36);
+  ctx.quadraticCurveTo(size * 0.4, -size * 0.4, size * 0.3, -size * 0.5);
+  ctx.bezierCurveTo(size * 0.2, -size * 0.78, size * 0.06, -size * 0.97, 0, -size);
+  ctx.bezierCurveTo(-size * 0.06, -size * 0.97, -size * 0.2, -size * 0.78, -size * 0.3, -size * 0.5);
+  ctx.quadraticCurveTo(-size * 0.4, -size * 0.4, -size * 0.98, -size * 0.36);
+  ctx.bezierCurveTo(-size * 1.02, -size * 0.02, -size * 0.42, size * 0.06, 0, 0);
+  ctx.closePath();
+}
+
+function maplePath(ctx, size) {
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(size * 0.16, -size * 0.05, size * 0.8, -size * 0.2);
+  ctx.quadraticCurveTo(size * 0.48, -size * 0.3, size * 0.38, -size * 0.34);
+  ctx.quadraticCurveTo(size * 0.7, -size * 0.44, size * 0.92, -size * 0.56);
+  ctx.quadraticCurveTo(size * 0.42, -size * 0.56, size * 0.24, -size * 0.62);
+  ctx.quadraticCurveTo(size * 0.1, -size * 0.84, 0, -size);
+  ctx.quadraticCurveTo(-size * 0.1, -size * 0.84, -size * 0.24, -size * 0.62);
+  ctx.quadraticCurveTo(-size * 0.42, -size * 0.56, -size * 0.92, -size * 0.56);
+  ctx.quadraticCurveTo(-size * 0.7, -size * 0.44, -size * 0.38, -size * 0.34);
+  ctx.quadraticCurveTo(-size * 0.48, -size * 0.3, -size * 0.8, -size * 0.2);
+  ctx.quadraticCurveTo(-size * 0.16, -size * 0.05, 0, 0);
+  ctx.closePath();
+}
+
+function figPath(ctx, size) {
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.bezierCurveTo(size * 0.35, -size * 0.02, size * 0.85, -size * 0.12, size * 0.78, -size * 0.42);
+  ctx.quadraticCurveTo(size * 0.28, -size * 0.4, size * 0.22, -size * 0.5);
+  ctx.bezierCurveTo(size * 0.38, -size * 0.72, size * 0.12, -size * 0.96, 0, -size);
+  ctx.bezierCurveTo(-size * 0.12, -size * 0.96, -size * 0.38, -size * 0.72, -size * 0.22, -size * 0.5);
+  ctx.quadraticCurveTo(-size * 0.28, -size * 0.4, -size * 0.78, -size * 0.42);
+  ctx.bezierCurveTo(-size * 0.85, -size * 0.12, -size * 0.35, -size * 0.02, 0, 0);
+  ctx.closePath();
+}
+
+function hawthornPath(ctx, size) {
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(size * 0.14, -size * 0.08, size * 0.7, -size * 0.22);
+  ctx.quadraticCurveTo(size * 0.34, -size * 0.32, size * 0.26, -size * 0.4);
+  ctx.quadraticCurveTo(size * 0.5, -size * 0.5, size * 0.6, -size * 0.64);
+  ctx.quadraticCurveTo(size * 0.22, -size * 0.62, size * 0.12, -size * 0.7);
+  ctx.quadraticCurveTo(size * 0.04, -size * 0.88, 0, -size);
+  ctx.quadraticCurveTo(-size * 0.05, -size * 0.86, -size * 0.14, -size * 0.68);
+  ctx.quadraticCurveTo(-size * 0.36, -size * 0.66, -size * 0.48, -size * 0.72);
+  ctx.quadraticCurveTo(-size * 0.22, -size * 0.5, -size * 0.2, -size * 0.44);
+  ctx.quadraticCurveTo(-size * 0.52, -size * 0.32, -size * 0.66, -size * 0.28);
+  ctx.quadraticCurveTo(-size * 0.16, -size * 0.12, 0, 0);
+  ctx.closePath();
+}
+
+function ginkgoPath(ctx, radius) {
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.bezierCurveTo(-radius * 0.08, -radius * 0.18, -radius * 1.08, -radius * 0.28, -radius * 1.02, -radius * 0.74);
+  ctx.quadraticCurveTo(-radius * 0.52, -radius * 1.1, -radius * 0.1, -radius * 0.8);
+  ctx.lineTo(0, -radius * 0.66);
+  ctx.lineTo(radius * 0.1, -radius * 0.8);
+  ctx.quadraticCurveTo(radius * 0.52, -radius * 1.1, radius * 1.02, -radius * 0.74);
+  ctx.bezierCurveTo(radius * 1.08, -radius * 0.28, radius * 0.08, -radius * 0.18, 0, 0);
+  ctx.closePath();
+}
+
+function paintModeledLeaf(ctx, pathFn, colors, length, width, vein = "pinnate") {
   ctx.save();
   pathFn();
   ctx.fillStyle = colors.umber;
@@ -334,125 +443,205 @@ function paintModeledLeaf(ctx, pathFn, colors, length, width) {
   ctx.lineWidth = 0.55;
   ctx.stroke();
 
-  ctx.globalAlpha = 0.45;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.quadraticCurveTo(width * 0.06, -length * 0.5, 0, -length * 0.92);
   ctx.strokeStyle = colors.vein;
-  ctx.lineWidth = 0.7;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(width * 0.04, -length * 0.04);
-  ctx.quadraticCurveTo(width * 0.1, -length * 0.48, width * 0.03, -length * 0.88);
-  ctx.strokeStyle = colors.gilt;
-  ctx.lineWidth = 0.28;
-  ctx.globalAlpha = 0.35;
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-
-  for (let i = 1; i <= 4; i += 1) {
-    const t = i / 5.2;
-    const y = -length * t;
-    const reach = width * (0.55 - t * 0.2);
-    ctx.globalAlpha = 0.28;
+  ctx.lineWidth = 0.65;
+  ctx.globalAlpha = 0.42;
+  if (vein === "fan") {
+    for (let i = -4; i <= 4; i += 1) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(i * width * 0.06, -length * 0.4, i * width * 0.16, -length * 0.86);
+      ctx.stroke();
+    }
+  } else if (vein === "palmate") {
+    const rays = [-1.15, -0.75, -Math.PI / 2, -2.4, -1.98];
+    rays.forEach((angle) => {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(angle) * length * 0.78, Math.sin(angle) * length * 0.78);
+      ctx.stroke();
+    });
+  } else {
     ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.quadraticCurveTo(reach * 0.4, y - length * 0.04, reach, y - length * 0.08);
-    ctx.moveTo(0, y);
-    ctx.quadraticCurveTo(-reach * 0.35, y - length * 0.03, -reach * 0.75, y - length * 0.05);
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(width * 0.04, -length * 0.5, 0, -length * 0.92);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(width * 0.04, -length * 0.04);
+    ctx.quadraticCurveTo(width * 0.08, -length * 0.48, width * 0.02, -length * 0.88);
+    ctx.strokeStyle = colors.gilt;
+    ctx.lineWidth = 0.26;
+    ctx.globalAlpha = 0.32;
+    ctx.stroke();
     ctx.strokeStyle = colors.vein;
     ctx.lineWidth = 0.28;
-    ctx.stroke();
+    for (let i = 1; i <= 4; i += 1) {
+      const t = i / 5.2;
+      const y = -length * t;
+      const reach = width * (0.55 - t * 0.2);
+      ctx.globalAlpha = 0.26;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.quadraticCurveTo(reach * 0.4, y - length * 0.04, reach, y - length * 0.08);
+      ctx.moveTo(0, y);
+      ctx.quadraticCurveTo(-reach * 0.35, y - length * 0.03, -reach * 0.75, y - length * 0.05);
+      ctx.stroke();
+    }
   }
   ctx.globalAlpha = 1;
   ctx.restore();
 }
 
+function tilt(ctx, random, amount = 0.1) {
+  ctx.rotate((random() - 0.5) * amount);
+}
+
 function drawBay(ctx, open, random) {
-  const length = (18 + random() * 3.5) * open;
-  const width = (6.2 + random() * 1.2) * open;
-  const lean = (random() - 0.5) * width * 0.35;
+  const length = (18.5 + random() * 2.2) * open;
+  const width = length * 0.34;
   const colors = leafPalette(random);
   ctx.save();
-  ctx.rotate((random() - 0.5) * 0.2);
-  paintModeledLeaf(ctx, () => ovalLeafPath(ctx, length, width, lean), colors, length, width);
+  tilt(ctx, random);
+  paintModeledLeaf(ctx, () => bayPath(ctx, length, width), colors, length, width);
+  ctx.restore();
+}
+
+function drawOlive(ctx, open, random) {
+  const length = (17 + random() * 2) * open;
+  const width = length * 0.2;
+  const colors = leafPalette(random);
+  ctx.save();
+  tilt(ctx, random);
+  paintModeledLeaf(ctx, () => olivePath(ctx, length, width), colors, length, width);
+  ctx.restore();
+}
+
+function drawWillow(ctx, open, random) {
+  const length = (22 + random() * 3) * open;
+  const width = length * 0.145;
+  const colors = leafPalette(random);
+  ctx.save();
+  tilt(ctx, random, 0.16);
+  paintModeledLeaf(ctx, () => willowPath(ctx, length, width), colors, length, width);
+  ctx.restore();
+}
+
+function drawOak(ctx, open, random) {
+  const length = (19 + random() * 2.4) * open;
+  const width = length * 0.46;
+  const colors = leafPalette(random);
+  ctx.save();
+  tilt(ctx, random);
+  paintModeledLeaf(ctx, () => oakPath(ctx, length, width), colors, length, width);
+  ctx.restore();
+}
+
+function drawHolly(ctx, open, random) {
+  const length = (17.5 + random() * 2) * open;
+  const width = length * 0.4;
+  const colors = leafPalette(random);
+  ctx.save();
+  tilt(ctx, random);
+  paintModeledLeaf(ctx, () => hollyPath(ctx, length, width), colors, length, width);
   ctx.restore();
 }
 
 function drawIvy(ctx, open, random) {
-  const size = (16 + random() * 3) * open;
+  const size = (16.5 + random() * 2) * open;
   const colors = leafPalette(random);
   ctx.save();
-  ctx.rotate((random() - 0.5) * 0.25);
-  paintModeledLeaf(ctx, () => ivyLeafPath(ctx, size), colors, size, size * 0.7);
+  tilt(ctx, random);
+  paintModeledLeaf(ctx, () => ivyPath(ctx, size), colors, size, size * 0.7, "palmate");
   ctx.restore();
 }
 
-function drawAcanthus(ctx, open, random) {
+function drawMaple(ctx, open, random) {
+  const size = (17.5 + random() * 2.2) * open;
   const colors = leafPalette(random);
   ctx.save();
-  ctx.rotate((random() - 0.5) * 0.15);
-  for (let i = 0; i < 3; i += 1) {
-    ctx.save();
-    ctx.rotate((-0.55 + i * 0.55) * 0.9);
-    const length = (13 + i * 2.4) * open;
-    const width = (5.4 + i * 0.6) * open;
-    const flip = i === 2 ? -1 : 1;
-    paintModeledLeaf(ctx, () => acanthusLobePath(ctx, length, width, flip), colors, length, width);
-    ctx.restore();
-  }
+  tilt(ctx, random);
+  paintModeledLeaf(ctx, () => maplePath(ctx, size), colors, size, size * 0.72, "palmate");
   ctx.restore();
 }
 
-function drawVineLeaf(ctx, open, random) {
-  const length = (16 + random() * 2.8) * open;
+function drawFig(ctx, open, random) {
+  const size = (17 + random() * 2) * open;
   const colors = leafPalette(random);
   ctx.save();
-  ctx.rotate((random() - 0.5) * 0.18);
-  paintModeledLeaf(
-    ctx,
-    () => {
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.bezierCurveTo(length * 0.55, -length * 0.05, length * 0.72, -length * 0.42, length * 0.22, -length * 0.58);
-      ctx.bezierCurveTo(length * 0.35, -length * 0.82, length * 0.08, -length * 1.02, 0, -length);
-      ctx.bezierCurveTo(-length * 0.08, -length * 1.02, -length * 0.35, -length * 0.82, -length * 0.22, -length * 0.58);
-      ctx.bezierCurveTo(-length * 0.72, -length * 0.42, -length * 0.55, -length * 0.05, 0, 0);
-      ctx.closePath();
-    },
-    colors,
-    length,
-    length * 0.55,
-  );
+  tilt(ctx, random);
+  paintModeledLeaf(ctx, () => figPath(ctx, size), colors, size, size * 0.62, "palmate");
   ctx.restore();
 }
 
-function drawSprig(ctx, open, random) {
+function drawHawthorn(ctx, open, random) {
+  const size = (16.5 + random() * 2) * open;
+  const colors = leafPalette(random);
   ctx.save();
-  for (let i = 0; i < 4; i += 1) {
-    ctx.save();
-    ctx.rotate((-0.55 + i * 0.36) * open);
-    ctx.translate(0, -1.6 * open);
-    if (i % 2 === 0) drawBay(ctx, open * 0.62, random);
-    else drawIvy(ctx, open * 0.55, random);
-    ctx.restore();
-  }
+  tilt(ctx, random);
+  paintModeledLeaf(ctx, () => hawthornPath(ctx, size), colors, size, size * 0.55, "palmate");
   ctx.restore();
 }
 
-const FLOWER_TYPES = [drawBay, drawIvy, drawAcanthus, drawVineLeaf, drawBay, drawSprig, drawIvy];
+function drawGinkgo(ctx, open, random) {
+  const radius = (14.5 + random() * 2) * open;
+  const colors = leafPalette(random);
+  ctx.save();
+  tilt(ctx, random, 0.08);
+  paintModeledLeaf(ctx, () => ginkgoPath(ctx, radius), colors, radius, radius * 0.85, "fan");
+  ctx.restore();
+}
+
+function drawRoseSprig(ctx, open, random) {
+  const colors = leafPalette(random);
+  ctx.save();
+  const pairs = [
+    { y: -4.2 * open, x: 5.4 * open, s: 0.48, rot: 1.05 },
+    { y: -9.2 * open, x: 4.6 * open, s: 0.42, rot: 1.15 },
+  ];
+  pairs.forEach((pair) => {
+    [-1, 1].forEach((side) => {
+      ctx.save();
+      ctx.translate(side * pair.x, pair.y);
+      ctx.rotate(side * pair.rot);
+      const length = 11 * open * pair.s * 2.2;
+      const width = length * 0.36;
+      paintModeledLeaf(ctx, () => {
+        profilePath(ctx, length, (t) => ovateWidth(t, width));
+      }, colors, length, width);
+      ctx.restore();
+    });
+  });
+  ctx.save();
+  ctx.translate(0, -14.5 * open);
+  const tip = 13 * open;
+  paintModeledLeaf(ctx, () => {
+    profilePath(ctx, tip, (t) => ovateWidth(t, tip * 0.34));
+  }, colors, tip, tip * 0.34);
+  ctx.restore();
+  ctx.restore();
+}
+
+const FLOWER_TYPES = [
+  drawBay,
+  drawOlive,
+  drawWillow,
+  drawOak,
+  drawHolly,
+  drawIvy,
+  drawMaple,
+  drawFig,
+  drawHawthorn,
+  drawGinkgo,
+  drawRoseSprig,
+];
 
 function drawLeaf(ctx, scale, side) {
   ctx.save();
   ctx.scale(side, 1);
   const colors = leafPalette(() => (side > 0 ? 0.7 : 0.2));
-  paintModeledLeaf(
-    ctx,
-    () => ovalLeafPath(ctx, 7.2 * scale, 2.8 * scale, 0.4 * scale),
-    colors,
-    7.2 * scale,
-    2.8 * scale,
-  );
+  const length = 7.4 * scale;
+  const width = length * 0.34;
+  paintModeledLeaf(ctx, () => bayPath(ctx, length, width), colors, length, width);
   ctx.restore();
 }
 
