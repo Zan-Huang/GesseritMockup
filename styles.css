@@ -17,8 +17,9 @@ body {
 body {
   position: relative;
   background:
-    radial-gradient(ellipse 24% 16% at 72% 12%, rgba(230, 230, 234, 0.1), transparent 64%),
-    linear-gradient(180deg, #000000 0%, #0a0a0c 38%, #1c1c20 70%, #2a2a30 100%);
+    radial-gradient(ellipse 24% 16% at 72% 12%, rgba(210, 210, 214, 0.06), transparent 64%),
+    radial-gradient(ellipse 16% 10% at 80% 20%, rgba(180, 180, 184, 0.04), transparent 58%),
+    linear-gradient(180deg, #030305 0%, #08080b 40%, #101014 62%, #161618 100%);
 }
 
 .sister {

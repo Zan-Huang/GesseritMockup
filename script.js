@@ -1106,11 +1106,11 @@ function drawArrakis(ctx, width, height, now) {
   }
 
   const layers = [
-    { fill: "rgba(78, 78, 84, 0.55)", shade: "rgba(18, 18, 22, 0.28)", light: "rgba(210, 210, 216, 0.16)" },
-    { fill: "rgba(58, 58, 64, 0.7)", shade: "rgba(12, 12, 16, 0.36)", light: "rgba(198, 198, 204, 0.14)" },
-    { fill: "rgba(42, 42, 48, 0.82)", shade: "rgba(6, 6, 8, 0.4)", light: "rgba(186, 186, 192, 0.12)" },
-    { fill: "rgba(24, 24, 28, 0.9)", shade: "rgba(0, 0, 0, 0.42)", light: "rgba(168, 168, 174, 0.1)" },
-    { fill: "rgba(8, 8, 10, 0.94)", shade: "rgba(0, 0, 0, 0.5)", light: "rgba(140, 140, 146, 0.08)" },
+    { fill: "rgba(36, 36, 38, 0.28)", shade: "rgba(12, 12, 14, 0.2)", light: "rgba(168, 168, 172, 0.07)" },
+    { fill: "rgba(44, 44, 46, 0.38)", shade: "rgba(16, 16, 18, 0.24)", light: "rgba(176, 176, 180, 0.08)" },
+    { fill: "rgba(50, 50, 52, 0.5)", shade: "rgba(18, 18, 20, 0.28)", light: "rgba(186, 186, 190, 0.1)" },
+    { fill: "rgba(40, 40, 42, 0.62)", shade: "rgba(12, 12, 14, 0.32)", light: "rgba(190, 190, 194, 0.1)" },
+    { fill: "rgba(28, 28, 30, 0.74)", shade: "rgba(8, 8, 10, 0.28)", light: "rgba(160, 160, 164, 0.09)" },
   ];
 
   layers.forEach((tone, layer) => {
@@ -1135,7 +1135,7 @@ function drawArrakis(ctx, width, height, now) {
     ctx.fillRect(0, 0, width, height);
 
     if (layer >= 2) {
-      ctx.strokeStyle = "rgba(200, 200, 206, 0.16)";
+      ctx.strokeStyle = "rgba(150, 150, 154, 0.1)";
       ctx.lineWidth = 0.7;
       for (let i = 0; i < 22; i += 1) {
         const y0 = height * (0.5 + layer * 0.06) + i * 6;
@@ -1153,7 +1153,7 @@ function drawArrakis(ctx, width, height, now) {
       for (let x = 8; x <= width; x += 8) {
         ctx.lineTo(x, duneHeight(x, width, height, layer));
       }
-      ctx.strokeStyle = "rgba(230, 230, 236, 0.28)";
+      ctx.strokeStyle = "rgba(198, 198, 202, 0.14)";
       ctx.lineWidth = 1.1;
       ctx.stroke();
     }
@@ -1166,12 +1166,6 @@ function drawArrakis(ctx, width, height, now) {
   haze.addColorStop(1, "rgba(12, 12, 14, 0)");
   ctx.fillStyle = haze;
   ctx.fillRect(0, height * 0.36, width, height * 0.16);
-
-  const leftLit = ctx.createRadialGradient(width * 0.13, height * 0.7, 16, width * 0.13, height * 0.7, width * 0.24);
-  leftLit.addColorStop(0, "rgba(210, 210, 216, 0.2)");
-  leftLit.addColorStop(1, "rgba(210, 210, 216, 0)");
-  ctx.fillStyle = leftLit;
-  ctx.fillRect(0, height * 0.48, width * 0.36, height * 0.42);
 
   const grit = mulberry32(77);
   for (let i = 0; i < 220; i += 1) {
