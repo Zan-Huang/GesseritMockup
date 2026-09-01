@@ -28,6 +28,28 @@ const blooms = new Map();
 const stuckGrid = new Map();
 const dust = [];
 const gust = [];
+const world = { lit: false };
+const torchBtn = document.querySelector(".torch");
+
+function torchAnchor() {
+  const box = torchBtn.getBoundingClientRect();
+  return { x: box.left + box.width * 0.52, y: box.top + box.height * 0.28 };
+}
+
+function setWorldLit(on) {
+  world.lit = on;
+  document.body.classList.toggle("lit", on);
+  torchBtn.classList.toggle("is-lit", on);
+  torchBtn.setAttribute("aria-pressed", on ? "true" : "false");
+}
+
+torchBtn.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  setWorldLit(!world.lit);
+  const flame = torchAnchor();
+  spawnDust(flame.x, flame.y, world.lit ? 36 : 10);
+});
 
 function resizeCanvas(canvas, ctx) {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1097,26 +1119,27 @@ function duneHeight(x, width, height, layer) {
 }
 
 function drawArrakis(ctx, width, height, now) {
+  const lit = world.lit;
   const moonA = { x: width * 0.74, y: height * 0.13, r: 34 };
   const moonB = { x: width * 0.83, y: height * 0.2, r: 16 };
   const glowA = ctx.createRadialGradient(moonA.x, moonA.y, 0, moonA.x, moonA.y, moonA.r * 2.6);
-  glowA.addColorStop(0, "rgba(214, 214, 218, 0.16)");
-  glowA.addColorStop(0.42, "rgba(186, 186, 190, 0.05)");
-  glowA.addColorStop(1, "rgba(186, 186, 190, 0)");
+  glowA.addColorStop(0, lit ? "rgba(255, 214, 130, 0.34)" : "rgba(214, 214, 218, 0.16)");
+  glowA.addColorStop(0.42, lit ? "rgba(255, 160, 70, 0.12)" : "rgba(186, 186, 190, 0.05)");
+  glowA.addColorStop(1, lit ? "rgba(255, 140, 50, 0)" : "rgba(186, 186, 190, 0)");
   ctx.fillStyle = glowA;
   ctx.fillRect(moonA.x - moonA.r * 2.6, moonA.y - moonA.r * 2.6, moonA.r * 5.2, moonA.r * 5.2);
   ctx.beginPath();
-  ctx.fillStyle = "rgba(220, 220, 224, 0.24)";
+  ctx.fillStyle = lit ? "rgba(255, 228, 170, 0.72)" : "rgba(220, 220, 224, 0.24)";
   ctx.arc(moonA.x, moonA.y, 6.8, 0, Math.PI * 2);
   ctx.fill();
 
   const glowB = ctx.createRadialGradient(moonB.x, moonB.y, 0, moonB.x, moonB.y, moonB.r * 2.2);
-  glowB.addColorStop(0, "rgba(196, 196, 200, 0.12)");
-  glowB.addColorStop(1, "rgba(196, 196, 200, 0)");
+  glowB.addColorStop(0, lit ? "rgba(255, 190, 110, 0.28)" : "rgba(196, 196, 200, 0.12)");
+  glowB.addColorStop(1, lit ? "rgba(255, 150, 70, 0)" : "rgba(196, 196, 200, 0)");
   ctx.fillStyle = glowB;
   ctx.fillRect(moonB.x - moonB.r * 2.2, moonB.y - moonB.r * 2.2, moonB.r * 4.4, moonB.r * 4.4);
   ctx.beginPath();
-  ctx.fillStyle = "rgba(200, 200, 204, 0.18)";
+  ctx.fillStyle = lit ? "rgba(255, 210, 150, 0.55)" : "rgba(200, 200, 204, 0.18)";
   ctx.arc(moonB.x, moonB.y, 3.2, 0, Math.PI * 2);
   ctx.fill();
 
@@ -1125,17 +1148,27 @@ function drawArrakis(ctx, width, height, now) {
     const x = stars() * width;
     const y = stars() * height * 0.4;
     const twinkle = 0.6 + 0.4 * Math.sin(now * 0.00045 + i * 1.7);
-    ctx.fillStyle = `rgba(220, 220, 224, ${(0.07 + stars() * 0.18) * twinkle})`;
+    ctx.fillStyle = lit
+      ? `rgba(255, 226, 170, ${(0.1 + stars() * 0.22) * twinkle})`
+      : `rgba(220, 220, 224, ${(0.07 + stars() * 0.18) * twinkle})`;
     ctx.fillRect(x, y, 0.8, 0.8);
   }
 
-  const layers = [
-    { fill: "rgba(36, 36, 38, 0.28)", shade: "rgba(12, 12, 14, 0.2)", light: "rgba(168, 168, 172, 0.07)" },
-    { fill: "rgba(44, 44, 46, 0.38)", shade: "rgba(16, 16, 18, 0.24)", light: "rgba(176, 176, 180, 0.08)" },
-    { fill: "rgba(50, 50, 52, 0.5)", shade: "rgba(18, 18, 20, 0.28)", light: "rgba(186, 186, 190, 0.1)" },
-    { fill: "rgba(40, 40, 42, 0.62)", shade: "rgba(12, 12, 14, 0.32)", light: "rgba(190, 190, 194, 0.1)" },
-    { fill: "rgba(28, 28, 30, 0.74)", shade: "rgba(8, 8, 10, 0.28)", light: "rgba(160, 160, 164, 0.09)" },
-  ];
+  const layers = lit
+    ? [
+        { fill: "rgba(168, 86, 32, 0.36)", shade: "rgba(70, 22, 8, 0.3)", light: "rgba(255, 196, 96, 0.18)" },
+        { fill: "rgba(186, 98, 36, 0.46)", shade: "rgba(78, 26, 10, 0.32)", light: "rgba(255, 186, 88, 0.2)" },
+        { fill: "rgba(204, 112, 40, 0.58)", shade: "rgba(82, 28, 10, 0.36)", light: "rgba(255, 206, 120, 0.22)" },
+        { fill: "rgba(160, 78, 28, 0.72)", shade: "rgba(56, 18, 8, 0.4)", light: "rgba(255, 176, 80, 0.18)" },
+        { fill: "rgba(110, 48, 16, 0.84)", shade: "rgba(36, 10, 6, 0.38)", light: "rgba(230, 140, 60, 0.16)" },
+      ]
+    : [
+        { fill: "rgba(36, 36, 38, 0.28)", shade: "rgba(12, 12, 14, 0.2)", light: "rgba(168, 168, 172, 0.07)" },
+        { fill: "rgba(44, 44, 46, 0.38)", shade: "rgba(16, 16, 18, 0.24)", light: "rgba(176, 176, 180, 0.08)" },
+        { fill: "rgba(50, 50, 52, 0.5)", shade: "rgba(18, 18, 20, 0.28)", light: "rgba(186, 186, 190, 0.1)" },
+        { fill: "rgba(40, 40, 42, 0.62)", shade: "rgba(12, 12, 14, 0.32)", light: "rgba(190, 190, 194, 0.1)" },
+        { fill: "rgba(28, 28, 30, 0.74)", shade: "rgba(8, 8, 10, 0.28)", light: "rgba(160, 160, 164, 0.09)" },
+      ];
 
   layers.forEach((tone, layer) => {
     ctx.beginPath();
@@ -1159,7 +1192,7 @@ function drawArrakis(ctx, width, height, now) {
     ctx.fillRect(0, 0, width, height);
 
     if (layer >= 2) {
-      ctx.strokeStyle = "rgba(150, 150, 154, 0.1)";
+      ctx.strokeStyle = lit ? "rgba(210, 120, 48, 0.16)" : "rgba(150, 150, 154, 0.1)";
       ctx.lineWidth = 0.7;
       for (let i = 0; i < 22; i += 1) {
         const y0 = height * (0.5 + layer * 0.06) + i * 6;
@@ -1177,7 +1210,7 @@ function drawArrakis(ctx, width, height, now) {
       for (let x = 8; x <= width; x += 8) {
         ctx.lineTo(x, duneHeight(x, width, height, layer));
       }
-      ctx.strokeStyle = "rgba(198, 198, 202, 0.14)";
+      ctx.strokeStyle = lit ? "rgba(255, 196, 110, 0.28)" : "rgba(198, 198, 202, 0.14)";
       ctx.lineWidth = 1.1;
       ctx.stroke();
     }
@@ -1185,17 +1218,29 @@ function drawArrakis(ctx, width, height, now) {
   });
 
   const haze = ctx.createLinearGradient(0, height * 0.36, 0, height * 0.52);
-  haze.addColorStop(0, "rgba(12, 12, 14, 0)");
-  haze.addColorStop(0.5, "rgba(72, 72, 76, 0.1)");
-  haze.addColorStop(1, "rgba(12, 12, 14, 0)");
+  haze.addColorStop(0, lit ? "rgba(80, 24, 8, 0)" : "rgba(12, 12, 14, 0)");
+  haze.addColorStop(0.5, lit ? "rgba(230, 130, 48, 0.22)" : "rgba(72, 72, 76, 0.1)");
+  haze.addColorStop(1, lit ? "rgba(80, 24, 8, 0)" : "rgba(12, 12, 14, 0)");
   ctx.fillStyle = haze;
   ctx.fillRect(0, height * 0.36, width, height * 0.16);
+
+  if (lit) {
+    const flame = torchAnchor();
+    const wash = ctx.createRadialGradient(flame.x, flame.y, 10, flame.x, flame.y, Math.max(width, height) * 0.72);
+    wash.addColorStop(0, "rgba(255, 176, 64, 0.26)");
+    wash.addColorStop(0.22, "rgba(220, 90, 24, 0.1)");
+    wash.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = wash;
+    ctx.fillRect(0, 0, width, height);
+  }
 
   const grit = mulberry32(77);
   for (let i = 0; i < 220; i += 1) {
     const x = grit() * width;
     const y = height * (0.48 + grit() * 0.5);
-    ctx.fillStyle = `rgba(186, 186, 190, ${0.04 + grit() * 0.1})`;
+    ctx.fillStyle = lit
+      ? `rgba(232, 164, 72, ${0.06 + grit() * 0.16})`
+      : `rgba(186, 186, 190, ${0.04 + grit() * 0.1})`;
     ctx.fillRect(x, y, 1 + grit(), 1);
   }
   for (let i = 0; i < 18; i += 1) {
@@ -1221,7 +1266,9 @@ function drawDuneMatrix(ctx, width, height, now) {
       const wave = 0.5 + 0.5 * Math.sin(now * 0.00055 + x * 0.012 + y * 0.008);
       const fade = Math.max(0, pulse * wave - 0.42);
       if (fade < 0.04) continue;
-      ctx.strokeStyle = `rgba(210, 210, 216, ${0.02 + fade * 0.1})`;
+      ctx.strokeStyle = world.lit
+        ? `rgba(255, 186, 92, ${0.04 + fade * 0.16})`
+        : `rgba(210, 210, 216, ${0.02 + fade * 0.1})`;
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(x + GRID, y);
@@ -1270,7 +1317,7 @@ function drawEmergedHill(ctx, width, height, now, originX, originY) {
       if (y < crest - 4 || y > foot + 10) continue;
       const edge = Math.min((x - x0) / (width * 0.08), (x1 - x) / (width * 0.08), 1);
       const alpha = 0.1 + pulse * 0.22 * Math.max(0, edge);
-      ctx.strokeStyle = `rgba(228, 228, 234, ${alpha})`;
+      ctx.strokeStyle = world.lit ? `rgba(255, 206, 120, ${alpha + 0.08})` : `rgba(228, 228, 234, ${alpha})`;
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(x + GRID, y);
@@ -1357,6 +1404,10 @@ function spawnDust(x, y, amount) {
 }
 
 function updateDust() {
+  if (world.lit && Math.random() < 0.4) {
+    const flame = torchAnchor();
+    spawnDust(flame.x + (Math.random() - 0.5) * 12, flame.y + (Math.random() - 0.5) * 10, 1);
+  }
   if (mouse.inside) {
     const speed = Math.hypot(mouse.x - lastMouse.x, mouse.y - lastMouse.y);
     spawnDust(mouse.x, mouse.y, 1 + Math.min(7, Math.floor(speed * 0.4)));
