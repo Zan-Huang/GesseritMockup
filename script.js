@@ -4,19 +4,19 @@ const illum = document.getElementById("illumination");
 const illumCtx = illum.getContext("2d", { alpha: true });
 const dropLetter = document.querySelector(".drop-letter");
 
-const GRID = 20;
-const REVEAL_RADIUS = 92;
-const BLOOM_RADIUS = 124;
+const GRID = 18;
+const REVEAL_RADIUS = 110;
+const BLOOM_RADIUS = 172;
 const BLOOM_DELAY = 1280;
-const SPRAWL_STAGGER = 3200;
+const SPRAWL_STAGGER = 4400;
 const STEM_LEAD = 260;
 const GRID_REVEAL_MS = 920;
-const BLOOM_SPEED_FAST = 0.0084;
-const BLOOM_SPEED_SLOW = 0.00115;
-const FADE_SPEED = 0.003;
-const PERSIST_MS = 3600;
-const GRID_STICK_MS = 6400;
-const GRID_STICK_FADE = 0.0014;
+const BLOOM_SPEED_FAST = 0.009;
+const BLOOM_SPEED_SLOW = 0.0016;
+const FADE_SPEED = 0.0012;
+const PERSIST_MS = 9800;
+const GRID_STICK_MS = 16000;
+const GRID_STICK_FADE = 0.00055;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 const PHI = (1 + Math.sqrt(5)) / 2;
 
@@ -275,8 +275,8 @@ function updateStuckGrid(now) {
     if (cell.strength <= 0) stuckGrid.delete(key);
   }
 
-  if (stuckGrid.size > 320) {
-    const extra = stuckGrid.size - 320;
+  if (stuckGrid.size > 520) {
+    const extra = stuckGrid.size - 520;
     let dropped = 0;
     for (const [key, cell] of stuckGrid) {
       if (cell.leftAt && dropped < extra) {
@@ -942,11 +942,13 @@ function drawFlowStem(ctx, pts, stem, seed) {
   ctx.stroke();
 
   const sideLeaves = [
-    { at: 0.22, side: 1, scale: 1.25, rot: 1.12 },
-    { at: 0.36, side: -1, scale: 1.4, rot: -1.05 },
-    { at: 0.5, side: 1, scale: 1.55, rot: 1.18 },
-    { at: 0.64, side: -1, scale: 1.45, rot: -1.1 },
-    { at: 0.78, side: 1, scale: 1.2, rot: 1.02 },
+    { at: 0.16, side: 1, scale: 1.2, rot: 1.1 },
+    { at: 0.28, side: -1, scale: 1.38, rot: -1.04 },
+    { at: 0.4, side: 1, scale: 1.52, rot: 1.16 },
+    { at: 0.52, side: -1, scale: 1.6, rot: -1.12 },
+    { at: 0.64, side: 1, scale: 1.48, rot: 1.08 },
+    { at: 0.76, side: -1, scale: 1.32, rot: -1.02 },
+    { at: 0.86, side: 1, scale: 1.18, rot: 0.98 },
   ];
   sideLeaves.forEach((leaf) => {
     if (stem < leaf.at) return;
@@ -1447,8 +1449,8 @@ function frame(now) {
 
   for (const node of blooms.values()) {
     if (node.stem < 0.02 && node.bloom < 0.02) continue;
-    const pts = integrateStream(node.x, node.y, node.seed, now, 84, 0.82);
-    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 2.05);
+    const pts = integrateStream(node.x, node.y, node.seed, now, 112, 1.02);
+    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 2.4);
   }
 
   updateDust();
