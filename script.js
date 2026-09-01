@@ -4,9 +4,9 @@ const illum = document.getElementById("illumination");
 const illumCtx = illum.getContext("2d", { alpha: true });
 const dropLetter = document.querySelector(".drop-letter");
 
-const GRID = 28;
-const REVEAL_RADIUS = 46;
-const BLOOM_RADIUS = 40;
+const GRID = 22;
+const REVEAL_RADIUS = 52;
+const BLOOM_RADIUS = 48;
 const BLOOM_DELAY = 780;
 const SPRAWL_STAGGER = 1400;
 const STEM_LEAD = 340;
@@ -254,7 +254,7 @@ function leafPalette(random) {
   const roll = random();
   const j = () => random();
 
-  if (roll < 0.22) {
+  if (roll < 0.14) {
     const h = 148 + j() * 16;
     return {
       umber: hsla(h, 42 + j() * 10, 7 + j() * 4, 0.84),
@@ -266,7 +266,7 @@ function leafPalette(random) {
       gilt: hsla(44, 88, 56, 0.52),
     };
   }
-  if (roll < 0.4) {
+  if (roll < 0.26) {
     const h = 88 + j() * 22;
     return {
       umber: hsla(h + 20, 28 + j() * 10, 12 + j() * 4, 0.8),
@@ -278,7 +278,7 @@ function leafPalette(random) {
       gilt: hsla(46, 80, 54, 0.48),
     };
   }
-  if (roll < 0.55) {
+  if (roll < 0.36) {
     const h = 118 + j() * 18;
     return {
       umber: hsla(h, 30 + j() * 8, 14 + j() * 4, 0.8),
@@ -290,7 +290,7 @@ function leafPalette(random) {
       gilt: hsla(43, 75, 52, 0.45),
     };
   }
-  if (roll < 0.72) {
+  if (roll < 0.5) {
     const h = 38 + j() * 8;
     return {
       umber: hsla(h - 6, 58 + j() * 10, 16 + j() * 4, 0.8),
@@ -302,7 +302,7 @@ function leafPalette(random) {
       gilt: hsla(45, 100, 72, 0.72),
     };
   }
-  if (roll < 0.84) {
+  if (roll < 0.58) {
     const h = 44 + j() * 8;
     return {
       umber: hsla(36, 48, 20, 0.78),
@@ -314,7 +314,7 @@ function leafPalette(random) {
       gilt: hsla(48, 95, 78, 0.65),
     };
   }
-  if (roll < 0.92) {
+  if (roll < 0.74) {
     const h = 28 + j() * 14;
     return {
       umber: hsla(20, 55, 14, 0.82),
@@ -326,15 +326,27 @@ function leafPalette(random) {
       gilt: hsla(38, 85, 52, 0.55),
     };
   }
-  const h = random() < 0.5 ? 8 + j() * 12 : 352 + j() * 10;
+  if (roll < 0.86) {
+    const h = 18 + j() * 16;
+    return {
+      umber: hsla(16, 52, 12, 0.84),
+      body: hsla(h, 78 + j() * 12, 36 + j() * 6, 0.94),
+      mid: hsla(h + 10, 80 + j() * 10, 48 + j() * 8, 0.9),
+      light: hsla(36 + j() * 10, 84, 58 + j() * 8, 0.68),
+      gleam: hsla(42, 88, 68, 0.4),
+      vein: hsla(16, 42, 20, 0.42),
+      gilt: hsla(32, 80, 50, 0.52),
+    };
+  }
+  const h = random() < 0.5 ? 6 + j() * 14 : 350 + j() * 12;
   return {
     umber: hsla(8, 48, 12, 0.82),
-    body: hsla(h, 58 + j() * 14, 28 + j() * 6, 0.93),
-    mid: hsla(h + 6, 62 + j() * 12, 40 + j() * 8, 0.88),
-    light: hsla(28 + j() * 10, 70, 52 + j() * 8, 0.62),
-    gleam: hsla(42, 80, 64, 0.35),
+    body: hsla(h, 62 + j() * 14, 30 + j() * 6, 0.93),
+    mid: hsla(h + 8, 66 + j() * 12, 42 + j() * 8, 0.88),
+    light: hsla(26 + j() * 12, 72, 54 + j() * 8, 0.64),
+    gleam: hsla(38, 78, 62, 0.36),
     vein: hsla(12, 40, 20, 0.4),
-    gilt: hsla(36, 78, 48, 0.5),
+    gilt: hsla(34, 76, 48, 0.5),
   };
 }
 
@@ -831,31 +843,30 @@ function drawFlowStem(ctx, pts, stem, seed) {
   ctx.lineWidth = 0.55;
   ctx.stroke();
 
-  if (stem > 0.28) {
-    const a = pointOnPath(pts, 0.38 * stem);
-    const tan = tangentOnPath(pts, 0.38 * stem);
+  const sideLeaves = [
+    { at: 0.22, side: 1, scale: 1.25, rot: 1.12 },
+    { at: 0.36, side: -1, scale: 1.4, rot: -1.05 },
+    { at: 0.5, side: 1, scale: 1.55, rot: 1.18 },
+    { at: 0.64, side: -1, scale: 1.45, rot: -1.1 },
+    { at: 0.78, side: 1, scale: 1.2, rot: 1.02 },
+  ];
+  sideLeaves.forEach((leaf) => {
+    if (stem < leaf.at) return;
+    const a = pointOnPath(pts, leaf.at * stem);
+    const tan = tangentOnPath(pts, leaf.at * stem);
     ctx.save();
     ctx.translate(a.x, a.y);
-    ctx.rotate(Math.atan2(tan.y, tan.x) + 1.15);
-    drawLeaf(ctx, stem * 1.55, 1);
+    ctx.rotate(Math.atan2(tan.y, tan.x) + leaf.rot);
+    drawLeaf(ctx, stem * leaf.scale, leaf.side);
     ctx.restore();
-  }
-  if (stem > 0.55) {
-    const a = pointOnPath(pts, 0.68 * stem);
-    const tan = tangentOnPath(pts, 0.68 * stem);
-    ctx.save();
-    ctx.translate(a.x, a.y);
-    ctx.rotate(Math.atan2(tan.y, tan.x) - 1.05);
-    drawLeaf(ctx, stem * 1.35, -1);
-    ctx.restore();
-  }
+  });
 
-  if (stem > 0.72 && random() > 0.45) {
-    const a = pointOnPath(pts, 0.52);
+  if (stem > 0.58) {
+    const a = pointOnPath(pts, 0.48);
     ctx.save();
     ctx.translate(a.x, a.y);
-    ctx.rotate(tangentOnPath(pts, 0.52).x);
-    drawBay(ctx, stem * 0.72, random);
+    ctx.rotate(tangentOnPath(pts, 0.48).x);
+    drawBay(ctx, stem * 0.78, random);
     ctx.restore();
   }
   ctx.restore();
