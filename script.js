@@ -244,26 +244,95 @@ function drawGrid(ctx) {
   ctx.restore();
 }
 
+function hsla(h, s, l, a) {
+  return `hsla(${h}, ${s}%, ${l}%, ${a})`;
+}
+
 function leafPalette(random) {
-  if (random() < 0.42) {
+  const roll = random();
+  const j = () => random();
+
+  if (roll < 0.22) {
+    const h = 148 + j() * 16;
     return {
-      umber: "hsla(32, 62%, 18%, 0.78)",
-      body: "hsla(38, 82%, 36%, 0.94)",
-      mid: "hsla(42, 88%, 48%, 0.9)",
-      light: "hsla(46, 96%, 64%, 0.72)",
-      gleam: "hsla(48, 100%, 82%, 0.55)",
-      vein: "hsla(30, 48%, 22%, 0.4)",
-      gilt: "hsla(45, 100%, 72%, 0.7)",
+      umber: hsla(h, 42 + j() * 10, 7 + j() * 4, 0.84),
+      body: hsla(h + 2, 48 + j() * 10, 12 + j() * 5, 0.95),
+      mid: hsla(h - 4, 36 + j() * 12, 20 + j() * 6, 0.9),
+      light: hsla(95 + j() * 18, 26 + j() * 12, 32 + j() * 8, 0.58),
+      gleam: hsla(46, 82, 64, 0.28 + j() * 0.12),
+      vein: hsla(42, 50, 36, 0.4),
+      gilt: hsla(44, 88, 56, 0.52),
     };
   }
+  if (roll < 0.4) {
+    const h = 88 + j() * 22;
+    return {
+      umber: hsla(h + 20, 28 + j() * 10, 12 + j() * 4, 0.8),
+      body: hsla(h, 34 + j() * 14, 22 + j() * 6, 0.93),
+      mid: hsla(h + 8, 38 + j() * 12, 32 + j() * 8, 0.9),
+      light: hsla(72 + j() * 14, 40 + j() * 12, 44 + j() * 8, 0.62),
+      gleam: hsla(50, 78, 68, 0.3),
+      vein: hsla(95, 22, 24, 0.42),
+      gilt: hsla(46, 80, 54, 0.48),
+    };
+  }
+  if (roll < 0.55) {
+    const h = 118 + j() * 18;
+    return {
+      umber: hsla(h, 30 + j() * 8, 14 + j() * 4, 0.8),
+      body: hsla(h + 6, 22 + j() * 10, 26 + j() * 6, 0.92),
+      mid: hsla(h - 8, 18 + j() * 10, 36 + j() * 8, 0.88),
+      light: hsla(70 + j() * 12, 24 + j() * 10, 48 + j() * 8, 0.55),
+      gleam: hsla(48, 70, 70, 0.26),
+      vein: hsla(40, 35, 32, 0.38),
+      gilt: hsla(43, 75, 52, 0.45),
+    };
+  }
+  if (roll < 0.72) {
+    const h = 38 + j() * 8;
+    return {
+      umber: hsla(h - 6, 58 + j() * 10, 16 + j() * 4, 0.8),
+      body: hsla(h, 84 + j() * 10, 34 + j() * 6, 0.95),
+      mid: hsla(h + 5, 90 + j() * 8, 48 + j() * 6, 0.92),
+      light: hsla(h + 10, 96, 66 + j() * 8, 0.74),
+      gleam: hsla(48, 100, 84, 0.58),
+      vein: hsla(30, 48, 22, 0.42),
+      gilt: hsla(45, 100, 72, 0.72),
+    };
+  }
+  if (roll < 0.84) {
+    const h = 44 + j() * 8;
+    return {
+      umber: hsla(36, 48, 20, 0.78),
+      body: hsla(h, 62 + j() * 12, 52 + j() * 8, 0.9),
+      mid: hsla(h + 6, 70 + j() * 12, 64 + j() * 8, 0.88),
+      light: hsla(50, 80, 78 + j() * 8, 0.7),
+      gleam: hsla(52, 100, 90, 0.5),
+      vein: hsla(38, 40, 28, 0.38),
+      gilt: hsla(48, 95, 78, 0.65),
+    };
+  }
+  if (roll < 0.92) {
+    const h = 28 + j() * 14;
+    return {
+      umber: hsla(20, 55, 14, 0.82),
+      body: hsla(h, 72 + j() * 12, 32 + j() * 6, 0.94),
+      mid: hsla(h + 8, 78 + j() * 10, 44 + j() * 8, 0.9),
+      light: hsla(40 + j() * 8, 82, 56 + j() * 8, 0.7),
+      gleam: hsla(46, 90, 70, 0.42),
+      vein: hsla(18, 45, 22, 0.42),
+      gilt: hsla(38, 85, 52, 0.55),
+    };
+  }
+  const h = random() < 0.5 ? 8 + j() * 12 : 352 + j() * 10;
   return {
-    umber: "hsla(150, 40%, 8%, 0.82)",
-    body: "hsla(152, 48%, 14%, 0.94)",
-    mid: "hsla(148, 38%, 22%, 0.9)",
-    light: "hsla(92, 28%, 34%, 0.55)",
-    gleam: "hsla(46, 86%, 62%, 0.32)",
-    vein: "hsla(42, 55%, 38%, 0.38)",
-    gilt: "hsla(44, 90%, 58%, 0.55)",
+    umber: hsla(8, 48, 12, 0.82),
+    body: hsla(h, 58 + j() * 14, 28 + j() * 6, 0.93),
+    mid: hsla(h + 6, 62 + j() * 12, 40 + j() * 8, 0.88),
+    light: hsla(28 + j() * 10, 70, 52 + j() * 8, 0.62),
+    gleam: hsla(42, 80, 64, 0.35),
+    vein: hsla(12, 40, 20, 0.4),
+    gilt: hsla(36, 78, 48, 0.5),
   };
 }
 
