@@ -46,49 +46,21 @@ body.lit {
   object-fit: contain;
   object-position: left bottom;
   user-select: none;
-  opacity: 0.94;
-  filter: brightness(1.2) contrast(1.12);
-}
-
-body.lit .sister {
-  filter: brightness(1.08) contrast(1.08) saturate(1.2);
+  opacity: 0.9;
+  filter: brightness(1.4) contrast(1.15);
 }
 
 .torch {
   position: absolute;
-  left: 62%;
-  top: 15%;
-  width: 36%;
-  height: 34%;
+  left: 70%;
+  top: 52%;
+  width: 28%;
+  height: 40%;
   padding: 0;
   border: 0;
   background: transparent;
   cursor: none;
   pointer-events: auto;
-}
-
-.torch::after {
-  content: "";
-  position: absolute;
-  left: 48%;
-  top: 18%;
-  width: 42%;
-  height: 46%;
-  border-radius: 50%;
-  transform: translateX(-50%);
-  background: radial-gradient(circle, rgba(255, 196, 90, 0.22), rgba(255, 110, 20, 0.05) 58%, transparent 74%);
-  animation: torch-idle 1.1s ease-in-out infinite alternate;
-  pointer-events: none;
-}
-
-body.lit .torch::after {
-  background: radial-gradient(circle, rgba(255, 220, 120, 0.55), rgba(255, 120, 30, 0.18) 52%, transparent 76%);
-  animation-duration: 0.18s;
-}
-
-@keyframes torch-idle {
-  from { opacity: 0.55; transform: translateX(-50%) scale(0.92); }
-  to { opacity: 1; transform: translateX(-50%) scale(1.08); }
 }
 
 #field,
@@ -102,6 +74,7 @@ body.lit .torch::after {
 
 #field {
   z-index: 2;
+  pointer-events: none;
 }
 
 #illumination {

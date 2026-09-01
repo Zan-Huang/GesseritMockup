@@ -7,15 +7,15 @@ const dropLetter = document.querySelector(".drop-letter");
 const GRID = 18;
 const REVEAL_RADIUS = 110;
 const BLOOM_RADIUS = 172;
-const BLOOM_DELAY = 720;
-const SPRAWL_STAGGER = 2100;
-const STEM_LEAD = 260;
+const BLOOM_DELAY = 180;
+const SPRAWL_STAGGER = 980;
+const STEM_LEAD = 180;
 const GRID_REVEAL_MS = 920;
-const BLOOM_SPEED_FAST = 0.005;
-const BLOOM_SPEED_SLOW = 0.0012;
-const FADE_SPEED = 0.0012;
+const BLOOM_SPEED_FAST = 0.012;
+const BLOOM_SPEED_SLOW = 0.0022;
+const FADE_SPEED = 0.0014;
 const PERSIST_MS = 9800;
-const MAX_BLOOMS = 28;
+const MAX_BLOOMS = 20;
 const GRID_STICK_MS = 16000;
 const GRID_STICK_FADE = 0.00055;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
@@ -32,24 +32,29 @@ const world = { lit: false };
 const torchBtn = document.querySelector(".torch");
 
 function torchAnchor() {
+  if (!torchBtn) return { x: 72, y: window.innerHeight * 0.62 };
   const box = torchBtn.getBoundingClientRect();
-  return { x: box.left + box.width * 0.52, y: box.top + box.height * 0.28 };
+  return { x: box.left + box.width * 0.55, y: box.top + box.height * 0.22 };
 }
 
 function setWorldLit(on) {
   world.lit = on;
   document.body.classList.toggle("lit", on);
-  torchBtn.classList.toggle("is-lit", on);
-  torchBtn.setAttribute("aria-pressed", on ? "true" : "false");
+  if (torchBtn) {
+    torchBtn.classList.toggle("is-lit", on);
+    torchBtn.setAttribute("aria-pressed", on ? "true" : "false");
+  }
 }
 
-torchBtn.addEventListener("pointerdown", (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  setWorldLit(!world.lit);
-  const flame = torchAnchor();
-  spawnDust(flame.x, flame.y, world.lit ? 36 : 10);
-});
+if (torchBtn) {
+  torchBtn.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setWorldLit(!world.lit);
+    const flame = torchAnchor();
+    spawnDust(flame.x, flame.y, world.lit ? 36 : 10);
+  });
+}
 
 function resizeCanvas(canvas, ctx) {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -191,13 +196,15 @@ function setPointer(clientX, clientY, inside) {
   mouse.inside = inside;
 }
 
-window.addEventListener("pointermove", (event) => {
+function onPointer(event) {
   setPointer(event.clientX, event.clientY, true);
-});
+}
 
-window.addEventListener("pointerdown", (event) => {
-  setPointer(event.clientX, event.clientY, true);
-});
+document.addEventListener("pointermove", onPointer, { passive: true });
+document.addEventListener("pointerdown", onPointer, { passive: true });
+document.addEventListener("pointerenter", onPointer, { passive: true });
+window.addEventListener("pointermove", onPointer, { passive: true });
+window.addEventListener("pointerdown", onPointer, { passive: true });
 
 window.addEventListener("pointerleave", () => {
   mouse.inside = false;
@@ -1536,9 +1543,9 @@ function frame(now) {
   drawHoverNodes(fieldCtx, originX, originY, now);
 
   for (const node of blooms.values()) {
-    if (node.stem < 0.02 && node.bloom < 0.02) continue;
-    const pts = integrateStream(node.x, node.y, node.seed, now, 112, 1.02);
-    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 2.4);
+    if (node.stem < 0.01 && node.bloom < 0.01) continue;
+    if (!node.pts) node.pts = integrateStream(node.x, node.y, node.seed, (node.seed % 997) + 40, 72, 1.05);
+    drawBloomAt(illumCtx, node.pts, node.bloom, node.stem, node.seed, 2.7);
   }
 
   updateDust();
