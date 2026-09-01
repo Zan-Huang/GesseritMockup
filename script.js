@@ -15,6 +15,8 @@ const BLOOM_SPEED_FAST = 0.0084;
 const BLOOM_SPEED_SLOW = 0.00115;
 const FADE_SPEED = 0.003;
 const PERSIST_MS = 3600;
+const GRID_STICK_MS = 6400;
+const GRID_STICK_FADE = 0.0014;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 const PHI = (1 + Math.sqrt(5)) / 2;
 
@@ -22,6 +24,7 @@ const mouse = { x: -9999, y: -9999, inside: false };
 const lastMouse = { x: -9999, y: -9999 };
 const pointerField = { since: 0, leftAt: 0 };
 const blooms = new Map();
+const stuckGrid = new Map();
 const dust = [];
 const gust = [];
 
@@ -230,6 +233,83 @@ function gridProgress(now) {
 function cellAppear(progress, dist) {
   const ring = dist / REVEAL_RADIUS;
   return easeOutCubic(Math.max(0, Math.min(1, (progress - ring * 0.72) / 0.28)));
+}
+
+function updateStuckGrid(now) {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const originX = gridOrigin(GRID, width);
+  const originY = gridOrigin(GRID, height);
+  const live = new Set();
+
+  if (mouse.inside) {
+    const minX = Math.floor((mouse.x - REVEAL_RADIUS - originX) / GRID);
+    const maxX = Math.ceil((mouse.x + REVEAL_RADIUS - originX) / GRID);
+    const minY = Math.floor((mouse.y - REVEAL_RADIUS - originY) / GRID);
+    const maxY = Math.ceil((mouse.y + REVEAL_RADIUS - originY) / GRID);
+
+    for (let ix = minX; ix <= maxX; ix += 1) {
+      for (let iy = minY; iy <= maxY; iy += 1) {
+        const x = originX + ix * GRID;
+        const y = originY + iy * GRID;
+        const dist = Math.hypot(x - mouse.x, y - mouse.y);
+        if (dist > REVEAL_RADIUS) continue;
+        const key = `${ix},${iy}`;
+        live.add(key);
+        let cell = stuckGrid.get(key);
+        if (!cell) {
+          cell = { x, y, strength: 0, leftAt: 0 };
+          stuckGrid.set(key, cell);
+        }
+        cell.strength = Math.min(1, cell.strength + 0.045 + falloff(dist, REVEAL_RADIUS) * 0.04);
+        cell.leftAt = 0;
+      }
+    }
+  }
+
+  for (const [key, cell] of stuckGrid) {
+    if (live.has(key)) continue;
+    if (!cell.leftAt) cell.leftAt = now;
+    if (now - cell.leftAt < GRID_STICK_MS) continue;
+    cell.strength = Math.max(0, cell.strength - GRID_STICK_FADE);
+    if (cell.strength <= 0) stuckGrid.delete(key);
+  }
+
+  if (stuckGrid.size > 320) {
+    const extra = stuckGrid.size - 320;
+    let dropped = 0;
+    for (const [key, cell] of stuckGrid) {
+      if (cell.leftAt && dropped < extra) {
+        stuckGrid.delete(key);
+        dropped += 1;
+      }
+    }
+  }
+}
+
+function drawStuckGrid(ctx) {
+  if (stuckGrid.size === 0) return;
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineWidth = 0.65;
+  for (const cell of stuckGrid.values()) {
+    if (cell.strength < 0.03) continue;
+    const a = cell.strength * 0.38;
+    ctx.globalAlpha = a;
+    ctx.strokeStyle = "rgba(214, 214, 220, 0.95)";
+    const span = GRID * (0.35 + cell.strength * 0.65);
+    ctx.beginPath();
+    ctx.moveTo(cell.x, cell.y);
+    ctx.lineTo(cell.x + span, cell.y);
+    ctx.moveTo(cell.x, cell.y);
+    ctx.lineTo(cell.x, cell.y + span);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(226, 226, 232, ${0.18 + cell.strength * 0.4})`;
+    ctx.arc(cell.x, cell.y, 0.45 + cell.strength * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
 }
 
 function drawGrid(ctx, now) {
@@ -1359,7 +1439,9 @@ function frame(now) {
   drawArrakis(fieldCtx, width, height, now);
   drawDuneMatrix(fieldCtx, width, height, now);
   updatePointerField(now);
+  updateStuckGrid(now);
   const { originX, originY } = updateHoverBlooms(now);
+  drawStuckGrid(fieldCtx);
   drawGrid(fieldCtx, now);
   drawHoverNodes(fieldCtx, originX, originY, now);
 
