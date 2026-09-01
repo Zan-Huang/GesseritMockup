@@ -308,40 +308,48 @@ function leafPalette(random) {
 }
 
 function mapleAutumnPalette(random) {
-  const j = () => random();
   const roll = random();
-  let h;
-  let sat;
-  let lit;
   if (roll < 0.28) {
-    h = 46 + j() * 10;
-    sat = 92 + j() * 8;
-    lit = 52 + j() * 10;
-  } else if (roll < 0.6) {
-    h = 26 + j() * 10;
-    sat = 90 + j() * 10;
-    lit = 46 + j() * 8;
-  } else if (roll < 0.82) {
-    h = 2 + j() * 8;
-    sat = 88 + j() * 10;
-    lit = 42 + j() * 8;
-  } else if (roll < 0.94) {
-    h = 16 + j() * 8;
-    sat = 86 + j() * 10;
-    lit = 40 + j() * 8;
-  } else {
-    h = 66 + j() * 12;
-    sat = 78 + j() * 12;
-    lit = 46 + j() * 8;
+    return {
+      umber: "#c39b0a",
+      body: "#f1c40f",
+      mid: "#f4d03f",
+      light: "#ffe566",
+      gleam: "rgba(255, 230, 120, 0.62)",
+      vein: "#8a5a12",
+      gilt: "#ffd54a",
+    };
+  }
+  if (roll < 0.58) {
+    return {
+      umber: "#b85c10",
+      body: "#e67e22",
+      mid: "#f39c12",
+      light: "#ffb36b",
+      gleam: "rgba(255, 196, 96, 0.55)",
+      vein: "#7a3b0c",
+      gilt: "#ffb347",
+    };
+  }
+  if (roll < 0.8) {
+    return {
+      umber: "#8e1b1b",
+      body: "#d32f2f",
+      mid: "#e74c3c",
+      light: "#ff7a70",
+      gleam: "rgba(255, 140, 120, 0.5)",
+      vein: "#6b1212",
+      gilt: "#ff6b5a",
+    };
   }
   return {
-    umber: hsla(h - 6, Math.max(72, sat - 12), Math.max(22, lit - 18), 0.9),
-    body: hsla(h, sat, lit, 0.98),
-    mid: hsla(h + 5, Math.min(100, sat + 4), lit + 10, 0.94),
-    light: hsla(h + 10, Math.min(100, sat + 6), lit + 18, 0.8),
-    gleam: hsla(50, 100, 78, 0.55),
-    vein: hsla(h - 4, 58, 24, 0.52),
-    gilt: hsla(48, 96, 58, 0.7),
+    umber: "#8e3b00",
+    body: "#d35400",
+    mid: "#e67e22",
+    light: "#ff9a4a",
+    gleam: "rgba(255, 170, 80, 0.5)",
+    vein: "#6b2c00",
+    gilt: "#ff8c3a",
   };
 }
 
@@ -638,7 +646,7 @@ function paintDichotomousVeins(ctx, length, width, colors) {
 function paintModeledLeaf(ctx, pathFn, colors, length, width, vein = "pinnate") {
   ctx.save();
   pathFn();
-  ctx.fillStyle = colors.umber;
+  ctx.fillStyle = colors.body;
   ctx.fill();
 
   ctx.save();
@@ -646,7 +654,7 @@ function paintModeledLeaf(ctx, pathFn, colors, length, width, vein = "pinnate") 
   ctx.clip();
   const shade = ctx.createLinearGradient(-width, 0, width * 0.65, -length);
   shade.addColorStop(0, colors.umber);
-  shade.addColorStop(0.3, colors.body);
+  shade.addColorStop(0.22, colors.body);
   shade.addColorStop(0.62, colors.mid);
   shade.addColorStop(1, colors.light);
   ctx.fillStyle = shade;
@@ -817,7 +825,7 @@ const FLOWER_TYPES = [
   drawMaple,
   drawMaple,
   drawMaple,
-  drawOak,
+  drawMaple,
   drawMaple,
   drawMaple,
 ];
@@ -1017,11 +1025,11 @@ function drawArrakis(ctx, width, height, now) {
   }
 
   const layers = [
-    { fill: "rgba(36, 36, 38, 0.28)", shade: "rgba(12, 12, 14, 0.2)", light: "rgba(168, 168, 172, 0.07)" },
-    { fill: "rgba(44, 44, 46, 0.38)", shade: "rgba(16, 16, 18, 0.24)", light: "rgba(176, 176, 180, 0.08)" },
-    { fill: "rgba(50, 50, 52, 0.5)", shade: "rgba(18, 18, 20, 0.28)", light: "rgba(186, 186, 190, 0.1)" },
-    { fill: "rgba(40, 40, 42, 0.62)", shade: "rgba(12, 12, 14, 0.32)", light: "rgba(190, 190, 194, 0.1)" },
-    { fill: "rgba(28, 28, 30, 0.74)", shade: "rgba(8, 8, 10, 0.28)", light: "rgba(160, 160, 164, 0.09)" },
+    { fill: "rgba(78, 78, 84, 0.55)", shade: "rgba(18, 18, 22, 0.28)", light: "rgba(210, 210, 216, 0.16)" },
+    { fill: "rgba(58, 58, 64, 0.7)", shade: "rgba(12, 12, 16, 0.36)", light: "rgba(198, 198, 204, 0.14)" },
+    { fill: "rgba(42, 42, 48, 0.82)", shade: "rgba(6, 6, 8, 0.4)", light: "rgba(186, 186, 192, 0.12)" },
+    { fill: "rgba(24, 24, 28, 0.9)", shade: "rgba(0, 0, 0, 0.42)", light: "rgba(168, 168, 174, 0.1)" },
+    { fill: "rgba(8, 8, 10, 0.94)", shade: "rgba(0, 0, 0, 0.5)", light: "rgba(140, 140, 146, 0.08)" },
   ];
 
   layers.forEach((tone, layer) => {
@@ -1046,7 +1054,7 @@ function drawArrakis(ctx, width, height, now) {
     ctx.fillRect(0, 0, width, height);
 
     if (layer >= 2) {
-      ctx.strokeStyle = "rgba(150, 150, 154, 0.1)";
+      ctx.strokeStyle = "rgba(200, 200, 206, 0.16)";
       ctx.lineWidth = 0.7;
       for (let i = 0; i < 22; i += 1) {
         const y0 = height * (0.5 + layer * 0.06) + i * 6;
@@ -1064,7 +1072,7 @@ function drawArrakis(ctx, width, height, now) {
       for (let x = 8; x <= width; x += 8) {
         ctx.lineTo(x, duneHeight(x, width, height, layer));
       }
-      ctx.strokeStyle = "rgba(198, 198, 202, 0.14)";
+      ctx.strokeStyle = "rgba(230, 230, 236, 0.28)";
       ctx.lineWidth = 1.1;
       ctx.stroke();
     }
@@ -1077,6 +1085,12 @@ function drawArrakis(ctx, width, height, now) {
   haze.addColorStop(1, "rgba(12, 12, 14, 0)");
   ctx.fillStyle = haze;
   ctx.fillRect(0, height * 0.36, width, height * 0.16);
+
+  const leftLit = ctx.createRadialGradient(width * 0.13, height * 0.7, 16, width * 0.13, height * 0.7, width * 0.24);
+  leftLit.addColorStop(0, "rgba(210, 210, 216, 0.2)");
+  leftLit.addColorStop(1, "rgba(210, 210, 216, 0)");
+  ctx.fillStyle = leftLit;
+  ctx.fillRect(0, height * 0.48, width * 0.36, height * 0.42);
 
   const grit = mulberry32(77);
   for (let i = 0; i < 220; i += 1) {
@@ -1108,7 +1122,56 @@ function drawDuneMatrix(ctx, width, height, now) {
       const wave = 0.5 + 0.5 * Math.sin(now * 0.00055 + x * 0.012 + y * 0.008);
       const fade = Math.max(0, pulse * wave - 0.42);
       if (fade < 0.04) continue;
-      ctx.strokeStyle = `rgba(186, 186, 190, ${0.03 + fade * 0.14})`;
+      ctx.strokeStyle = `rgba(210, 210, 216, ${0.02 + fade * 0.1})`;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + GRID, y);
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + GRID);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+  drawEmergedHill(ctx, width, height, now, originX, originY);
+}
+
+function drawEmergedHill(ctx, width, height, now, originX, originY) {
+  const layer = 2;
+  const next = 3;
+  const x0 = width * 0.56;
+  const x1 = width * 0.9;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x0, height);
+  ctx.lineTo(x0, duneHeight(x0, width, height, layer));
+  for (let x = x0; x <= x1; x += 8) {
+    ctx.lineTo(x, duneHeight(x, width, height, layer));
+  }
+  ctx.lineTo(x1, height);
+  ctx.closePath();
+  ctx.clip();
+
+  ctx.beginPath();
+  ctx.moveTo(x0, duneHeight(x0, width, height, next));
+  for (let x = x0; x <= x1; x += 8) {
+    ctx.lineTo(x, duneHeight(x, width, height, next));
+  }
+  ctx.lineTo(x1, height);
+  ctx.lineTo(x0, height);
+  ctx.closePath();
+  ctx.clip();
+
+  const pulse = 0.72 + 0.28 * Math.sin(now * 0.00035);
+  ctx.lineWidth = 0.85;
+  for (let x = originX; x <= width; x += GRID) {
+    if (x < x0 - GRID || x > x1 + GRID) continue;
+    for (let y = originY; y <= height; y += GRID) {
+      const crest = duneHeight(x, width, height, layer);
+      const foot = duneHeight(x, width, height, next);
+      if (y < crest - 4 || y > foot + 10) continue;
+      const edge = Math.min((x - x0) / (width * 0.08), (x1 - x) / (width * 0.08), 1);
+      const alpha = 0.1 + pulse * 0.22 * Math.max(0, edge);
+      ctx.strokeStyle = `rgba(228, 228, 234, ${alpha})`;
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(x + GRID, y);
