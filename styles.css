@@ -33,10 +33,8 @@ body {
   object-position: left bottom;
   pointer-events: none;
   user-select: none;
-  opacity: 0.88;
-  filter: brightness(0.42) contrast(1.25) saturate(0.55);
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 82%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 82%, transparent 100%);
+  opacity: 0.92;
+  filter: brightness(0.78) contrast(1.12) saturate(0.7);
 }
 
 #field,

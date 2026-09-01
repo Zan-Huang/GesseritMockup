@@ -4,15 +4,15 @@ const illum = document.getElementById("illumination");
 const illumCtx = illum.getContext("2d", { alpha: true });
 const dropLetter = document.querySelector(".drop-letter");
 
-const GRID = 34;
-const REVEAL_RADIUS = 40;
-const BLOOM_RADIUS = 36;
-const BLOOM_DELAY = 1600;
-const SPRAWL_STAGGER = 2600;
-const STEM_LEAD = 520;
-const BLOOM_SPEED = 0.00085;
-const FADE_SPEED = 0.0009;
-const PERSIST_MS = 4800;
+const GRID = 22;
+const REVEAL_RADIUS = 52;
+const BLOOM_RADIUS = 48;
+const BLOOM_DELAY = 1100;
+const SPRAWL_STAGGER = 1600;
+const STEM_LEAD = 380;
+const BLOOM_SPEED = 0.0024;
+const FADE_SPEED = 0.0028;
+const PERSIST_MS = 3600;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 const PHI = (1 + Math.sqrt(5)) / 2;
 
@@ -213,9 +213,9 @@ function drawGrid(ctx) {
 
   ctx.save();
   ctx.beginPath();
-  ctx.rect(minX, minY, REVEAL_RADIUS * 2, REVEAL_RADIUS * 2);
+  ctx.arc(mx, my, REVEAL_RADIUS, 0, Math.PI * 2);
   ctx.clip();
-  ctx.strokeStyle = "rgba(214, 196, 132, 0.28)";
+  ctx.strokeStyle = "rgba(214, 196, 132, 0.34)";
   ctx.lineWidth = 0.65;
 
   for (let x = originX; x <= width + GRID; x += GRID) {
@@ -234,16 +234,6 @@ function drawGrid(ctx) {
     ctx.stroke();
   }
 
-  ctx.restore();
-
-  ctx.save();
-  ctx.globalCompositeOperation = "destination-in";
-  const wash = ctx.createRadialGradient(mx, my, REVEAL_RADIUS * 0.2, mx, my, REVEAL_RADIUS);
-  wash.addColorStop(0, "rgba(0, 0, 0, 1)");
-  wash.addColorStop(0.62, "rgba(0, 0, 0, 0.5)");
-  wash.addColorStop(1, "rgba(0, 0, 0, 0)");
-  ctx.fillStyle = wash;
-  ctx.fillRect(minX, minY, REVEAL_RADIUS * 2, REVEAL_RADIUS * 2);
   ctx.restore();
 }
 
@@ -900,8 +890,11 @@ function drawFlowStem(ctx, pts, stem, seed) {
   ctx.stroke();
 
   const sideLeaves = [
-    { at: 0.34, side: 1, scale: 1.05, rot: 1.12 },
-    { at: 0.62, side: -1, scale: 1.15, rot: -1.08 },
+    { at: 0.22, side: 1, scale: 1.25, rot: 1.12 },
+    { at: 0.36, side: -1, scale: 1.4, rot: -1.05 },
+    { at: 0.5, side: 1, scale: 1.55, rot: 1.18 },
+    { at: 0.64, side: -1, scale: 1.45, rot: -1.1 },
+    { at: 0.78, side: 1, scale: 1.2, rot: 1.02 },
   ];
   sideLeaves.forEach((leaf) => {
     if (stem < leaf.at) return;
@@ -1088,22 +1081,79 @@ function drawArrakis(ctx, width, height, now) {
     ctx.fillStyle = shade;
     ctx.fillRect(0, 0, width, height);
 
-    if (layer >= 3) {
-      ctx.strokeStyle = "rgba(120, 88, 52, 0.08)";
+    if (layer >= 2) {
+      ctx.strokeStyle = "rgba(150, 112, 68, 0.1)";
       ctx.lineWidth = 0.7;
-      for (let i = 0; i < 18; i += 1) {
-        const y0 = height * (0.62 + layer * 0.05) + i * 7;
+      for (let i = 0; i < 22; i += 1) {
+        const y0 = height * (0.5 + layer * 0.06) + i * 6;
         ctx.beginPath();
-        for (let x = 0; x <= width; x += 14) {
-          const y = y0 + Math.sin(x * 0.03 + layer + i) * 2.2;
+        for (let x = 0; x <= width; x += 12) {
+          const y = y0 + Math.sin(x * 0.028 + layer * 1.4 + i * 0.4) * 2.4 + noise3(x * 0.01, i * 0.2, layer) * 3;
           if (x === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
         ctx.stroke();
       }
+
+      ctx.beginPath();
+      ctx.moveTo(0, duneHeight(0, width, height, layer));
+      for (let x = 8; x <= width; x += 8) {
+        ctx.lineTo(x, duneHeight(x, width, height, layer));
+      }
+      ctx.strokeStyle = "rgba(210, 176, 118, 0.16)";
+      ctx.lineWidth = 1.1;
+      ctx.stroke();
     }
     ctx.restore();
   });
+
+  const haze = ctx.createLinearGradient(0, height * 0.36, 0, height * 0.52);
+  haze.addColorStop(0, "rgba(18, 12, 10, 0)");
+  haze.addColorStop(0.5, "rgba(86, 58, 32, 0.1)");
+  haze.addColorStop(1, "rgba(18, 12, 10, 0)");
+  ctx.fillStyle = haze;
+  ctx.fillRect(0, height * 0.36, width, height * 0.16);
+
+  const grit = mulberry32(77);
+  for (let i = 0; i < 220; i += 1) {
+    const x = grit() * width;
+    const y = height * (0.48 + grit() * 0.5);
+    ctx.fillStyle = `rgba(186, 148, 88, ${0.04 + grit() * 0.1})`;
+    ctx.fillRect(x, y, 1 + grit(), 1);
+  }
+  for (let i = 0; i < 18; i += 1) {
+    const x = grit() * width;
+    const y = height * (0.62 + grit() * 0.32);
+    ctx.fillStyle = `rgba(12, 8, 6, ${0.18 + grit() * 0.28})`;
+    ctx.beginPath();
+    ctx.ellipse(x, y, 3 + grit() * 7, 1.2 + grit() * 2.2, grit() * 0.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawDuneMatrix(ctx, width, height, now) {
+  const originX = gridOrigin(GRID, width);
+  const originY = gridOrigin(GRID, height);
+  ctx.save();
+  ctx.lineWidth = 0.55;
+  for (let x = originX; x <= width; x += GRID) {
+    for (let y = originY; y <= height; y += GRID) {
+      const ground = duneHeight(x, width, height, 1);
+      if (y < ground - 6) continue;
+      const pulse = noise3(x * 0.018, y * 0.018, now * 0.00007);
+      const wave = 0.5 + 0.5 * Math.sin(now * 0.00055 + x * 0.012 + y * 0.008);
+      const fade = Math.max(0, pulse * wave - 0.42);
+      if (fade < 0.04) continue;
+      ctx.strokeStyle = `rgba(196, 170, 110, ${0.03 + fade * 0.16})`;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + GRID, y);
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + GRID);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
 }
 
 function spawnMapleGust(x, y, amount) {
@@ -1167,9 +1217,9 @@ function spawnDust(x, y, amount) {
       x: x + (Math.random() - 0.5) * 7,
       y: y + 2 + (Math.random() - 0.4) * 5,
       vx: (Math.random() - 0.5) * 0.32,
-      vy: 0.06 + Math.random() * 0.22,
+      vy: 0.02 + Math.random() * 0.08,
       life: 1,
-      decay: 0.002 + Math.random() * 0.003,
+      decay: 0.001 + Math.random() * 0.0016,
       r: 0.35 + Math.random() * 1.15,
       hue: gilt ? 36 + Math.random() * 10 : 22 + Math.random() * 14,
       sat: gilt ? 48 + Math.random() * 22 : 32 + Math.random() * 20,
@@ -1190,7 +1240,7 @@ function updateDust() {
     const grain = dust[i];
     grain.x += grain.vx;
     grain.y += grain.vy;
-    grain.vy += 0.006;
+    grain.vy += 0.002;
     grain.vx *= 0.985;
     grain.life -= grain.decay;
     if (grain.life <= 0 || grain.y > window.innerHeight + 8) dust.splice(i, 1);
@@ -1264,17 +1314,13 @@ function drawDropcap(ctx, now) {
   const box = dropLetter.getBoundingClientRect();
   if (box.width < 8) return;
 
-  const cx = box.left + box.width * 0.38;
-  const cy = box.top + box.height * 0.52;
-  drawGoldenSpiral(ctx, cx, cy, Math.min(box.width, box.height) * 0.82, now);
-
   dropAnchors.forEach((anchor, index) => {
     const sx = box.left + box.width * anchor.ox;
     const sy = box.top + box.height * anchor.oy;
     const seed = hash(index + 11, 97);
-    const pts = integrateStream(sx, sy, seed, now, 40, 0.55);
-    const breathe = 0.82 + Math.sin(now * 0.00018 + index) * 0.08;
-    drawBloomAt(ctx, pts, breathe, 0.92 + Math.sin(now * 0.0001 + index * 0.6) * 0.06, seed, anchor.scale);
+    const pts = integrateStream(sx, sy, seed, now * 0.18, 34, 0.46);
+    const breathe = 0.76 + Math.sin(now * 0.000045 + index) * 0.035;
+    drawBloomAt(ctx, pts, breathe, 0.86 + Math.sin(now * 0.000028 + index * 0.6) * 0.025, seed, anchor.scale * 0.82);
   });
 }
 
@@ -1285,22 +1331,23 @@ function frame(now) {
   illumCtx.clearRect(0, 0, width, height);
 
   drawArrakis(fieldCtx, width, height, now);
-  updateHoverBlooms(now);
+  drawDuneMatrix(fieldCtx, width, height, now);
+  const { originX, originY } = updateHoverBlooms(now);
+  drawGrid(fieldCtx);
+  drawHoverNodes(fieldCtx, originX, originY);
 
   for (const node of blooms.values()) {
     if (node.stem < 0.02 && node.bloom < 0.02) continue;
-    const pts = integrateStream(node.x, node.y, node.seed, now, 40, 0.42);
-    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 1.15);
+    const pts = integrateStream(node.x, node.y, node.seed, now, 46, 0.52);
+    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 1.65);
   }
 
-  updateGust();
-  drawGust(fieldCtx);
   updateDust();
   drawDust(fieldCtx);
   drawCursor(fieldCtx);
+  drawDropcap(illumCtx, now);
   requestAnimationFrame(frame);
 }
 
 resize();
-seedAmbientMaples();
 requestAnimationFrame(frame);
