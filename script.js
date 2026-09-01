@@ -5,13 +5,13 @@ const illumCtx = illum.getContext("2d", { alpha: true });
 const dropLetter = document.querySelector(".drop-letter");
 
 const GRID = 22;
-const REVEAL_RADIUS = 52;
-const BLOOM_RADIUS = 48;
-const BLOOM_DELAY = 1100;
-const SPRAWL_STAGGER = 1600;
-const STEM_LEAD = 380;
-const BLOOM_SPEED = 0.0024;
-const FADE_SPEED = 0.0028;
+const REVEAL_RADIUS = 64;
+const BLOOM_RADIUS = 72;
+const BLOOM_DELAY = 820;
+const SPRAWL_STAGGER = 2100;
+const STEM_LEAD = 360;
+const BLOOM_SPEED = 0.0034;
+const FADE_SPEED = 0.003;
 const PERSIST_MS = 3600;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 const PHI = (1 + Math.sqrt(5)) / 2;
@@ -1338,8 +1338,8 @@ function frame(now) {
 
   for (const node of blooms.values()) {
     if (node.stem < 0.02 && node.bloom < 0.02) continue;
-    const pts = integrateStream(node.x, node.y, node.seed, now, 46, 0.52);
-    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 1.65);
+    const pts = integrateStream(node.x, node.y, node.seed, now, 58, 0.62);
+    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 1.75);
   }
 
   updateDust();
