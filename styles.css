@@ -27,14 +27,14 @@ body {
   left: 3.2vw;
   bottom: 6.5vh;
   z-index: 3;
-  height: 156px;
+  height: 188px;
   width: auto;
   object-fit: contain;
   object-position: left bottom;
   pointer-events: none;
   user-select: none;
   opacity: 0.92;
-  filter: brightness(0.88) contrast(1.12) saturate(0.12);
+  filter: brightness(0.96) contrast(1.06) saturate(0.82);
 }
 
 #field,
@@ -99,7 +99,7 @@ body {
   .sister {
     left: 4vw;
     bottom: 5vh;
-    height: 118px;
+    height: 148px;
   }
 
   .drop {

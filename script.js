@@ -4,11 +4,11 @@ const illum = document.getElementById("illumination");
 const illumCtx = illum.getContext("2d", { alpha: true });
 const dropLetter = document.querySelector(".drop-letter");
 
-const GRID = 22;
-const REVEAL_RADIUS = 64;
-const BLOOM_RADIUS = 72;
+const GRID = 20;
+const REVEAL_RADIUS = 92;
+const BLOOM_RADIUS = 124;
 const BLOOM_DELAY = 1280;
-const SPRAWL_STAGGER = 2100;
+const SPRAWL_STAGGER = 3200;
 const STEM_LEAD = 260;
 const GRID_REVEAL_MS = 920;
 const BLOOM_SPEED_FAST = 0.0084;
@@ -304,17 +304,7 @@ function hsla(h, s, l, a) {
 }
 
 function leafPalette(random) {
-  const j = () => random();
-  const lit = 16 + j() * 18;
-  return {
-    umber: hsla(0, 0, 8 + j() * 4, 0.84),
-    body: hsla(0, 0, lit, 0.93),
-    mid: hsla(0, 0, lit + 10, 0.88),
-    light: hsla(0, 0, lit + 20, 0.55),
-    gleam: hsla(0, 0, 72, 0.18),
-    vein: hsla(0, 0, 22, 0.4),
-    gilt: hsla(0, 0, 58, 0.32),
-  };
+  return mapleAutumnPalette(random);
 }
 
 function mapleAutumnPalette(random) {
@@ -824,21 +814,20 @@ function drawRoseSprig(ctx, open, random) {
 const FLOWER_TYPES = [
   drawMaple,
   drawMaple,
+  drawMaple,
+  drawMaple,
+  drawMaple,
   drawOak,
   drawMaple,
-  drawBay,
-  drawMaple,
-  drawOlive,
   drawMaple,
 ];
 
-function drawLeaf(ctx, scale, side) {
+function drawLeaf(ctx, scale, side, seed) {
   ctx.save();
   ctx.scale(side, 1);
-  const colors = mapleAutumnPalette(() => (side > 0 ? 0.55 : 0.22));
-  const length = 7.2 * scale;
-  const width = length * 0.34;
-  paintModeledLeaf(ctx, () => bayPath(ctx, length, width), colors, length, width);
+  const colors = mapleAutumnPalette(mulberry32((seed || 1) ^ (side > 0 ? 19 : 41)));
+  const length = 7.6 * scale;
+  paintModeledLeaf(ctx, () => maplePath(ctx, length), colors, length, length * 0.72, "palmate");
   ctx.restore();
 }
 
@@ -851,10 +840,10 @@ function drawFlowStem(ctx, pts, stem, seed) {
   ctx.beginPath();
   ctx.moveTo(pts[0].x, pts[0].y);
   for (let i = 1; i < visible; i += 1) ctx.lineTo(pts[i].x, pts[i].y);
-  ctx.strokeStyle = "hsla(0, 0%, 14%, 0.82)";
+  ctx.strokeStyle = "hsla(28, 62%, 22%, 0.88)";
   ctx.lineWidth = 1.7;
   ctx.stroke();
-  ctx.strokeStyle = "hsla(0, 0%, 62%, 0.28)";
+  ctx.strokeStyle = "hsla(34, 78%, 38%, 0.4)";
   ctx.lineWidth = 0.55;
   ctx.stroke();
 
@@ -872,7 +861,7 @@ function drawFlowStem(ctx, pts, stem, seed) {
     ctx.save();
     ctx.translate(a.x, a.y);
     ctx.rotate(Math.atan2(tan.y, tan.x) + leaf.rot);
-    drawLeaf(ctx, stem * leaf.scale, leaf.side);
+    drawLeaf(ctx, stem * leaf.scale, leaf.side, seed);
     ctx.restore();
   });
 
@@ -1314,8 +1303,8 @@ function frame(now) {
 
   for (const node of blooms.values()) {
     if (node.stem < 0.02 && node.bloom < 0.02) continue;
-    const pts = integrateStream(node.x, node.y, node.seed, now, 58, 0.62);
-    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 1.75);
+    const pts = integrateStream(node.x, node.y, node.seed, now, 84, 0.82);
+    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 2.05);
   }
 
   updateDust();
