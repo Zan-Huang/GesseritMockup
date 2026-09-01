@@ -7,15 +7,15 @@ const dropLetter = document.querySelector(".drop-letter");
 const GRID = 18;
 const REVEAL_RADIUS = 110;
 const BLOOM_RADIUS = 172;
-const BLOOM_DELAY = 1280;
-const SPRAWL_STAGGER = 4400;
+const BLOOM_DELAY = 720;
+const SPRAWL_STAGGER = 2100;
 const STEM_LEAD = 260;
 const GRID_REVEAL_MS = 920;
-const BLOOM_SPEED_FAST = 0.0032;
-const BLOOM_SPEED_SLOW = 0.0007;
+const BLOOM_SPEED_FAST = 0.005;
+const BLOOM_SPEED_SLOW = 0.0012;
 const FADE_SPEED = 0.0012;
 const PERSIST_MS = 9800;
-const MAX_BLOOMS = 34;
+const MAX_BLOOMS = 28;
 const GRID_STICK_MS = 16000;
 const GRID_STICK_FADE = 0.00055;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
@@ -1044,6 +1044,7 @@ function updateHoverBlooms(now) {
     const maxX = Math.ceil((mouse.x + BLOOM_RADIUS - originX) / GRID);
     const minY = Math.floor((mouse.y - BLOOM_RADIUS - originY) / GRID);
     const maxY = Math.ceil((mouse.y + BLOOM_RADIUS - originY) / GRID);
+    const candidates = [];
 
     for (let ix = minX; ix <= maxX; ix += 1) {
       for (let iy = minY; iy <= maxY; iy += 1) {
@@ -1051,22 +1052,38 @@ function updateHoverBlooms(now) {
         const y = originY + iy * GRID;
         const dist = Math.hypot(x - mouse.x, y - mouse.y);
         if (dist > BLOOM_RADIUS) continue;
-
-        const key = `${ix},${iy}`;
-        active.add(key);
-        let node = blooms.get(key);
-        if (!node) {
-          if (blooms.size >= MAX_BLOOMS) continue;
-          node = { x, y, seed: hash(ix, iy), revealedAt: now, bloom: 0, stem: 0, leftAt: 0 };
-          blooms.set(key, node);
-        }
-        node.leftAt = 0;
-
-        const wait = BLOOM_DELAY + (dist / BLOOM_RADIUS) * SPRAWL_STAGGER;
-        const elapsed = now - node.revealedAt;
-        if (elapsed > wait - STEM_LEAD) node.stem = Math.min(1, node.stem + growthRate(node.stem) * 1.2);
-        if (elapsed > wait) node.bloom = Math.min(1, node.bloom + growthRate(node.bloom));
+        candidates.push({ key: `${ix},${iy}`, x, y, dist, seed: hash(ix, iy) });
       }
+    }
+
+    candidates.sort((a, b) => a.dist - b.dist);
+
+    for (const cell of candidates) {
+      active.add(cell.key);
+      let node = blooms.get(cell.key);
+      if (!node) {
+        if (blooms.size >= MAX_BLOOMS) {
+          let farthestKey = null;
+          let farthest = -1;
+          for (const [key, existing] of blooms) {
+            const away = Math.hypot(existing.x - mouse.x, existing.y - mouse.y);
+            if (away > farthest) {
+              farthest = away;
+              farthestKey = key;
+            }
+          }
+          if (farthestKey && farthest > cell.dist + GRID) blooms.delete(farthestKey);
+          else continue;
+        }
+        node = { x: cell.x, y: cell.y, seed: cell.seed, revealedAt: now, bloom: 0, stem: 0, leftAt: 0 };
+        blooms.set(cell.key, node);
+      }
+      node.leftAt = 0;
+
+      const wait = BLOOM_DELAY + (cell.dist / BLOOM_RADIUS) * SPRAWL_STAGGER;
+      const elapsed = now - node.revealedAt;
+      if (elapsed > wait - STEM_LEAD) node.stem = Math.min(1, node.stem + growthRate(node.stem) * 1.2);
+      if (elapsed > wait) node.bloom = Math.min(1, node.bloom + growthRate(node.bloom));
     }
   }
 
