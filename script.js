@@ -264,44 +264,6 @@ function leafPalette(random) {
   };
 }
 
-function fractalBranch(ctx, x, y, angle, length, depth, color) {
-  if (depth <= 0 || length < 0.85) return;
-  const x2 = x + Math.cos(angle) * length;
-  const y2 = y + Math.sin(angle) * length;
-  ctx.beginPath();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = Math.max(0.16, depth * 0.2);
-  ctx.moveTo(x, y);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
-  const spread = 0.46 + depth * 0.03;
-  fractalBranch(ctx, x2, y2, angle - spread, length * 0.62, depth - 1, color);
-  fractalBranch(ctx, x2, y2, angle + spread, length * 0.62, depth - 1, color);
-  if (depth > 2) fractalBranch(ctx, x2, y2, angle, length * 0.48, depth - 2, color);
-}
-
-function fractalTendril(ctx, x, y, angle, length, depth, side, color) {
-  if (depth <= 0 || length < 1.1) return;
-  const curl = angle + side * 0.72;
-  const x2 = x + Math.cos(curl) * length;
-  const y2 = y + Math.sin(curl) * length;
-  ctx.beginPath();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = Math.max(0.2, depth * 0.22);
-  ctx.moveTo(x, y);
-  ctx.quadraticCurveTo(
-    x + Math.cos(angle) * length * 0.55,
-    y + Math.sin(angle) * length * 0.55,
-    x2,
-    y2,
-  );
-  ctx.stroke();
-  fractalTendril(ctx, x2, y2, curl + side * 0.48, length * 0.64, depth - 1, side, color);
-  if (depth > 2) {
-    fractalTendril(ctx, x2, y2, curl - side * 0.95, length * 0.42, depth - 2, -side, color);
-  }
-}
-
 function fillSimpleLeaf(ctx, length, width, colors) {
   ctx.beginPath();
   ctx.moveTo(0, 0);
@@ -335,13 +297,23 @@ function fillSimpleLeaf(ctx, length, width, colors) {
 }
 
 function drawVeinsOnLeaf(ctx, length, width, color) {
-  fractalBranch(ctx, 0, 0, -Math.PI / 2, length * 0.92, 4, color);
-  for (let i = 1; i <= 4; i += 1) {
-    const t = i / 5;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 0.55;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(0, -length * 0.52, 0, -length * 0.94);
+  ctx.stroke();
+  ctx.lineWidth = 0.32;
+  for (let i = 1; i <= 5; i += 1) {
+    const t = i / 6.2;
     const y = -length * t;
-    const reach = width * (1 - t * 0.45) * 0.72;
-    fractalBranch(ctx, 0, y, -0.35, reach, 3, color);
-    fractalBranch(ctx, 0, y, Math.PI + 0.35, reach, 3, color);
+    const reach = width * (1 - t * 0.45) * 0.78;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.quadraticCurveTo(reach * 0.45, y - length * 0.05, reach, y - length * 0.09);
+    ctx.moveTo(0, y);
+    ctx.quadraticCurveTo(-reach * 0.45, y - length * 0.05, -reach, y - length * 0.09);
+    ctx.stroke();
   }
 }
 
@@ -420,9 +392,13 @@ function drawMaple(ctx, open, random) {
   ctx.strokeStyle = colors.rim;
   ctx.lineWidth = 0.7;
   ctx.stroke();
+  ctx.strokeStyle = colors.vein;
+  ctx.lineWidth = 0.45;
   lobes.forEach((lobe) => {
-    const angle = Math.atan2(lobe[1] * length, lobe[0] * length * 0.72);
-    fractalBranch(ctx, 0, 0, angle, length * 0.86, 4, colors.vein);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(lobe[0] * length * 0.25, lobe[1] * length * 0.45, lobe[0] * length * 0.62, lobe[1] * length * 0.92);
+    ctx.stroke();
   });
   ctx.restore();
 }
@@ -447,9 +423,13 @@ function drawGinkgo(ctx, open, random) {
   ctx.strokeStyle = colors.rim;
   ctx.lineWidth = 0.7;
   ctx.stroke();
+  ctx.strokeStyle = colors.vein;
+  ctx.lineWidth = 0.32;
   for (let i = -5; i <= 5; i += 1) {
-    const angle = -Math.PI / 2 + i * 0.16;
-    fractalBranch(ctx, 0, 0, angle, radius * 0.9, 3, colors.vein);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(i * radius * 0.08, -radius * 0.4, i * radius * 0.18, -radius * 0.86);
+    ctx.stroke();
   }
   ctx.restore();
 }
@@ -464,7 +444,7 @@ function drawWillow(ctx, open, random) {
   ctx.restore();
 }
 
-function drawSpray(ctx, open, random, depth = 2) {
+function drawSpray(ctx, open, random) {
   const count = 5;
   ctx.save();
   for (let i = 0; i < count; i += 1) {
@@ -472,10 +452,6 @@ function drawSpray(ctx, open, random, depth = 2) {
     ctx.rotate((-0.7 + i * 0.35) * open);
     ctx.translate(0, -2.2 * open);
     drawLaurel(ctx, open * (0.55 + (i % 2) * 0.18), random);
-    if (depth > 0 && i % 2 === 1) {
-      ctx.translate(0, -8 * open);
-      drawSpray(ctx, open * 0.42, random, depth - 1);
-    }
     ctx.restore();
   }
   ctx.restore();
@@ -500,7 +476,12 @@ function drawLeaf(ctx, scale, side) {
   ctx.strokeStyle = colors.rim;
   ctx.lineWidth = 0.45;
   ctx.stroke();
-  fractalBranch(ctx, 0.15 * scale, 0, -1.15, 6.2 * scale, 3, colors.vein);
+  ctx.beginPath();
+  ctx.strokeStyle = colors.vein;
+  ctx.lineWidth = 0.35;
+  ctx.moveTo(0.15 * scale, 0);
+  ctx.quadraticCurveTo(1.6 * scale, -2.6 * scale, 0.35 * scale, -6.2 * scale);
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -519,27 +500,6 @@ function drawFlowStem(ctx, pts, stem, seed) {
   ctx.strokeStyle = "hsla(44, 92%, 58%, 0.35)";
   ctx.lineWidth = 0.55;
   ctx.stroke();
-
-  if (stem > 0.2) {
-    const vineCount = 3;
-    for (let i = 1; i <= vineCount; i += 1) {
-      const t = (i / (vineCount + 1)) * stem;
-      const p = pointOnPath(pts, t);
-      const tan = tangentOnPath(pts, t);
-      const heading = Math.atan2(tan.y, tan.x);
-      const side = i % 2 === 0 ? 1 : -1;
-      fractalTendril(
-        ctx,
-        p.x,
-        p.y,
-        heading + side * 0.9,
-        7 + stem * 6,
-        4,
-        side,
-        side > 0 ? "hsla(44, 90%, 56%, 0.7)" : "hsla(150, 50%, 18%, 0.75)",
-      );
-    }
-  }
 
   if (stem > 0.28) {
     const a = pointOnPath(pts, 0.38 * stem);
