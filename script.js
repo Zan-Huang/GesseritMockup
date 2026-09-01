@@ -11,7 +11,8 @@ const BLOOM_DELAY = 1280;
 const SPRAWL_STAGGER = 2100;
 const STEM_LEAD = 260;
 const GRID_REVEAL_MS = 920;
-const BLOOM_SPEED = 0.0034;
+const BLOOM_SPEED_FAST = 0.0084;
+const BLOOM_SPEED_SLOW = 0.00115;
 const FADE_SPEED = 0.003;
 const PERSIST_MS = 3600;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
@@ -145,6 +146,11 @@ function easeOutBack(t) {
   const c1 = 1.2;
   const c3 = c1 + 1;
   return 1 + c3 * (t - 1) ** 3 + c1 * (t - 1) ** 2;
+}
+
+function growthRate(progress) {
+  const s = 1 / (1 + Math.exp(-8.5 * (progress - 0.4)));
+  return lerp(BLOOM_SPEED_FAST, BLOOM_SPEED_SLOW, s);
 }
 
 function falloff(distance, radius) {
@@ -560,25 +566,18 @@ function maplePath(ctx, size) {
   const s = size;
   ctx.beginPath();
   ctx.moveTo(0, s * 0.05);
-  ctx.lineTo(s * 0.07, 0);
-  ctx.bezierCurveTo(s * 0.2, s * 0.02, s * 0.38, -s * 0.01, s * 0.52, -s * 0.1);
-  ctx.lineTo(s * 0.74, s * 0.01);
-  ctx.lineTo(s * 0.58, -s * 0.14);
-  ctx.lineTo(s * 0.9, -s * 0.16);
-  ctx.lineTo(s * 0.56, -s * 0.26);
-  ctx.bezierCurveTo(s * 0.86, -s * 0.3, s * 1.08, -s * 0.38, s * 0.96, -s * 0.5);
-  ctx.lineTo(s * 0.68, -s * 0.43);
-  ctx.lineTo(s * 0.84, -s * 0.6);
-  ctx.lineTo(s * 0.5, -s * 0.5);
-  ctx.bezierCurveTo(s * 0.4, -s * 0.7, s * 0.16, -s * 0.9, 0, -s);
-  ctx.bezierCurveTo(-s * 0.16, -s * 0.9, -s * 0.4, -s * 0.7, -s * 0.5, -s * 0.5);
-  ctx.lineTo(-s * 0.84, -s * 0.6);
-  ctx.lineTo(-s * 0.68, -s * 0.43);
-  ctx.bezierCurveTo(-s * 1.08, -s * 0.38, -s * 0.86, -s * 0.3, -s * 0.56, -s * 0.26);
-  ctx.lineTo(-s * 0.9, -s * 0.16);
-  ctx.lineTo(-s * 0.58, -s * 0.14);
-  ctx.lineTo(-s * 0.74, s * 0.01);
-  ctx.bezierCurveTo(-s * 0.38, -s * 0.01, -s * 0.2, s * 0.02, -s * 0.07, 0);
+  ctx.quadraticCurveTo(s * 0.07, s * 0.015, s * 0.11, -s * 0.02);
+  ctx.bezierCurveTo(s * 0.36, s * 0.03, s * 0.58, -s * 0.03, s * 0.66, -s * 0.16);
+  ctx.quadraticCurveTo(s * 0.5, -s * 0.18, s * 0.38, -s * 0.23);
+  ctx.bezierCurveTo(s * 0.74, -s * 0.26, s * 0.98, -s * 0.38, s * 0.84, -s * 0.52);
+  ctx.quadraticCurveTo(s * 0.56, -s * 0.46, s * 0.34, -s * 0.52);
+  ctx.bezierCurveTo(s * 0.4, -s * 0.7, s * 0.16, -s * 0.92, 0, -s);
+  ctx.bezierCurveTo(-s * 0.16, -s * 0.92, -s * 0.4, -s * 0.7, -s * 0.34, -s * 0.52);
+  ctx.quadraticCurveTo(-s * 0.56, -s * 0.46, -s * 0.84, -s * 0.52);
+  ctx.bezierCurveTo(-s * 0.98, -s * 0.38, -s * 0.74, -s * 0.26, -s * 0.38, -s * 0.23);
+  ctx.quadraticCurveTo(-s * 0.5, -s * 0.18, -s * 0.66, -s * 0.16);
+  ctx.bezierCurveTo(-s * 0.58, -s * 0.03, -s * 0.36, s * 0.03, -s * 0.11, -s * 0.02);
+  ctx.quadraticCurveTo(-s * 0.07, s * 0.015, 0, s * 0.05);
   ctx.closePath();
 }
 
@@ -763,7 +762,8 @@ function paintModeledLeaf(ctx, pathFn, colors, length, width, vein = "pinnate") 
 
   pathFn();
   ctx.strokeStyle = colors.gilt;
-  ctx.lineWidth = 0.55;
+  ctx.globalAlpha = 0.45;
+  ctx.lineWidth = 0.35;
   ctx.stroke();
   ctx.restore();
 }
@@ -832,20 +832,20 @@ function drawIvy(ctx, open, random) {
 }
 
 function drawMaple(ctx, open, random, simple = false) {
-  const size = (21 + random() * 6) * open;
+  const size = (16.8 + random() * 2.4) * open;
   const colors = mapleAutumnPalette(random);
   ctx.save();
-  tilt(ctx, random, 0.22);
+  tilt(ctx, random, 0.12);
   if (simple) {
     maplePath(ctx, size);
     ctx.fillStyle = colors.body;
     ctx.fill();
     maplePath(ctx, size);
     ctx.strokeStyle = colors.gilt;
-    ctx.lineWidth = 0.45;
+    ctx.lineWidth = 0.35;
     ctx.stroke();
   } else {
-    paintModeledLeaf(ctx, () => maplePath(ctx, size), colors, size, size * 0.92, "palmate");
+    paintModeledLeaf(ctx, () => maplePath(ctx, size), colors, size, size * 0.78, "palmate");
   }
   ctx.restore();
 }
@@ -910,22 +910,21 @@ function drawRoseSprig(ctx, open, random) {
 const FLOWER_TYPES = [
   drawMaple,
   drawMaple,
-  drawMaple,
-  drawMaple,
-  drawMaple,
   drawOak,
   drawMaple,
-  drawGinkgo,
+  drawBay,
   drawMaple,
-  drawFig,
+  drawOlive,
+  drawMaple,
 ];
 
 function drawLeaf(ctx, scale, side) {
   ctx.save();
   ctx.scale(side, 1);
-  const colors = mapleAutumnPalette(() => (side > 0 ? 0.62 : 0.28));
-  const length = 9.2 * scale;
-  paintModeledLeaf(ctx, () => maplePath(ctx, length), colors, length, length * 0.86, "palmate");
+  const colors = mapleAutumnPalette(() => (side > 0 ? 0.55 : 0.22));
+  const length = 7.2 * scale;
+  const width = length * 0.34;
+  paintModeledLeaf(ctx, () => bayPath(ctx, length, width), colors, length, width);
   ctx.restore();
 }
 
@@ -968,7 +967,7 @@ function drawFlowStem(ctx, pts, stem, seed) {
     ctx.save();
     ctx.translate(a.x, a.y);
     ctx.rotate(tangentOnPath(pts, 0.48).x);
-    drawMaple(ctx, stem * 0.78, random);
+    drawBay(ctx, stem * 0.72, random);
     ctx.restore();
   }
   ctx.restore();
@@ -978,7 +977,7 @@ function drawBloomAt(ctx, pts, bloom, stem, seed, scale) {
   const random = mulberry32(seed);
   const type = FLOWER_TYPES[seed % FLOWER_TYPES.length];
   const fade = easeOutCubic(Math.max(bloom, stem * 0.55));
-  const open = easeOutBack(Math.min(1, bloom)) * scale;
+  const open = easeOutCubic(Math.min(1, bloom)) * scale;
   const tipT = Math.max(0.12, easeInOut(stem));
   const tip = pointOnPath(pts, tipT);
   const tan = tangentOnPath(pts, tipT);
@@ -1027,8 +1026,8 @@ function updateHoverBlooms(now) {
 
         const wait = BLOOM_DELAY + (dist / BLOOM_RADIUS) * SPRAWL_STAGGER;
         const elapsed = now - node.revealedAt;
-        if (elapsed > wait - STEM_LEAD) node.stem = Math.min(1, node.stem + BLOOM_SPEED * 1.4);
-        if (elapsed > wait) node.bloom = Math.min(1, node.bloom + BLOOM_SPEED);
+        if (elapsed > wait - STEM_LEAD) node.stem = Math.min(1, node.stem + growthRate(node.stem) * 1.2);
+        if (elapsed > wait) node.bloom = Math.min(1, node.bloom + growthRate(node.bloom));
       }
     }
   }
