@@ -11,10 +11,11 @@ const BLOOM_DELAY = 1280;
 const SPRAWL_STAGGER = 4400;
 const STEM_LEAD = 260;
 const GRID_REVEAL_MS = 920;
-const BLOOM_SPEED_FAST = 0.0054;
-const BLOOM_SPEED_SLOW = 0.00095;
+const BLOOM_SPEED_FAST = 0.0032;
+const BLOOM_SPEED_SLOW = 0.0007;
 const FADE_SPEED = 0.0012;
 const PERSIST_MS = 9800;
+const MAX_BLOOMS = 34;
 const GRID_STICK_MS = 16000;
 const GRID_STICK_FADE = 0.00055;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
@@ -1033,6 +1034,7 @@ function updateHoverBlooms(now) {
         active.add(key);
         let node = blooms.get(key);
         if (!node) {
+          if (blooms.size >= MAX_BLOOMS) continue;
           node = { x, y, seed: hash(ix, iy), revealedAt: now, bloom: 0, stem: 0, leftAt: 0 };
           blooms.set(key, node);
         }

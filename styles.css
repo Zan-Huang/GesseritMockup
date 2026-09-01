@@ -33,9 +33,8 @@ body {
   object-position: left bottom;
   pointer-events: none;
   user-select: none;
-  opacity: 0.62;
-  mix-blend-mode: screen;
-  filter: brightness(1.15) contrast(1.05);
+  opacity: 0.88;
+  filter: brightness(1.55) contrast(1.2);
 }
 
 #field,
