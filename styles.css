@@ -33,7 +33,7 @@ body {
   pointer-events: none;
   user-select: none;
   opacity: 1;
-  filter: brightness(1.08) contrast(1.22) saturate(0.95) drop-shadow(0 0 14px rgba(220, 220, 226, 0.28));
+  filter: grayscale(1) brightness(0.82) contrast(1.08) drop-shadow(0 0 10px rgba(200, 200, 206, 0.2));
 }
 
 #field,
