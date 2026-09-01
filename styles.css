@@ -17,29 +17,26 @@ body {
 body {
   position: relative;
   background:
-    radial-gradient(ellipse 28% 18% at 16% 14%, rgba(210, 196, 160, 0.07), transparent 62%),
-    radial-gradient(ellipse 18% 12% at 27% 22%, rgba(186, 162, 118, 0.05), transparent 58%),
-    radial-gradient(ellipse 90% 38% at 50% 100%, rgba(72, 42, 18, 0.22), transparent 55%),
-    linear-gradient(180deg, #04040a 0%, #08070f 42%, #100c10 68%, #16100c 100%);
+    radial-gradient(ellipse 24% 16% at 72% 12%, rgba(210, 196, 160, 0.08), transparent 64%),
+    radial-gradient(ellipse 16% 10% at 80% 20%, rgba(186, 150, 96, 0.05), transparent 58%),
+    linear-gradient(180deg, #030308 0%, #07070e 38%, #120e10 58%, #1a130e 100%);
 }
 
 .sister {
   position: fixed;
-  right: -3vw;
-  bottom: -10vh;
-  z-index: 1;
-  height: min(125vh, 1040px);
+  left: 3.2vw;
+  bottom: 6.5vh;
+  z-index: 3;
+  height: 78px;
   width: auto;
-  max-width: 68vw;
   object-fit: contain;
-  object-position: right bottom;
+  object-position: left bottom;
   pointer-events: none;
   user-select: none;
-  opacity: 0.96;
-  mix-blend-mode: lighten;
-  filter: brightness(0.88) contrast(1.18) saturate(0.82);
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 74%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 74%, transparent 100%);
+  opacity: 0.88;
+  filter: brightness(0.42) contrast(1.25) saturate(0.55);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 82%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 82%, transparent 100%);
 }
 
 #field,
@@ -56,14 +53,14 @@ body {
 }
 
 #illumination {
-  z-index: 4;
+  z-index: 5;
   pointer-events: none;
 }
 
 .wordmark {
   position: fixed;
   inset: 0;
-  z-index: 3;
+  z-index: 4;
   display: flex;
   align-items: baseline;
   justify-content: center;
@@ -93,34 +90,6 @@ body {
   color: #ffffff;
 }
 
-.drop-filigree {
-  position: absolute;
-  left: -28%;
-  top: -18%;
-  width: 156%;
-  height: 136%;
-  overflow: visible;
-  z-index: 0;
-}
-
-.drop-filigree .gold {
-  stroke: #f2c94c;
-  stroke-width: 1.35;
-  opacity: 0.95;
-}
-
-.drop-filigree .ink {
-  stroke: #8fbc8f;
-  stroke-width: 1;
-  opacity: 0.55;
-}
-
-.drop-filigree .vine {
-  stroke: #6a9a72;
-  stroke-width: 1.2;
-  opacity: 0.7;
-}
-
 .rest {
   font-size: clamp(3.2rem, 10.5vw, 9.2rem);
   line-height: 1;
@@ -130,10 +99,9 @@ body {
 
 @media (max-width: 640px) {
   .sister {
-    right: -18vw;
-    height: min(92vh, 720px);
-    max-width: 92vw;
-    opacity: 0.82;
+    left: 4vw;
+    bottom: 5vh;
+    height: 58px;
   }
 
   .drop {

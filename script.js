@@ -4,15 +4,15 @@ const illum = document.getElementById("illumination");
 const illumCtx = illum.getContext("2d", { alpha: true });
 const dropLetter = document.querySelector(".drop-letter");
 
-const GRID = 22;
-const REVEAL_RADIUS = 54;
-const BLOOM_RADIUS = 52;
-const BLOOM_DELAY = 780;
-const SPRAWL_STAGGER = 1400;
-const STEM_LEAD = 340;
-const BLOOM_SPEED = 0.0028;
-const FADE_SPEED = 0.0032;
-const PERSIST_MS = 3200;
+const GRID = 34;
+const REVEAL_RADIUS = 40;
+const BLOOM_RADIUS = 36;
+const BLOOM_DELAY = 1600;
+const SPRAWL_STAGGER = 2600;
+const STEM_LEAD = 520;
+const BLOOM_SPEED = 0.00085;
+const FADE_SPEED = 0.0009;
+const PERSIST_MS = 4800;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 const PHI = (1 + Math.sqrt(5)) / 2;
 
@@ -900,11 +900,8 @@ function drawFlowStem(ctx, pts, stem, seed) {
   ctx.stroke();
 
   const sideLeaves = [
-    { at: 0.22, side: 1, scale: 1.25, rot: 1.12 },
-    { at: 0.36, side: -1, scale: 1.4, rot: -1.05 },
-    { at: 0.5, side: 1, scale: 1.55, rot: 1.18 },
-    { at: 0.64, side: -1, scale: 1.45, rot: -1.1 },
-    { at: 0.78, side: 1, scale: 1.2, rot: 1.02 },
+    { at: 0.34, side: 1, scale: 1.05, rot: 1.12 },
+    { at: 0.62, side: -1, scale: 1.15, rot: -1.08 },
   ];
   sideLeaves.forEach((leaf) => {
     if (stem < leaf.at) return;
@@ -976,7 +973,6 @@ function updateHoverBlooms(now) {
         if (!node) {
           node = { x, y, seed: hash(ix, iy), revealedAt: now, bloom: 0, stem: 0, leftAt: 0 };
           blooms.set(key, node);
-          spawnMapleGust(x, y, 1 + (node.seed % 2));
         }
         node.leftAt = 0;
 
@@ -1021,78 +1017,107 @@ function drawHoverNodes(ctx, originX, originY) {
   }
 }
 
+function duneHeight(x, width, height, layer) {
+  const t = x / width;
+  const crest = Math.sin(t * Math.PI * (1.35 + layer * 0.28) + layer * 1.35);
+  const slip = Math.sin(t * Math.PI * 2.8 + layer * 2.4) * 0.32;
+  const n = noise3(x * 0.0018, layer * 1.6, 0.22);
+  const base = 0.4 + layer * 0.08;
+  return height * base + crest * height * 0.07 + slip * height * 0.028 + (n - 0.5) * height * 0.04;
+}
+
 function drawArrakis(ctx, width, height, now) {
-  const moonA = { x: width * 0.17, y: height * 0.15, r: 34 };
-  const moonB = { x: width * 0.27, y: height * 0.23, r: 16 };
-  const glowA = ctx.createRadialGradient(moonA.x, moonA.y, 0, moonA.x, moonA.y, moonA.r * 2.4);
-  glowA.addColorStop(0, "rgba(224, 210, 176, 0.2)");
-  glowA.addColorStop(0.4, "rgba(200, 184, 142, 0.07)");
+  const moonA = { x: width * 0.74, y: height * 0.13, r: 34 };
+  const moonB = { x: width * 0.83, y: height * 0.2, r: 16 };
+  const glowA = ctx.createRadialGradient(moonA.x, moonA.y, 0, moonA.x, moonA.y, moonA.r * 2.6);
+  glowA.addColorStop(0, "rgba(224, 210, 176, 0.18)");
+  glowA.addColorStop(0.42, "rgba(200, 184, 142, 0.06)");
   glowA.addColorStop(1, "rgba(200, 184, 142, 0)");
   ctx.fillStyle = glowA;
-  ctx.fillRect(moonA.x - moonA.r * 2.4, moonA.y - moonA.r * 2.4, moonA.r * 4.8, moonA.r * 4.8);
+  ctx.fillRect(moonA.x - moonA.r * 2.6, moonA.y - moonA.r * 2.6, moonA.r * 5.2, moonA.r * 5.2);
   ctx.beginPath();
-  ctx.fillStyle = "rgba(226, 214, 184, 0.28)";
-  ctx.arc(moonA.x, moonA.y, 7.5, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(226, 214, 184, 0.26)";
+  ctx.arc(moonA.x, moonA.y, 6.8, 0, Math.PI * 2);
   ctx.fill();
 
   const glowB = ctx.createRadialGradient(moonB.x, moonB.y, 0, moonB.x, moonB.y, moonB.r * 2.2);
-  glowB.addColorStop(0, "rgba(196, 158, 98, 0.16)");
+  glowB.addColorStop(0, "rgba(196, 158, 98, 0.14)");
   glowB.addColorStop(1, "rgba(196, 158, 98, 0)");
   ctx.fillStyle = glowB;
   ctx.fillRect(moonB.x - moonB.r * 2.2, moonB.y - moonB.r * 2.2, moonB.r * 4.4, moonB.r * 4.4);
   ctx.beginPath();
-  ctx.fillStyle = "rgba(198, 164, 108, 0.22)";
-  ctx.arc(moonB.x, moonB.y, 3.6, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(198, 164, 108, 0.2)";
+  ctx.arc(moonB.x, moonB.y, 3.2, 0, Math.PI * 2);
   ctx.fill();
 
   const stars = mulberry32(2024);
-  for (let i = 0; i < 96; i += 1) {
+  for (let i = 0; i < 70; i += 1) {
     const x = stars() * width;
-    const y = stars() * height * 0.58;
-    const twinkle = 0.55 + 0.45 * Math.sin(now * 0.0007 + i * 1.7);
-    ctx.fillStyle = `rgba(228, 218, 190, ${(0.08 + stars() * 0.22) * twinkle})`;
-    ctx.fillRect(x, y, stars() < 0.12 ? 1.4 : 0.8, stars() < 0.12 ? 1.4 : 0.8);
+    const y = stars() * height * 0.4;
+    const twinkle = 0.6 + 0.4 * Math.sin(now * 0.00045 + i * 1.7);
+    ctx.fillStyle = `rgba(228, 218, 190, ${(0.07 + stars() * 0.18) * twinkle})`;
+    ctx.fillRect(x, y, 0.8, 0.8);
   }
 
-  const bases = [0.73, 0.81, 0.89];
-  const fills = ["rgba(58, 40, 26, 0.16)", "rgba(40, 26, 18, 0.22)", "rgba(22, 14, 10, 0.3)"];
-  bases.forEach((base, layer) => {
+  const layers = [
+    { fill: "rgba(42, 32, 28, 0.28)", shade: "rgba(18, 12, 10, 0.2)", light: "rgba(168, 138, 96, 0.07)" },
+    { fill: "rgba(52, 36, 24, 0.38)", shade: "rgba(22, 14, 10, 0.24)", light: "rgba(176, 140, 92, 0.08)" },
+    { fill: "rgba(58, 38, 22, 0.5)", shade: "rgba(24, 14, 8, 0.28)", light: "rgba(186, 148, 92, 0.1)" },
+    { fill: "rgba(46, 30, 16, 0.62)", shade: "rgba(16, 10, 6, 0.32)", light: "rgba(190, 150, 88, 0.11)" },
+    { fill: "rgba(32, 20, 12, 0.74)", shade: "rgba(10, 6, 4, 0.28)", light: "rgba(160, 120, 72, 0.1)" },
+  ];
+
+  layers.forEach((tone, layer) => {
     ctx.beginPath();
     ctx.moveTo(0, height);
-    ctx.lineTo(0, height * base);
-    for (let x = 0; x <= width; x += 20) {
-      const n = noise3(x * 0.0038, layer * 2.4, 0.35);
-      const swell = Math.sin(x * 0.007 + layer * 1.8) * height * 0.03;
-      ctx.lineTo(x, height * base + swell + (n - 0.5) * height * 0.038);
+    ctx.lineTo(0, duneHeight(0, width, height, layer));
+    for (let x = 8; x <= width; x += 8) {
+      ctx.lineTo(x, duneHeight(x, width, height, layer));
     }
     ctx.lineTo(width, height);
     ctx.closePath();
-    ctx.fillStyle = fills[layer];
+    ctx.fillStyle = tone.fill;
     ctx.fill();
-  });
 
-  const spice = ctx.createLinearGradient(0, height * 0.6, 0, height);
-  spice.addColorStop(0, "rgba(0, 0, 0, 0)");
-  spice.addColorStop(0.45, "rgba(118, 70, 26, 0.05)");
-  spice.addColorStop(1, "rgba(36, 20, 10, 0.16)");
-  ctx.fillStyle = spice;
-  ctx.fillRect(0, height * 0.6, width, height * 0.4);
+    ctx.save();
+    ctx.clip();
+    const shade = ctx.createLinearGradient(0, height * (0.38 + layer * 0.08), width * 0.7, height);
+    shade.addColorStop(0, tone.light);
+    shade.addColorStop(0.45, "rgba(0, 0, 0, 0)");
+    shade.addColorStop(1, tone.shade);
+    ctx.fillStyle = shade;
+    ctx.fillRect(0, 0, width, height);
+
+    if (layer >= 3) {
+      ctx.strokeStyle = "rgba(120, 88, 52, 0.08)";
+      ctx.lineWidth = 0.7;
+      for (let i = 0; i < 18; i += 1) {
+        const y0 = height * (0.62 + layer * 0.05) + i * 7;
+        ctx.beginPath();
+        for (let x = 0; x <= width; x += 14) {
+          const y = y0 + Math.sin(x * 0.03 + layer + i) * 2.2;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  });
 }
 
-function spawnMapleGust(x, y, amount, drift = false) {
+function spawnMapleGust(x, y, amount) {
   for (let i = 0; i < amount; i += 1) {
-    const angle = drift ? Math.PI * 0.15 + Math.random() * 0.5 : Math.random() * Math.PI * 2;
-    const speed = drift ? 0.28 + Math.random() * 0.55 : 1.1 + Math.random() * 2.6;
     gust.push({
-      x: x + (Math.random() - 0.5) * 10,
-      y: y + (Math.random() - 0.5) * 8,
-      vx: Math.cos(angle) * speed + (drift ? 0.35 : 0),
-      vy: Math.sin(angle) * speed - (drift ? 0.05 : 0.55),
+      x: x + (Math.random() - 0.5) * 18,
+      y: y + (Math.random() - 0.5) * 10,
+      vx: 0.08 + Math.random() * 0.16,
+      vy: 0.04 + Math.random() * 0.08,
       rot: Math.random() * Math.PI * 2,
-      spin: (Math.random() - 0.5) * 0.14,
-      life: drift ? 0.7 + Math.random() * 0.3 : 1,
-      decay: drift ? 0.0012 + Math.random() * 0.0018 : 0.004 + Math.random() * 0.005,
-      size: drift ? 0.55 + Math.random() * 0.55 : 0.7 + Math.random() * 0.85,
+      spin: (Math.random() - 0.5) * 0.02,
+      life: 1,
+      decay: 0.0007 + Math.random() * 0.0008,
+      size: 0.42 + Math.random() * 0.32,
       seed: (Math.random() * 1e9) | 0,
     });
   }
@@ -1101,32 +1126,26 @@ function spawnMapleGust(x, y, amount, drift = false) {
 function seedAmbientMaples() {
   const width = window.innerWidth;
   const height = window.innerHeight;
-  for (let i = 0; i < 18; i += 1) {
-    spawnMapleGust(Math.random() * width, Math.random() * height, 1, true);
+  for (let i = 0; i < 5; i += 1) {
+    spawnMapleGust(Math.random() * width, Math.random() * height * 0.7);
   }
 }
 
 function updateGust() {
-  if (mouse.inside) {
-    const speed = Math.hypot(mouse.x - lastMouse.x, mouse.y - lastMouse.y);
-    if (speed > 2.2) spawnMapleGust(mouse.x, mouse.y, 1 + Math.min(4, Math.floor(speed * 0.18)));
-    if (Math.random() < 0.22) spawnMapleGust(mouse.x, mouse.y, 1);
-  }
-  if (gust.length < 22 && Math.random() < 0.04) {
-    spawnMapleGust(Math.random() * window.innerWidth, -16, 1, true);
+  if (gust.length < 8 && Math.random() < 0.012) {
+    spawnMapleGust(Math.random() * window.innerWidth, -20);
   }
 
   for (let i = gust.length - 1; i >= 0; i -= 1) {
     const leaf = gust[i];
     leaf.x += leaf.vx;
     leaf.y += leaf.vy;
-    leaf.vy += 0.012;
-    leaf.vx *= 0.992;
+    leaf.vy += 0.0012;
+    leaf.vx *= 0.998;
     leaf.rot += leaf.spin;
     leaf.life -= leaf.decay;
     if (leaf.life <= 0 || leaf.y > window.innerHeight + 40) gust.splice(i, 1);
   }
-  if (gust.length > 90) gust.splice(0, gust.length - 90);
 }
 
 function drawGust(ctx) {
@@ -1266,14 +1285,12 @@ function frame(now) {
   illumCtx.clearRect(0, 0, width, height);
 
   drawArrakis(fieldCtx, width, height, now);
-  const { originX, originY } = updateHoverBlooms(now);
-  drawGrid(fieldCtx);
-  drawHoverNodes(fieldCtx, originX, originY);
+  updateHoverBlooms(now);
 
   for (const node of blooms.values()) {
     if (node.stem < 0.02 && node.bloom < 0.02) continue;
-    const pts = integrateStream(node.x, node.y, node.seed, now, 46, 0.52);
-    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 1.8);
+    const pts = integrateStream(node.x, node.y, node.seed, now, 40, 0.42);
+    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 1.15);
   }
 
   updateGust();
@@ -1281,7 +1298,6 @@ function frame(now) {
   updateDust();
   drawDust(fieldCtx);
   drawCursor(fieldCtx);
-  drawDropcap(illumCtx, now);
   requestAnimationFrame(frame);
 }
 
