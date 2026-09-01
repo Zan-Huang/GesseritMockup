@@ -266,7 +266,7 @@ function drawGrid(ctx, now) {
       const grown = GRID * local;
       const from = midY - grown * 0.5;
       ctx.globalAlpha = local * reach * 0.85;
-      ctx.strokeStyle = "rgba(214, 196, 132, 0.42)";
+      ctx.strokeStyle = "rgba(198, 198, 202, 0.4)";
       ctx.beginPath();
       ctx.moveTo(x, from);
       ctx.lineTo(x, from + grown);
@@ -288,7 +288,7 @@ function drawGrid(ctx, now) {
       const grown = GRID * local;
       const from = midX - grown * 0.5;
       ctx.globalAlpha = local * reach * 0.85;
-      ctx.strokeStyle = "rgba(214, 196, 132, 0.42)";
+      ctx.strokeStyle = "rgba(198, 198, 202, 0.4)";
       ctx.beginPath();
       ctx.moveTo(from, y);
       ctx.lineTo(from + grown, y);
@@ -304,102 +304,16 @@ function hsla(h, s, l, a) {
 }
 
 function leafPalette(random) {
-  const roll = random();
   const j = () => random();
-
-  if (roll < 0.14) {
-    const h = 148 + j() * 16;
-    return {
-      umber: hsla(h, 42 + j() * 10, 7 + j() * 4, 0.84),
-      body: hsla(h + 2, 48 + j() * 10, 12 + j() * 5, 0.95),
-      mid: hsla(h - 4, 36 + j() * 12, 20 + j() * 6, 0.9),
-      light: hsla(95 + j() * 18, 26 + j() * 12, 32 + j() * 8, 0.58),
-      gleam: hsla(46, 82, 64, 0.28 + j() * 0.12),
-      vein: hsla(42, 50, 36, 0.4),
-      gilt: hsla(44, 88, 56, 0.52),
-    };
-  }
-  if (roll < 0.26) {
-    const h = 88 + j() * 22;
-    return {
-      umber: hsla(h + 20, 28 + j() * 10, 12 + j() * 4, 0.8),
-      body: hsla(h, 34 + j() * 14, 22 + j() * 6, 0.93),
-      mid: hsla(h + 8, 38 + j() * 12, 32 + j() * 8, 0.9),
-      light: hsla(72 + j() * 14, 40 + j() * 12, 44 + j() * 8, 0.62),
-      gleam: hsla(50, 78, 68, 0.3),
-      vein: hsla(95, 22, 24, 0.42),
-      gilt: hsla(46, 80, 54, 0.48),
-    };
-  }
-  if (roll < 0.36) {
-    const h = 118 + j() * 18;
-    return {
-      umber: hsla(h, 30 + j() * 8, 14 + j() * 4, 0.8),
-      body: hsla(h + 6, 22 + j() * 10, 26 + j() * 6, 0.92),
-      mid: hsla(h - 8, 18 + j() * 10, 36 + j() * 8, 0.88),
-      light: hsla(70 + j() * 12, 24 + j() * 10, 48 + j() * 8, 0.55),
-      gleam: hsla(48, 70, 70, 0.26),
-      vein: hsla(40, 35, 32, 0.38),
-      gilt: hsla(43, 75, 52, 0.45),
-    };
-  }
-  if (roll < 0.5) {
-    const h = 38 + j() * 8;
-    return {
-      umber: hsla(h - 6, 58 + j() * 10, 16 + j() * 4, 0.8),
-      body: hsla(h, 84 + j() * 10, 34 + j() * 6, 0.95),
-      mid: hsla(h + 5, 90 + j() * 8, 48 + j() * 6, 0.92),
-      light: hsla(h + 10, 96, 66 + j() * 8, 0.74),
-      gleam: hsla(48, 100, 84, 0.58),
-      vein: hsla(30, 48, 22, 0.42),
-      gilt: hsla(45, 100, 72, 0.72),
-    };
-  }
-  if (roll < 0.58) {
-    const h = 44 + j() * 8;
-    return {
-      umber: hsla(36, 48, 20, 0.78),
-      body: hsla(h, 62 + j() * 12, 52 + j() * 8, 0.9),
-      mid: hsla(h + 6, 70 + j() * 12, 64 + j() * 8, 0.88),
-      light: hsla(50, 80, 78 + j() * 8, 0.7),
-      gleam: hsla(52, 100, 90, 0.5),
-      vein: hsla(38, 40, 28, 0.38),
-      gilt: hsla(48, 95, 78, 0.65),
-    };
-  }
-  if (roll < 0.74) {
-    const h = 28 + j() * 14;
-    return {
-      umber: hsla(20, 55, 14, 0.82),
-      body: hsla(h, 72 + j() * 12, 32 + j() * 6, 0.94),
-      mid: hsla(h + 8, 78 + j() * 10, 44 + j() * 8, 0.9),
-      light: hsla(40 + j() * 8, 82, 56 + j() * 8, 0.7),
-      gleam: hsla(46, 90, 70, 0.42),
-      vein: hsla(18, 45, 22, 0.42),
-      gilt: hsla(38, 85, 52, 0.55),
-    };
-  }
-  if (roll < 0.86) {
-    const h = 18 + j() * 16;
-    return {
-      umber: hsla(16, 52, 12, 0.84),
-      body: hsla(h, 78 + j() * 12, 36 + j() * 6, 0.94),
-      mid: hsla(h + 10, 80 + j() * 10, 48 + j() * 8, 0.9),
-      light: hsla(36 + j() * 10, 84, 58 + j() * 8, 0.68),
-      gleam: hsla(42, 88, 68, 0.4),
-      vein: hsla(16, 42, 20, 0.42),
-      gilt: hsla(32, 80, 50, 0.52),
-    };
-  }
-  const h = random() < 0.5 ? 6 + j() * 14 : 350 + j() * 12;
+  const lit = 16 + j() * 18;
   return {
-    umber: hsla(8, 48, 12, 0.82),
-    body: hsla(h, 62 + j() * 14, 30 + j() * 6, 0.93),
-    mid: hsla(h + 8, 66 + j() * 12, 42 + j() * 8, 0.88),
-    light: hsla(26 + j() * 12, 72, 54 + j() * 8, 0.64),
-    gleam: hsla(38, 78, 62, 0.36),
-    vein: hsla(12, 40, 20, 0.4),
-    gilt: hsla(34, 76, 48, 0.5),
+    umber: hsla(0, 0, 8 + j() * 4, 0.84),
+    body: hsla(0, 0, lit, 0.93),
+    mid: hsla(0, 0, lit + 10, 0.88),
+    light: hsla(0, 0, lit + 20, 0.55),
+    gleam: hsla(0, 0, 72, 0.18),
+    vein: hsla(0, 0, 22, 0.4),
+    gilt: hsla(0, 0, 58, 0.32),
   };
 }
 
@@ -937,10 +851,10 @@ function drawFlowStem(ctx, pts, stem, seed) {
   ctx.beginPath();
   ctx.moveTo(pts[0].x, pts[0].y);
   for (let i = 1; i < visible; i += 1) ctx.lineTo(pts[i].x, pts[i].y);
-  ctx.strokeStyle = "hsla(152, 48%, 16%, 0.82)";
+  ctx.strokeStyle = "hsla(0, 0%, 14%, 0.82)";
   ctx.lineWidth = 1.7;
   ctx.stroke();
-  ctx.strokeStyle = "hsla(44, 92%, 58%, 0.35)";
+  ctx.strokeStyle = "hsla(0, 0%, 62%, 0.28)";
   ctx.lineWidth = 0.55;
   ctx.stroke();
 
@@ -1064,7 +978,7 @@ function drawHoverNodes(ctx, originX, originY, now) {
       const intensity = falloff(dist, radius) * local;
       if (intensity < 0.05) continue;
       ctx.beginPath();
-      ctx.fillStyle = `rgba(232, 215, 150, ${0.16 + intensity * 0.55})`;
+      ctx.fillStyle = `rgba(220, 220, 224, ${0.16 + intensity * 0.5})`;
       ctx.arc(x, y, 0.45 + local * 0.45, 0, Math.PI * 2);
       ctx.fill();
     }
@@ -1084,23 +998,23 @@ function drawArrakis(ctx, width, height, now) {
   const moonA = { x: width * 0.74, y: height * 0.13, r: 34 };
   const moonB = { x: width * 0.83, y: height * 0.2, r: 16 };
   const glowA = ctx.createRadialGradient(moonA.x, moonA.y, 0, moonA.x, moonA.y, moonA.r * 2.6);
-  glowA.addColorStop(0, "rgba(224, 210, 176, 0.18)");
-  glowA.addColorStop(0.42, "rgba(200, 184, 142, 0.06)");
-  glowA.addColorStop(1, "rgba(200, 184, 142, 0)");
+  glowA.addColorStop(0, "rgba(214, 214, 218, 0.16)");
+  glowA.addColorStop(0.42, "rgba(186, 186, 190, 0.05)");
+  glowA.addColorStop(1, "rgba(186, 186, 190, 0)");
   ctx.fillStyle = glowA;
   ctx.fillRect(moonA.x - moonA.r * 2.6, moonA.y - moonA.r * 2.6, moonA.r * 5.2, moonA.r * 5.2);
   ctx.beginPath();
-  ctx.fillStyle = "rgba(226, 214, 184, 0.26)";
+  ctx.fillStyle = "rgba(220, 220, 224, 0.24)";
   ctx.arc(moonA.x, moonA.y, 6.8, 0, Math.PI * 2);
   ctx.fill();
 
   const glowB = ctx.createRadialGradient(moonB.x, moonB.y, 0, moonB.x, moonB.y, moonB.r * 2.2);
-  glowB.addColorStop(0, "rgba(196, 158, 98, 0.14)");
-  glowB.addColorStop(1, "rgba(196, 158, 98, 0)");
+  glowB.addColorStop(0, "rgba(196, 196, 200, 0.12)");
+  glowB.addColorStop(1, "rgba(196, 196, 200, 0)");
   ctx.fillStyle = glowB;
   ctx.fillRect(moonB.x - moonB.r * 2.2, moonB.y - moonB.r * 2.2, moonB.r * 4.4, moonB.r * 4.4);
   ctx.beginPath();
-  ctx.fillStyle = "rgba(198, 164, 108, 0.2)";
+  ctx.fillStyle = "rgba(200, 200, 204, 0.18)";
   ctx.arc(moonB.x, moonB.y, 3.2, 0, Math.PI * 2);
   ctx.fill();
 
@@ -1109,16 +1023,16 @@ function drawArrakis(ctx, width, height, now) {
     const x = stars() * width;
     const y = stars() * height * 0.4;
     const twinkle = 0.6 + 0.4 * Math.sin(now * 0.00045 + i * 1.7);
-    ctx.fillStyle = `rgba(228, 218, 190, ${(0.07 + stars() * 0.18) * twinkle})`;
+    ctx.fillStyle = `rgba(220, 220, 224, ${(0.07 + stars() * 0.18) * twinkle})`;
     ctx.fillRect(x, y, 0.8, 0.8);
   }
 
   const layers = [
-    { fill: "rgba(42, 32, 28, 0.28)", shade: "rgba(18, 12, 10, 0.2)", light: "rgba(168, 138, 96, 0.07)" },
-    { fill: "rgba(52, 36, 24, 0.38)", shade: "rgba(22, 14, 10, 0.24)", light: "rgba(176, 140, 92, 0.08)" },
-    { fill: "rgba(58, 38, 22, 0.5)", shade: "rgba(24, 14, 8, 0.28)", light: "rgba(186, 148, 92, 0.1)" },
-    { fill: "rgba(46, 30, 16, 0.62)", shade: "rgba(16, 10, 6, 0.32)", light: "rgba(190, 150, 88, 0.11)" },
-    { fill: "rgba(32, 20, 12, 0.74)", shade: "rgba(10, 6, 4, 0.28)", light: "rgba(160, 120, 72, 0.1)" },
+    { fill: "rgba(36, 36, 38, 0.28)", shade: "rgba(12, 12, 14, 0.2)", light: "rgba(168, 168, 172, 0.07)" },
+    { fill: "rgba(44, 44, 46, 0.38)", shade: "rgba(16, 16, 18, 0.24)", light: "rgba(176, 176, 180, 0.08)" },
+    { fill: "rgba(50, 50, 52, 0.5)", shade: "rgba(18, 18, 20, 0.28)", light: "rgba(186, 186, 190, 0.1)" },
+    { fill: "rgba(40, 40, 42, 0.62)", shade: "rgba(12, 12, 14, 0.32)", light: "rgba(190, 190, 194, 0.1)" },
+    { fill: "rgba(28, 28, 30, 0.74)", shade: "rgba(8, 8, 10, 0.28)", light: "rgba(160, 160, 164, 0.09)" },
   ];
 
   layers.forEach((tone, layer) => {
@@ -1143,7 +1057,7 @@ function drawArrakis(ctx, width, height, now) {
     ctx.fillRect(0, 0, width, height);
 
     if (layer >= 2) {
-      ctx.strokeStyle = "rgba(150, 112, 68, 0.1)";
+      ctx.strokeStyle = "rgba(150, 150, 154, 0.1)";
       ctx.lineWidth = 0.7;
       for (let i = 0; i < 22; i += 1) {
         const y0 = height * (0.5 + layer * 0.06) + i * 6;
@@ -1161,7 +1075,7 @@ function drawArrakis(ctx, width, height, now) {
       for (let x = 8; x <= width; x += 8) {
         ctx.lineTo(x, duneHeight(x, width, height, layer));
       }
-      ctx.strokeStyle = "rgba(210, 176, 118, 0.16)";
+      ctx.strokeStyle = "rgba(198, 198, 202, 0.14)";
       ctx.lineWidth = 1.1;
       ctx.stroke();
     }
@@ -1169,9 +1083,9 @@ function drawArrakis(ctx, width, height, now) {
   });
 
   const haze = ctx.createLinearGradient(0, height * 0.36, 0, height * 0.52);
-  haze.addColorStop(0, "rgba(18, 12, 10, 0)");
-  haze.addColorStop(0.5, "rgba(86, 58, 32, 0.1)");
-  haze.addColorStop(1, "rgba(18, 12, 10, 0)");
+  haze.addColorStop(0, "rgba(12, 12, 14, 0)");
+  haze.addColorStop(0.5, "rgba(72, 72, 76, 0.1)");
+  haze.addColorStop(1, "rgba(12, 12, 14, 0)");
   ctx.fillStyle = haze;
   ctx.fillRect(0, height * 0.36, width, height * 0.16);
 
@@ -1179,13 +1093,13 @@ function drawArrakis(ctx, width, height, now) {
   for (let i = 0; i < 220; i += 1) {
     const x = grit() * width;
     const y = height * (0.48 + grit() * 0.5);
-    ctx.fillStyle = `rgba(186, 148, 88, ${0.04 + grit() * 0.1})`;
+    ctx.fillStyle = `rgba(186, 186, 190, ${0.04 + grit() * 0.1})`;
     ctx.fillRect(x, y, 1 + grit(), 1);
   }
   for (let i = 0; i < 18; i += 1) {
     const x = grit() * width;
     const y = height * (0.62 + grit() * 0.32);
-    ctx.fillStyle = `rgba(12, 8, 6, ${0.18 + grit() * 0.28})`;
+    ctx.fillStyle = `rgba(10, 10, 12, ${0.18 + grit() * 0.28})`;
     ctx.beginPath();
     ctx.ellipse(x, y, 3 + grit() * 7, 1.2 + grit() * 2.2, grit() * 0.6, 0, Math.PI * 2);
     ctx.fill();
@@ -1205,7 +1119,7 @@ function drawDuneMatrix(ctx, width, height, now) {
       const wave = 0.5 + 0.5 * Math.sin(now * 0.00055 + x * 0.012 + y * 0.008);
       const fade = Math.max(0, pulse * wave - 0.42);
       if (fade < 0.04) continue;
-      ctx.strokeStyle = `rgba(196, 170, 110, ${0.03 + fade * 0.16})`;
+      ctx.strokeStyle = `rgba(186, 186, 190, ${0.03 + fade * 0.14})`;
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(x + GRID, y);
@@ -1282,9 +1196,9 @@ function spawnDust(x, y, amount) {
       life: 1,
       decay: 0.001 + Math.random() * 0.0016,
       r: 0.35 + Math.random() * 1.15,
-      hue: gilt ? 36 + Math.random() * 10 : 22 + Math.random() * 14,
-      sat: gilt ? 48 + Math.random() * 22 : 32 + Math.random() * 20,
-      light: gilt ? 42 + Math.random() * 18 : 26 + Math.random() * 16,
+      hue: 0,
+      sat: 0,
+      light: gilt ? 58 + Math.random() * 18 : 32 + Math.random() * 16,
     });
   }
 }
@@ -1321,12 +1235,12 @@ function drawDust(ctx) {
 function drawCursor(ctx) {
   if (!mouse.inside) return;
   ctx.beginPath();
-  ctx.strokeStyle = "rgba(232, 215, 150, 0.45)";
+  ctx.strokeStyle = "rgba(214, 214, 218, 0.42)";
   ctx.lineWidth = 1;
   ctx.arc(mouse.x, mouse.y, 3.2, 0, Math.PI * 2);
   ctx.stroke();
   ctx.beginPath();
-  ctx.fillStyle = "rgba(196, 148, 72, 0.9)";
+  ctx.fillStyle = "rgba(210, 210, 214, 0.88)";
   ctx.arc(mouse.x, mouse.y, 1.05, 0, Math.PI * 2);
   ctx.fill();
 }

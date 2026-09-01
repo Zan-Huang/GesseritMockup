@@ -17,9 +17,9 @@ body {
 body {
   position: relative;
   background:
-    radial-gradient(ellipse 24% 16% at 72% 12%, rgba(210, 196, 160, 0.08), transparent 64%),
-    radial-gradient(ellipse 16% 10% at 80% 20%, rgba(186, 150, 96, 0.05), transparent 58%),
-    linear-gradient(180deg, #030308 0%, #07070e 38%, #120e10 58%, #1a130e 100%);
+    radial-gradient(ellipse 24% 16% at 72% 12%, rgba(210, 210, 214, 0.06), transparent 64%),
+    radial-gradient(ellipse 16% 10% at 80% 20%, rgba(180, 180, 184, 0.04), transparent 58%),
+    linear-gradient(180deg, #030305 0%, #08080b 40%, #101014 62%, #161618 100%);
 }
 
 .sister {
@@ -34,7 +34,7 @@ body {
   pointer-events: none;
   user-select: none;
   opacity: 0.92;
-  filter: brightness(0.92) contrast(1.08) saturate(0.85);
+  filter: brightness(0.88) contrast(1.12) saturate(0.12);
 }
 
 #field,
