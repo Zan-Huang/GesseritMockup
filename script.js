@@ -960,9 +960,9 @@ function spawnDust(x, y, amount) {
       x: x + (Math.random() - 0.5) * 7,
       y: y + 2 + (Math.random() - 0.4) * 5,
       vx: (Math.random() - 0.5) * 0.32,
-      vy: 0.12 + Math.random() * 0.48,
+      vy: 0.06 + Math.random() * 0.22,
       life: 1,
-      decay: 0.0035 + Math.random() * 0.0055,
+      decay: 0.002 + Math.random() * 0.003,
       r: 0.35 + Math.random() * 1.15,
       hue: gilt ? 36 + Math.random() * 10 : 22 + Math.random() * 14,
       sat: gilt ? 48 + Math.random() * 22 : 32 + Math.random() * 20,
@@ -983,7 +983,7 @@ function updateDust() {
     const grain = dust[i];
     grain.x += grain.vx;
     grain.y += grain.vy;
-    grain.vy += 0.014;
+    grain.vy += 0.006;
     grain.vx *= 0.985;
     grain.life -= grain.decay;
     if (grain.life <= 0 || grain.y > window.innerHeight + 8) dust.splice(i, 1);
