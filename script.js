@@ -5,8 +5,8 @@ const illumCtx = illum.getContext("2d", { alpha: true });
 const dropLetter = document.querySelector(".drop-letter");
 
 const GRID = 22;
-const REVEAL_RADIUS = 52;
-const BLOOM_RADIUS = 48;
+const REVEAL_RADIUS = 54;
+const BLOOM_RADIUS = 52;
 const BLOOM_DELAY = 780;
 const SPRAWL_STAGGER = 1400;
 const STEM_LEAD = 340;
@@ -20,6 +20,7 @@ const mouse = { x: -9999, y: -9999, inside: false };
 const lastMouse = { x: -9999, y: -9999 };
 const blooms = new Map();
 const dust = [];
+const gust = [];
 
 function resizeCanvas(canvas, ctx) {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -350,6 +351,44 @@ function leafPalette(random) {
   };
 }
 
+function mapleAutumnPalette(random) {
+  const j = () => random();
+  const roll = random();
+  let h;
+  let sat;
+  let lit;
+  if (roll < 0.2) {
+    h = 44 + j() * 10;
+    sat = 88 + j() * 12;
+    lit = 46 + j() * 10;
+  } else if (roll < 0.42) {
+    h = 28 + j() * 12;
+    sat = 84 + j() * 14;
+    lit = 42 + j() * 10;
+  } else if (roll < 0.68) {
+    h = 8 + j() * 14;
+    sat = 78 + j() * 16;
+    lit = 38 + j() * 8;
+  } else if (roll < 0.84) {
+    h = random() < 0.5 ? 2 + j() * 8 : 348 + j() * 10;
+    sat = 62 + j() * 16;
+    lit = 28 + j() * 8;
+  } else {
+    h = 16 + j() * 12;
+    sat = 70 + j() * 14;
+    lit = 34 + j() * 8;
+  }
+  return {
+    umber: hsla(h - 8, sat * 0.55, Math.max(10, lit - 22), 0.86),
+    body: hsla(h, sat, lit, 0.96),
+    mid: hsla(h + 6, Math.min(100, sat + 6), lit + 12, 0.92),
+    light: hsla(h + 12, Math.min(100, sat + 8), lit + 24, 0.74),
+    gleam: hsla(48, 100, 82, 0.5),
+    vein: hsla(h - 6, 42, 18, 0.48),
+    gilt: hsla(42, 92, 62, 0.62),
+  };
+}
+
 function profilePath(ctx, length, widthAt, samples = 36) {
   ctx.beginPath();
   ctx.moveTo(0, 0);
@@ -472,20 +511,28 @@ function ivyPath(ctx, size) {
 }
 
 function maplePath(ctx, size) {
+  const s = size;
   ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(size * 0.16, size * 0.02, size * 0.5, -size * 0.02, size * 0.7, -size * 0.16);
-  ctx.lineTo(size * 0.46, -size * 0.22);
-  ctx.quadraticCurveTo(size * 0.4, -size * 0.3, size * 0.48, -size * 0.34);
-  ctx.bezierCurveTo(size * 0.82, -size * 0.36, size * 0.98, -size * 0.46, size * 0.86, -size * 0.58);
-  ctx.quadraticCurveTo(size * 0.48, -size * 0.52, size * 0.3, -size * 0.6);
-  ctx.bezierCurveTo(size * 0.26, -size * 0.8, size * 0.08, -size * 0.96, 0, -size);
-  ctx.bezierCurveTo(-size * 0.08, -size * 0.96, -size * 0.26, -size * 0.8, -size * 0.3, -size * 0.6);
-  ctx.quadraticCurveTo(-size * 0.48, -size * 0.52, -size * 0.86, -size * 0.58);
-  ctx.bezierCurveTo(-size * 0.98, -size * 0.46, -size * 0.82, -size * 0.36, -size * 0.48, -size * 0.34);
-  ctx.quadraticCurveTo(-size * 0.4, -size * 0.3, -size * 0.46, -size * 0.22);
-  ctx.lineTo(-size * 0.7, -size * 0.16);
-  ctx.bezierCurveTo(-size * 0.5, -size * 0.02, -size * 0.16, size * 0.02, 0, 0);
+  ctx.moveTo(0, s * 0.05);
+  ctx.lineTo(s * 0.07, 0);
+  ctx.bezierCurveTo(s * 0.2, s * 0.02, s * 0.38, -s * 0.01, s * 0.52, -s * 0.1);
+  ctx.lineTo(s * 0.74, s * 0.01);
+  ctx.lineTo(s * 0.58, -s * 0.14);
+  ctx.lineTo(s * 0.9, -s * 0.16);
+  ctx.lineTo(s * 0.56, -s * 0.26);
+  ctx.bezierCurveTo(s * 0.86, -s * 0.3, s * 1.08, -s * 0.38, s * 0.96, -s * 0.5);
+  ctx.lineTo(s * 0.68, -s * 0.43);
+  ctx.lineTo(s * 0.84, -s * 0.6);
+  ctx.lineTo(s * 0.5, -s * 0.5);
+  ctx.bezierCurveTo(s * 0.4, -s * 0.7, s * 0.16, -s * 0.9, 0, -s);
+  ctx.bezierCurveTo(-s * 0.16, -s * 0.9, -s * 0.4, -s * 0.7, -s * 0.5, -s * 0.5);
+  ctx.lineTo(-s * 0.84, -s * 0.6);
+  ctx.lineTo(-s * 0.68, -s * 0.43);
+  ctx.bezierCurveTo(-s * 1.08, -s * 0.38, -s * 0.86, -s * 0.3, -s * 0.56, -s * 0.26);
+  ctx.lineTo(-s * 0.9, -s * 0.16);
+  ctx.lineTo(-s * 0.58, -s * 0.14);
+  ctx.lineTo(-s * 0.74, s * 0.01);
+  ctx.bezierCurveTo(-s * 0.38, -s * 0.01, -s * 0.2, s * 0.02, -s * 0.07, 0);
   ctx.closePath();
 }
 
@@ -738,12 +785,22 @@ function drawIvy(ctx, open, random) {
   ctx.restore();
 }
 
-function drawMaple(ctx, open, random) {
-  const size = (17.5 + random() * 2.2) * open;
-  const colors = leafPalette(random);
+function drawMaple(ctx, open, random, simple = false) {
+  const size = (21 + random() * 6) * open;
+  const colors = mapleAutumnPalette(random);
   ctx.save();
-  tilt(ctx, random);
-  paintModeledLeaf(ctx, () => maplePath(ctx, size), colors, size, size * 0.72, "palmate");
+  tilt(ctx, random, 0.22);
+  if (simple) {
+    maplePath(ctx, size);
+    ctx.fillStyle = colors.body;
+    ctx.fill();
+    maplePath(ctx, size);
+    ctx.strokeStyle = colors.gilt;
+    ctx.lineWidth = 0.45;
+    ctx.stroke();
+  } else {
+    paintModeledLeaf(ctx, () => maplePath(ctx, size), colors, size, size * 0.92, "palmate");
+  }
   ctx.restore();
 }
 
@@ -805,25 +862,24 @@ function drawRoseSprig(ctx, open, random) {
 }
 
 const FLOWER_TYPES = [
-  drawBay,
-  drawOlive,
-  drawWillow,
+  drawMaple,
+  drawMaple,
+  drawMaple,
+  drawMaple,
+  drawMaple,
   drawOak,
-  drawIvy,
+  drawMaple,
   drawGinkgo,
-  drawRoseSprig,
-  drawBay,
-  drawOlive,
+  drawMaple,
   drawFig,
 ];
 
 function drawLeaf(ctx, scale, side) {
   ctx.save();
   ctx.scale(side, 1);
-  const colors = leafPalette(() => (side > 0 ? 0.7 : 0.2));
-  const length = 7.4 * scale;
-  const width = length * 0.34;
-  paintModeledLeaf(ctx, () => bayPath(ctx, length, width), colors, length, width);
+  const colors = mapleAutumnPalette(() => (side > 0 ? 0.62 : 0.28));
+  const length = 9.2 * scale;
+  paintModeledLeaf(ctx, () => maplePath(ctx, length), colors, length, length * 0.86, "palmate");
   ctx.restore();
 }
 
@@ -866,7 +922,7 @@ function drawFlowStem(ctx, pts, stem, seed) {
     ctx.save();
     ctx.translate(a.x, a.y);
     ctx.rotate(tangentOnPath(pts, 0.48).x);
-    drawBay(ctx, stem * 0.78, random);
+    drawMaple(ctx, stem * 0.78, random);
     ctx.restore();
   }
   ctx.restore();
@@ -920,6 +976,7 @@ function updateHoverBlooms(now) {
         if (!node) {
           node = { x, y, seed: hash(ix, iy), revealedAt: now, bloom: 0, stem: 0, leftAt: 0 };
           blooms.set(key, node);
+          spawnMapleGust(x, y, 1 + (node.seed % 2));
         }
         node.leftAt = 0;
 
@@ -961,6 +1018,126 @@ function drawHoverNodes(ctx, originX, originY) {
       ctx.arc(x, y, 0.7, 0, Math.PI * 2);
       ctx.fill();
     }
+  }
+}
+
+function drawArrakis(ctx, width, height, now) {
+  const moonA = { x: width * 0.17, y: height * 0.15, r: 34 };
+  const moonB = { x: width * 0.27, y: height * 0.23, r: 16 };
+  const glowA = ctx.createRadialGradient(moonA.x, moonA.y, 0, moonA.x, moonA.y, moonA.r * 2.4);
+  glowA.addColorStop(0, "rgba(224, 210, 176, 0.2)");
+  glowA.addColorStop(0.4, "rgba(200, 184, 142, 0.07)");
+  glowA.addColorStop(1, "rgba(200, 184, 142, 0)");
+  ctx.fillStyle = glowA;
+  ctx.fillRect(moonA.x - moonA.r * 2.4, moonA.y - moonA.r * 2.4, moonA.r * 4.8, moonA.r * 4.8);
+  ctx.beginPath();
+  ctx.fillStyle = "rgba(226, 214, 184, 0.28)";
+  ctx.arc(moonA.x, moonA.y, 7.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  const glowB = ctx.createRadialGradient(moonB.x, moonB.y, 0, moonB.x, moonB.y, moonB.r * 2.2);
+  glowB.addColorStop(0, "rgba(196, 158, 98, 0.16)");
+  glowB.addColorStop(1, "rgba(196, 158, 98, 0)");
+  ctx.fillStyle = glowB;
+  ctx.fillRect(moonB.x - moonB.r * 2.2, moonB.y - moonB.r * 2.2, moonB.r * 4.4, moonB.r * 4.4);
+  ctx.beginPath();
+  ctx.fillStyle = "rgba(198, 164, 108, 0.22)";
+  ctx.arc(moonB.x, moonB.y, 3.6, 0, Math.PI * 2);
+  ctx.fill();
+
+  const stars = mulberry32(2024);
+  for (let i = 0; i < 96; i += 1) {
+    const x = stars() * width;
+    const y = stars() * height * 0.58;
+    const twinkle = 0.55 + 0.45 * Math.sin(now * 0.0007 + i * 1.7);
+    ctx.fillStyle = `rgba(228, 218, 190, ${(0.08 + stars() * 0.22) * twinkle})`;
+    ctx.fillRect(x, y, stars() < 0.12 ? 1.4 : 0.8, stars() < 0.12 ? 1.4 : 0.8);
+  }
+
+  const bases = [0.73, 0.81, 0.89];
+  const fills = ["rgba(58, 40, 26, 0.16)", "rgba(40, 26, 18, 0.22)", "rgba(22, 14, 10, 0.3)"];
+  bases.forEach((base, layer) => {
+    ctx.beginPath();
+    ctx.moveTo(0, height);
+    ctx.lineTo(0, height * base);
+    for (let x = 0; x <= width; x += 20) {
+      const n = noise3(x * 0.0038, layer * 2.4, 0.35);
+      const swell = Math.sin(x * 0.007 + layer * 1.8) * height * 0.03;
+      ctx.lineTo(x, height * base + swell + (n - 0.5) * height * 0.038);
+    }
+    ctx.lineTo(width, height);
+    ctx.closePath();
+    ctx.fillStyle = fills[layer];
+    ctx.fill();
+  });
+
+  const spice = ctx.createLinearGradient(0, height * 0.6, 0, height);
+  spice.addColorStop(0, "rgba(0, 0, 0, 0)");
+  spice.addColorStop(0.45, "rgba(118, 70, 26, 0.05)");
+  spice.addColorStop(1, "rgba(36, 20, 10, 0.16)");
+  ctx.fillStyle = spice;
+  ctx.fillRect(0, height * 0.6, width, height * 0.4);
+}
+
+function spawnMapleGust(x, y, amount, drift = false) {
+  for (let i = 0; i < amount; i += 1) {
+    const angle = drift ? Math.PI * 0.15 + Math.random() * 0.5 : Math.random() * Math.PI * 2;
+    const speed = drift ? 0.28 + Math.random() * 0.55 : 1.1 + Math.random() * 2.6;
+    gust.push({
+      x: x + (Math.random() - 0.5) * 10,
+      y: y + (Math.random() - 0.5) * 8,
+      vx: Math.cos(angle) * speed + (drift ? 0.35 : 0),
+      vy: Math.sin(angle) * speed - (drift ? 0.05 : 0.55),
+      rot: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.14,
+      life: drift ? 0.7 + Math.random() * 0.3 : 1,
+      decay: drift ? 0.0012 + Math.random() * 0.0018 : 0.004 + Math.random() * 0.005,
+      size: drift ? 0.55 + Math.random() * 0.55 : 0.7 + Math.random() * 0.85,
+      seed: (Math.random() * 1e9) | 0,
+    });
+  }
+}
+
+function seedAmbientMaples() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  for (let i = 0; i < 18; i += 1) {
+    spawnMapleGust(Math.random() * width, Math.random() * height, 1, true);
+  }
+}
+
+function updateGust() {
+  if (mouse.inside) {
+    const speed = Math.hypot(mouse.x - lastMouse.x, mouse.y - lastMouse.y);
+    if (speed > 2.2) spawnMapleGust(mouse.x, mouse.y, 1 + Math.min(4, Math.floor(speed * 0.18)));
+    if (Math.random() < 0.22) spawnMapleGust(mouse.x, mouse.y, 1);
+  }
+  if (gust.length < 22 && Math.random() < 0.04) {
+    spawnMapleGust(Math.random() * window.innerWidth, -16, 1, true);
+  }
+
+  for (let i = gust.length - 1; i >= 0; i -= 1) {
+    const leaf = gust[i];
+    leaf.x += leaf.vx;
+    leaf.y += leaf.vy;
+    leaf.vy += 0.012;
+    leaf.vx *= 0.992;
+    leaf.rot += leaf.spin;
+    leaf.life -= leaf.decay;
+    if (leaf.life <= 0 || leaf.y > window.innerHeight + 40) gust.splice(i, 1);
+  }
+  if (gust.length > 90) gust.splice(0, gust.length - 90);
+}
+
+function drawGust(ctx) {
+  for (const leaf of gust) {
+    const random = mulberry32(leaf.seed);
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, leaf.life) * 0.92;
+    ctx.translate(leaf.x, leaf.y);
+    ctx.rotate(leaf.rot);
+    drawMaple(ctx, leaf.size, random, true);
+    ctx.restore();
   }
 }
 
@@ -1025,13 +1202,13 @@ function drawCursor(ctx) {
 }
 
 const dropAnchors = [
-  { ox: 0.16, oy: 0.2, type: 1, scale: 1.85 },
+  { ox: 0.16, oy: 0.2, type: 0, scale: 1.85 },
   { ox: 0.4, oy: 0.14, type: 0, scale: 2.05 },
-  { ox: 0.26, oy: 0.46, type: 2, scale: 1.75 },
+  { ox: 0.26, oy: 0.46, type: 0, scale: 1.75 },
   { ox: 0.5, oy: 0.4, type: 0, scale: 1.95 },
-  { ox: 0.12, oy: 0.66, type: 4, scale: 1.15 },
-  { ox: 0.36, oy: 0.84, type: 6, scale: 1.55 },
-  { ox: 0.06, oy: 0.36, type: 4, scale: 1.1 },
+  { ox: 0.12, oy: 0.66, type: 0, scale: 1.15 },
+  { ox: 0.36, oy: 0.84, type: 2, scale: 1.55 },
+  { ox: 0.06, oy: 0.36, type: 0, scale: 1.1 },
 ];
 
 function drawGoldenSpiral(ctx, cx, cy, scale, now) {
@@ -1088,6 +1265,7 @@ function frame(now) {
   fieldCtx.clearRect(0, 0, width, height);
   illumCtx.clearRect(0, 0, width, height);
 
+  drawArrakis(fieldCtx, width, height, now);
   const { originX, originY } = updateHoverBlooms(now);
   drawGrid(fieldCtx);
   drawHoverNodes(fieldCtx, originX, originY);
@@ -1095,9 +1273,11 @@ function frame(now) {
   for (const node of blooms.values()) {
     if (node.stem < 0.02 && node.bloom < 0.02) continue;
     const pts = integrateStream(node.x, node.y, node.seed, now, 46, 0.52);
-    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 1.65);
+    drawBloomAt(fieldCtx, pts, node.bloom, node.stem, node.seed, 1.8);
   }
 
+  updateGust();
+  drawGust(fieldCtx);
   updateDust();
   drawDust(fieldCtx);
   drawCursor(fieldCtx);
@@ -1106,4 +1286,5 @@ function frame(now) {
 }
 
 resize();
+seedAmbientMaples();
 requestAnimationFrame(frame);
