@@ -653,8 +653,8 @@ function paintModeledLeaf(ctx, pathFn, colors, length, width, vein = "pinnate") 
   pathFn();
   ctx.clip();
   const shade = ctx.createLinearGradient(-width, 0, width * 0.65, -length);
-  shade.addColorStop(0, colors.umber);
-  shade.addColorStop(0.22, colors.body);
+  shade.addColorStop(0, colors.body);
+  shade.addColorStop(0.22, colors.mid);
   shade.addColorStop(0.62, colors.mid);
   shade.addColorStop(1, colors.light);
   ctx.fillStyle = shade;
@@ -666,7 +666,6 @@ function paintModeledLeaf(ctx, pathFn, colors, length, width, vein = "pinnate") 
   ctx.fillStyle = lamp;
   ctx.fill();
 
-  paintReticulum(ctx, length, width, colors);
   if (vein === "fan") paintDichotomousVeins(ctx, length, width, colors);
   else if (vein === "palmate") paintPalmateVeins(ctx, length, colors);
   else paintPinnateVeins(ctx, length, width, colors, vein === "crasp" ? "crasp" : "broch");
@@ -831,11 +830,18 @@ const FLOWER_TYPES = [
 ];
 
 function drawLeaf(ctx, scale, side, seed) {
+  if (scale < 0.55) return;
   ctx.save();
   ctx.scale(side, 1);
   const colors = mapleAutumnPalette(mulberry32((seed || 1) ^ (side > 0 ? 19 : 41)));
-  const length = 7.6 * scale;
-  paintModeledLeaf(ctx, () => maplePath(ctx, length), colors, length, length * 0.72, "palmate");
+  const length = 8.4 * scale;
+  maplePath(ctx, length);
+  ctx.fillStyle = colors.body;
+  ctx.fill();
+  maplePath(ctx, length);
+  ctx.strokeStyle = colors.gilt;
+  ctx.lineWidth = 0.4;
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -873,14 +879,6 @@ function drawFlowStem(ctx, pts, stem, seed) {
     ctx.restore();
   });
 
-  if (stem > 0.58) {
-    const a = pointOnPath(pts, 0.48);
-    ctx.save();
-    ctx.translate(a.x, a.y);
-    ctx.rotate(tangentOnPath(pts, 0.48).x);
-    drawBay(ctx, stem * 0.72, random);
-    ctx.restore();
-  }
   ctx.restore();
 }
 
@@ -894,16 +892,17 @@ function drawBloomAt(ctx, pts, bloom, stem, seed, scale) {
   const tan = tangentOnPath(pts, tipT);
 
   ctx.save();
-  ctx.globalAlpha = fade;
+  ctx.globalAlpha = Math.max(0.45, fade);
   drawFlowStem(ctx, pts, stem, seed);
-  if (bloom > 0.03) {
+  ctx.restore();
+  if (bloom > 0.12) {
     ctx.save();
+    ctx.globalAlpha = 1;
     ctx.translate(tip.x, tip.y);
     ctx.rotate(Math.atan2(tan.y, tan.x) + Math.PI / 2);
     type(ctx, open, random);
     ctx.restore();
   }
-  ctx.restore();
 }
 
 function updateHoverBlooms(now) {

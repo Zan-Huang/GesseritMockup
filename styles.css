@@ -23,10 +23,10 @@ body {
 
 .sister {
   position: fixed;
-  left: 4.5vw;
-  bottom: 18vh;
+  left: 3.5vw;
+  bottom: 16vh;
   z-index: 3;
-  height: 210px;
+  height: 280px;
   width: auto;
   object-fit: contain;
   object-position: left bottom;
@@ -98,7 +98,7 @@ body {
   .sister {
     left: 4vw;
     bottom: 14vh;
-    height: 160px;
+    height: 210px;
   }
 
   .drop {
