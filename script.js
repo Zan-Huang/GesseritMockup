@@ -316,93 +316,244 @@ function olivePath(ctx, length, width) {
 }
 
 function oakPath(ctx, length, width) {
-  profilePath(ctx, length, (t) => {
-    if (t < 0.03 || t > 0.97) return 0;
-    const envelope = Math.sin(Math.PI * t);
-    const lobe = 0.2 + 0.8 * Math.pow(0.5 + 0.5 * Math.sin(t * Math.PI * 7.2 + 0.55), 1.65);
-    return width * envelope * lobe;
-  }, 48);
+  const right = [
+    [0, 0],
+    [width * 0.28, -length * 0.05],
+    [width * 0.5, -length * 0.15],
+    [width * 0.24, -length * 0.23],
+    [width * 0.74, -length * 0.36],
+    [width * 0.34, -length * 0.46],
+    [width * 0.98, -length * 0.58],
+    [width * 0.4, -length * 0.68],
+    [width * 0.72, -length * 0.8],
+    [width * 0.26, -length * 0.88],
+    [0, -length],
+  ];
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  for (let i = 1; i < right.length; i += 1) {
+    const prev = right[i - 1];
+    const curr = right[i];
+    const mx = (prev[0] + curr[0]) * 0.5;
+    const my = (prev[1] + curr[1]) * 0.5;
+    ctx.quadraticCurveTo(curr[0] * 0.35 + prev[0] * 0.65, (prev[1] + curr[1]) * 0.5, mx, my);
+    ctx.quadraticCurveTo(curr[0], curr[1], curr[0], curr[1]);
+  }
+  for (let i = right.length - 2; i >= 0; i -= 1) {
+    ctx.quadraticCurveTo(-right[i][0] * 0.85, right[i][1] + length * 0.01, -right[i][0], right[i][1]);
+  }
+  ctx.closePath();
 }
 
 function hollyPath(ctx, length, width) {
-  profilePath(ctx, length, (t) => {
-    if (t < 0.04 || t > 0.97) return t > 0.97 ? 0 : width * 0.12;
-    const envelope = ovateWidth(t, 1);
-    const spine = 0.62 + 0.38 * Math.abs(Math.sin(t * Math.PI * 8));
-    return width * envelope * spine;
-  }, 52);
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  const spines = 8;
+  for (let side of [1, -1]) {
+    if (side === -1) ctx.lineTo(0, -length);
+    const dir = side === 1 ? 1 : -1;
+    const start = side === 1 ? 0 : spines - 1;
+    const end = side === 1 ? spines : -1;
+    for (let i = start; i !== end; i += dir) {
+      const tValley = (i + 0.18) / spines;
+      const tTip = (i + 0.52) / spines;
+      const tNext = (i + 0.82) / spines;
+      ctx.lineTo(side * ovateWidth(tValley, width) * 0.68, -length * tValley);
+      ctx.lineTo(side * ovateWidth(tTip, width) * 1.2, -length * tTip);
+      ctx.lineTo(side * ovateWidth(Math.min(0.98, tNext), width) * 0.66, -length * Math.min(0.98, tNext));
+    }
+  }
+  ctx.closePath();
 }
 
 function willowPath(ctx, length, width) {
-  profilePath(ctx, length, (t) => lanceWidth(t, width), 40);
+  profilePath(ctx, length, (t) => {
+    const body = lanceWidth(t, width);
+    const tooth = 1 + 0.07 * Math.sin(t * Math.PI * 22);
+    return body * tooth;
+  }, 56);
 }
 
 function ivyPath(ctx, size) {
   ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(size * 0.42, size * 0.06, size * 1.02, -size * 0.02, size * 0.98, -size * 0.36);
-  ctx.quadraticCurveTo(size * 0.4, -size * 0.4, size * 0.3, -size * 0.5);
-  ctx.bezierCurveTo(size * 0.2, -size * 0.78, size * 0.06, -size * 0.97, 0, -size);
-  ctx.bezierCurveTo(-size * 0.06, -size * 0.97, -size * 0.2, -size * 0.78, -size * 0.3, -size * 0.5);
-  ctx.quadraticCurveTo(-size * 0.4, -size * 0.4, -size * 0.98, -size * 0.36);
-  ctx.bezierCurveTo(-size * 1.02, -size * 0.02, -size * 0.42, size * 0.06, 0, 0);
+  ctx.moveTo(0, size * 0.05);
+  ctx.bezierCurveTo(size * 0.4, size * 0.18, size * 0.78, size * 0.02, size * 0.9, -size * 0.24);
+  ctx.lineTo(size * 0.96, -size * 0.38);
+  ctx.quadraticCurveTo(size * 0.42, -size * 0.36, size * 0.3, -size * 0.5);
+  ctx.bezierCurveTo(size * 0.2, -size * 0.74, size * 0.05, -size * 0.95, 0, -size);
+  ctx.bezierCurveTo(-size * 0.05, -size * 0.95, -size * 0.2, -size * 0.74, -size * 0.3, -size * 0.5);
+  ctx.quadraticCurveTo(-size * 0.42, -size * 0.36, -size * 0.96, -size * 0.38);
+  ctx.lineTo(-size * 0.9, -size * 0.24);
+  ctx.bezierCurveTo(-size * 0.78, size * 0.02, -size * 0.4, size * 0.18, 0, size * 0.05);
   ctx.closePath();
 }
 
 function maplePath(ctx, size) {
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.quadraticCurveTo(size * 0.16, -size * 0.05, size * 0.8, -size * 0.2);
-  ctx.quadraticCurveTo(size * 0.48, -size * 0.3, size * 0.38, -size * 0.34);
-  ctx.quadraticCurveTo(size * 0.7, -size * 0.44, size * 0.92, -size * 0.56);
-  ctx.quadraticCurveTo(size * 0.42, -size * 0.56, size * 0.24, -size * 0.62);
-  ctx.quadraticCurveTo(size * 0.1, -size * 0.84, 0, -size);
-  ctx.quadraticCurveTo(-size * 0.1, -size * 0.84, -size * 0.24, -size * 0.62);
-  ctx.quadraticCurveTo(-size * 0.42, -size * 0.56, -size * 0.92, -size * 0.56);
-  ctx.quadraticCurveTo(-size * 0.7, -size * 0.44, -size * 0.38, -size * 0.34);
-  ctx.quadraticCurveTo(-size * 0.48, -size * 0.3, -size * 0.8, -size * 0.2);
-  ctx.quadraticCurveTo(-size * 0.16, -size * 0.05, 0, 0);
+  ctx.bezierCurveTo(size * 0.16, size * 0.02, size * 0.5, -size * 0.02, size * 0.7, -size * 0.16);
+  ctx.lineTo(size * 0.46, -size * 0.22);
+  ctx.quadraticCurveTo(size * 0.4, -size * 0.3, size * 0.48, -size * 0.34);
+  ctx.bezierCurveTo(size * 0.82, -size * 0.36, size * 0.98, -size * 0.46, size * 0.86, -size * 0.58);
+  ctx.quadraticCurveTo(size * 0.48, -size * 0.52, size * 0.3, -size * 0.6);
+  ctx.bezierCurveTo(size * 0.26, -size * 0.8, size * 0.08, -size * 0.96, 0, -size);
+  ctx.bezierCurveTo(-size * 0.08, -size * 0.96, -size * 0.26, -size * 0.8, -size * 0.3, -size * 0.6);
+  ctx.quadraticCurveTo(-size * 0.48, -size * 0.52, -size * 0.86, -size * 0.58);
+  ctx.bezierCurveTo(-size * 0.98, -size * 0.46, -size * 0.82, -size * 0.36, -size * 0.48, -size * 0.34);
+  ctx.quadraticCurveTo(-size * 0.4, -size * 0.3, -size * 0.46, -size * 0.22);
+  ctx.lineTo(-size * 0.7, -size * 0.16);
+  ctx.bezierCurveTo(-size * 0.5, -size * 0.02, -size * 0.16, size * 0.02, 0, 0);
   ctx.closePath();
 }
 
 function figPath(ctx, size) {
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(size * 0.35, -size * 0.02, size * 0.85, -size * 0.12, size * 0.78, -size * 0.42);
-  ctx.quadraticCurveTo(size * 0.28, -size * 0.4, size * 0.22, -size * 0.5);
-  ctx.bezierCurveTo(size * 0.38, -size * 0.72, size * 0.12, -size * 0.96, 0, -size);
-  ctx.bezierCurveTo(-size * 0.12, -size * 0.96, -size * 0.38, -size * 0.72, -size * 0.22, -size * 0.5);
-  ctx.quadraticCurveTo(-size * 0.28, -size * 0.4, -size * 0.78, -size * 0.42);
-  ctx.bezierCurveTo(-size * 0.85, -size * 0.12, -size * 0.35, -size * 0.02, 0, 0);
+  ctx.bezierCurveTo(size * 0.28, -size * 0.01, size * 0.82, -size * 0.08, size * 0.86, -size * 0.36);
+  ctx.quadraticCurveTo(size * 0.32, -size * 0.38, size * 0.24, -size * 0.48);
+  ctx.bezierCurveTo(size * 0.42, -size * 0.7, size * 0.14, -size * 0.94, 0, -size);
+  ctx.bezierCurveTo(-size * 0.14, -size * 0.94, -size * 0.42, -size * 0.7, -size * 0.24, -size * 0.48);
+  ctx.quadraticCurveTo(-size * 0.32, -size * 0.38, -size * 0.86, -size * 0.36);
+  ctx.bezierCurveTo(-size * 0.82, -size * 0.08, -size * 0.28, -size * 0.01, 0, 0);
   ctx.closePath();
 }
 
 function hawthornPath(ctx, size) {
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.quadraticCurveTo(size * 0.14, -size * 0.08, size * 0.7, -size * 0.22);
-  ctx.quadraticCurveTo(size * 0.34, -size * 0.32, size * 0.26, -size * 0.4);
-  ctx.quadraticCurveTo(size * 0.5, -size * 0.5, size * 0.6, -size * 0.64);
-  ctx.quadraticCurveTo(size * 0.22, -size * 0.62, size * 0.12, -size * 0.7);
-  ctx.quadraticCurveTo(size * 0.04, -size * 0.88, 0, -size);
-  ctx.quadraticCurveTo(-size * 0.05, -size * 0.86, -size * 0.14, -size * 0.68);
-  ctx.quadraticCurveTo(-size * 0.36, -size * 0.66, -size * 0.48, -size * 0.72);
-  ctx.quadraticCurveTo(-size * 0.22, -size * 0.5, -size * 0.2, -size * 0.44);
-  ctx.quadraticCurveTo(-size * 0.52, -size * 0.32, -size * 0.66, -size * 0.28);
-  ctx.quadraticCurveTo(-size * 0.16, -size * 0.12, 0, 0);
+  ctx.lineTo(size * 0.12, -size * 0.14);
+  ctx.bezierCurveTo(size * 0.42, -size * 0.16, size * 0.7, -size * 0.18, size * 0.68, -size * 0.3);
+  ctx.quadraticCurveTo(size * 0.3, -size * 0.36, size * 0.22, -size * 0.46);
+  ctx.bezierCurveTo(size * 0.5, -size * 0.5, size * 0.58, -size * 0.62, size * 0.36, -size * 0.7);
+  ctx.quadraticCurveTo(size * 0.12, -size * 0.78, 0, -size);
+  ctx.quadraticCurveTo(-size * 0.1, -size * 0.76, -size * 0.18, -size * 0.64);
+  ctx.bezierCurveTo(-size * 0.42, -size * 0.66, -size * 0.5, -size * 0.52, -size * 0.22, -size * 0.46);
+  ctx.quadraticCurveTo(-size * 0.28, -size * 0.34, -size * 0.64, -size * 0.28);
+  ctx.bezierCurveTo(-size * 0.4, -size * 0.16, -size * 0.12, -size * 0.12, 0, 0);
   ctx.closePath();
 }
 
 function ginkgoPath(ctx, radius) {
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(-radius * 0.08, -radius * 0.18, -radius * 1.08, -radius * 0.28, -radius * 1.02, -radius * 0.74);
-  ctx.quadraticCurveTo(-radius * 0.52, -radius * 1.1, -radius * 0.1, -radius * 0.8);
-  ctx.lineTo(0, -radius * 0.66);
-  ctx.lineTo(radius * 0.1, -radius * 0.8);
-  ctx.quadraticCurveTo(radius * 0.52, -radius * 1.1, radius * 1.02, -radius * 0.74);
-  ctx.bezierCurveTo(radius * 1.08, -radius * 0.28, radius * 0.08, -radius * 0.18, 0, 0);
+  ctx.bezierCurveTo(-radius * 0.12, -radius * 0.22, -radius * 1.12, -radius * 0.32, -radius * 1.05, -radius * 0.78);
+  ctx.quadraticCurveTo(-radius * 0.58, -radius * 1.12, -radius * 0.12, -radius * 0.84);
+  ctx.lineTo(0, -radius * 0.68);
+  ctx.lineTo(radius * 0.12, -radius * 0.84);
+  ctx.quadraticCurveTo(radius * 0.58, -radius * 1.12, radius * 1.05, -radius * 0.78);
+  ctx.bezierCurveTo(radius * 1.12, -radius * 0.32, radius * 0.12, -radius * 0.22, 0, 0);
   ctx.closePath();
+}
+
+function paintReticulum(ctx, length, width, colors) {
+  ctx.save();
+  ctx.globalAlpha = 0.14;
+  ctx.strokeStyle = colors.vein;
+  ctx.lineWidth = 0.18;
+  const step = Math.max(2.4, length / 11);
+  for (let y = -length * 0.08; y > -length; y -= step) {
+    ctx.beginPath();
+    ctx.moveTo(-width, y);
+    ctx.lineTo(width, y - step * 0.55);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(width, y);
+    ctx.lineTo(-width, y - step * 0.55);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function paintPinnateVeins(ctx, length, width, colors, style) {
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(width * 0.02, -length * 0.5, 0, -length * 0.94);
+  ctx.strokeStyle = colors.vein;
+  ctx.lineWidth = 0.85;
+  ctx.globalAlpha = 0.5;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(width * 0.035, -length * 0.03);
+  ctx.quadraticCurveTo(width * 0.06, -length * 0.48, width * 0.015, -length * 0.9);
+  ctx.strokeStyle = colors.gilt;
+  ctx.lineWidth = 0.28;
+  ctx.globalAlpha = 0.28;
+  ctx.stroke();
+
+  const count = style === "crasp" ? 8 : 7;
+  for (let i = 1; i <= count; i += 1) {
+    const t = 0.1 + (i / (count + 1)) * 0.78;
+    const y = -length * t;
+    const reach = width * (0.82 - t * 0.22);
+    const lift = style === "crasp" ? 0.02 : 0.09;
+    for (const side of [-1, 1]) {
+      ctx.globalAlpha = 0.36;
+      ctx.strokeStyle = colors.vein;
+      ctx.lineWidth = 0.32;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      if (style === "crasp") {
+        ctx.quadraticCurveTo(side * reach * 0.55, y - length * 0.03, side * reach, y - length * lift);
+      } else {
+        ctx.bezierCurveTo(
+          side * reach * 0.45,
+          y - length * 0.01,
+          side * reach * 0.85,
+          y - length * 0.04,
+          side * reach * 0.55,
+          y - length * 0.1,
+        );
+      }
+      ctx.stroke();
+    }
+  }
+}
+
+function paintPalmateVeins(ctx, length, colors) {
+  const rays = [-1.22, -0.88, -Math.PI / 2, -2.26, -1.92];
+  rays.forEach((angle, index) => {
+    const reach = index === 2 ? length * 0.92 : length * 0.78;
+    ctx.globalAlpha = 0.48;
+    ctx.strokeStyle = colors.vein;
+    ctx.lineWidth = index === 2 ? 0.8 : 0.55;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(Math.cos(angle) * reach, Math.sin(angle) * reach);
+    ctx.stroke();
+    ctx.globalAlpha = 0.28;
+    ctx.lineWidth = 0.26;
+    for (const side of [-0.32, 0.32]) {
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(angle) * reach * 0.35, Math.sin(angle) * reach * 0.35);
+      ctx.quadraticCurveTo(
+        Math.cos(angle + side) * reach * 0.55,
+        Math.sin(angle + side) * reach * 0.55,
+        Math.cos(angle + side * 0.7) * reach * 0.72,
+        Math.sin(angle + side * 0.7) * reach * 0.72,
+      );
+      ctx.stroke();
+    }
+  });
+}
+
+function paintDichotomousVeins(ctx, length, width, colors) {
+  function fork(x, y, angle, span, depth) {
+    const x2 = x + Math.cos(angle) * span;
+    const y2 = y + Math.sin(angle) * span;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    if (depth <= 0 || span < 2.2) return;
+    fork(x2, y2, angle - 0.2, span * 0.68, depth - 1);
+    fork(x2, y2, angle + 0.2, span * 0.68, depth - 1);
+  }
+  ctx.strokeStyle = colors.vein;
+  ctx.lineWidth = 0.32;
+  ctx.globalAlpha = 0.4;
+  for (let i = -3; i <= 3; i += 1) {
+    fork(0, 0, -Math.PI / 2 + i * 0.22, length * 0.34, 2);
+  }
 }
 
 function paintModeledLeaf(ctx, pathFn, colors, length, width, vein = "pinnate") {
@@ -414,81 +565,30 @@ function paintModeledLeaf(ctx, pathFn, colors, length, width, vein = "pinnate") 
   ctx.save();
   pathFn();
   ctx.clip();
-  const shade = ctx.createLinearGradient(-width, 0, width * 0.7, -length);
+  const shade = ctx.createLinearGradient(-width, 0, width * 0.65, -length);
   shade.addColorStop(0, colors.umber);
-  shade.addColorStop(0.32, colors.body);
+  shade.addColorStop(0.3, colors.body);
   shade.addColorStop(0.62, colors.mid);
   shade.addColorStop(1, colors.light);
   ctx.fillStyle = shade;
   ctx.fill();
 
-  const lamp = ctx.createRadialGradient(-width * 0.15, -length * 0.28, length * 0.04, 0, -length * 0.4, length * 0.85);
+  const lamp = ctx.createRadialGradient(-width * 0.18, -length * 0.3, length * 0.05, 0, -length * 0.42, length * 0.9);
   lamp.addColorStop(0, colors.gleam);
-  lamp.addColorStop(0.45, "hsla(45, 80%, 70%, 0)");
-  lamp.addColorStop(1, "hsla(150, 20%, 10%, 0)");
+  lamp.addColorStop(0.5, "hsla(45, 80%, 70%, 0)");
   ctx.fillStyle = lamp;
   ctx.fill();
 
-  ctx.beginPath();
-  ctx.ellipse(-width * 0.12, -length * 0.34, width * 0.22, length * 0.18, -0.4, 0, Math.PI * 2);
-  ctx.fillStyle = colors.gleam;
-  ctx.globalAlpha = 0.35;
-  ctx.fill();
-  ctx.globalAlpha = 1;
-
+  paintReticulum(ctx, length, width, colors);
+  if (vein === "fan") paintDichotomousVeins(ctx, length, width, colors);
+  else if (vein === "palmate") paintPalmateVeins(ctx, length, colors);
+  else paintPinnateVeins(ctx, length, width, colors, vein === "crasp" ? "crasp" : "broch");
   ctx.restore();
 
   pathFn();
   ctx.strokeStyle = colors.gilt;
   ctx.lineWidth = 0.55;
   ctx.stroke();
-
-  ctx.strokeStyle = colors.vein;
-  ctx.lineWidth = 0.65;
-  ctx.globalAlpha = 0.42;
-  if (vein === "fan") {
-    for (let i = -4; i <= 4; i += 1) {
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.quadraticCurveTo(i * width * 0.06, -length * 0.4, i * width * 0.16, -length * 0.86);
-      ctx.stroke();
-    }
-  } else if (vein === "palmate") {
-    const rays = [-1.15, -0.75, -Math.PI / 2, -2.4, -1.98];
-    rays.forEach((angle) => {
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(Math.cos(angle) * length * 0.78, Math.sin(angle) * length * 0.78);
-      ctx.stroke();
-    });
-  } else {
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(width * 0.04, -length * 0.5, 0, -length * 0.92);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(width * 0.04, -length * 0.04);
-    ctx.quadraticCurveTo(width * 0.08, -length * 0.48, width * 0.02, -length * 0.88);
-    ctx.strokeStyle = colors.gilt;
-    ctx.lineWidth = 0.26;
-    ctx.globalAlpha = 0.32;
-    ctx.stroke();
-    ctx.strokeStyle = colors.vein;
-    ctx.lineWidth = 0.28;
-    for (let i = 1; i <= 4; i += 1) {
-      const t = i / 5.2;
-      const y = -length * t;
-      const reach = width * (0.55 - t * 0.2);
-      ctx.globalAlpha = 0.26;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.quadraticCurveTo(reach * 0.4, y - length * 0.04, reach, y - length * 0.08);
-      ctx.moveTo(0, y);
-      ctx.quadraticCurveTo(-reach * 0.35, y - length * 0.03, -reach * 0.75, y - length * 0.05);
-      ctx.stroke();
-    }
-  }
-  ctx.globalAlpha = 1;
   ctx.restore();
 }
 
@@ -522,7 +622,7 @@ function drawWillow(ctx, open, random) {
   const colors = leafPalette(random);
   ctx.save();
   tilt(ctx, random, 0.16);
-  paintModeledLeaf(ctx, () => willowPath(ctx, length, width), colors, length, width);
+  paintModeledLeaf(ctx, () => willowPath(ctx, length, width), colors, length, width, "crasp");
   ctx.restore();
 }
 
@@ -532,7 +632,7 @@ function drawOak(ctx, open, random) {
   const colors = leafPalette(random);
   ctx.save();
   tilt(ctx, random);
-  paintModeledLeaf(ctx, () => oakPath(ctx, length, width), colors, length, width);
+  paintModeledLeaf(ctx, () => oakPath(ctx, length, width), colors, length, width, "crasp");
   ctx.restore();
 }
 
@@ -542,7 +642,7 @@ function drawHolly(ctx, open, random) {
   const colors = leafPalette(random);
   ctx.save();
   tilt(ctx, random);
-  paintModeledLeaf(ctx, () => hollyPath(ctx, length, width), colors, length, width);
+  paintModeledLeaf(ctx, () => hollyPath(ctx, length, width), colors, length, width, "crasp");
   ctx.restore();
 }
 
@@ -578,7 +678,7 @@ function drawHawthorn(ctx, open, random) {
   const colors = leafPalette(random);
   ctx.save();
   tilt(ctx, random);
-  paintModeledLeaf(ctx, () => hawthornPath(ctx, size), colors, size, size * 0.55, "palmate");
+  paintModeledLeaf(ctx, () => hawthornPath(ctx, size), colors, size, size * 0.55, "crasp");
   ctx.restore();
 }
 
@@ -606,8 +706,8 @@ function drawRoseSprig(ctx, open, random) {
       const length = 11 * open * pair.s * 2.2;
       const width = length * 0.36;
       paintModeledLeaf(ctx, () => {
-        profilePath(ctx, length, (t) => ovateWidth(t, width));
-      }, colors, length, width);
+        profilePath(ctx, length, (t) => ovateWidth(t, width) * (1 + 0.08 * Math.sin(t * Math.PI * 16)));
+      }, colors, length, width, "crasp");
       ctx.restore();
     });
   });
@@ -615,8 +715,8 @@ function drawRoseSprig(ctx, open, random) {
   ctx.translate(0, -14.5 * open);
   const tip = 13 * open;
   paintModeledLeaf(ctx, () => {
-    profilePath(ctx, tip, (t) => ovateWidth(t, tip * 0.34));
-  }, colors, tip, tip * 0.34);
+    profilePath(ctx, tip, (t) => ovateWidth(t, tip * 0.34) * (1 + 0.08 * Math.sin(t * Math.PI * 16)));
+  }, colors, tip, tip * 0.34, "crasp");
   ctx.restore();
   ctx.restore();
 }
