@@ -4,9 +4,9 @@ const illum = document.getElementById("illumination");
 const illumCtx = illum.getContext("2d", { alpha: true });
 const dropLetter = document.querySelector(".drop-letter");
 
-const GRID = 18;
-const REVEAL_RADIUS = 110;
-const BLOOM_RADIUS = 172;
+const GRID = 16;
+const REVEAL_RADIUS = 52;
+const BLOOM_RADIUS = 68;
 const BLOOM_DELAY = 180;
 const SPRAWL_STAGGER = 980;
 const STEM_LEAD = 180;
@@ -31,22 +31,36 @@ const gust = [];
 const world = { lit: false };
 const torchBtn = document.querySelector(".torch");
 
-function sisterBox() {
-  const stage = document.querySelector(".sister-stage");
-  return stage ? stage.getBoundingClientRect() : new DOMRect();
+function paintedSister() {
+  const img = document.querySelector(".sister");
+  if (!img) return { left: 0, top: 0, width: 0, height: 0 };
+  const box = img.getBoundingClientRect();
+  const nw = img.naturalWidth || 1024;
+  const nh = img.naturalHeight || 1536;
+  const scale = Math.max(box.width / nw, box.height / nh);
+  const width = nw * scale;
+  const height = nh * scale;
+  const extraX = width - box.width;
+  const extraY = height - box.height;
+  return {
+    left: box.left - extraX * 0.4,
+    top: box.top - extraY * 0.08,
+    width,
+    height,
+  };
 }
 
 function torchAnchor() {
-  const box = sisterBox();
-  return { x: box.left + box.width * 0.82, y: box.top + box.height * 0.36 };
+  const box = paintedSister();
+  return { x: box.left + box.width * 0.887, y: box.top + box.height * 0.164 };
 }
 
 function hitTorch(x, y) {
-  const box = sisterBox();
+  const box = paintedSister();
   if (box.width < 8 || box.height < 8) return false;
   const rx = (x - box.left) / box.width;
   const ry = (y - box.top) / box.height;
-  return rx >= 0.5 && rx <= 1.15 && ry >= 0.12 && ry <= 1.05;
+  return rx >= 0.76 && rx <= 1.05 && ry >= 0.04 && ry <= 0.34;
 }
 
 function setWorldLit(on) {
@@ -429,7 +443,46 @@ function leafPalette(random) {
   return mapleAutumnPalette(random);
 }
 
+function desertPalette(random) {
+  const roll = random();
+  if (roll < 0.34) {
+    return {
+      umber: "#3d3a2e",
+      body: "#5c5848",
+      mid: "#6e6956",
+      light: "#827c66",
+      gleam: "rgba(140, 132, 108, 0.22)",
+      vein: "#353226",
+      gilt: "#6a6554",
+    };
+  }
+  if (roll < 0.67) {
+    return {
+      umber: "#3a3d30",
+      body: "#555848",
+      mid: "#666a54",
+      light: "#7a7c64",
+      gleam: "rgba(130, 132, 108, 0.2)",
+      vein: "#2f3226",
+      gilt: "#5e624c",
+    };
+  }
+  return {
+    umber: "#40362c",
+    body: "#615648",
+    mid: "#746858",
+    light: "#8a7c68",
+    gleam: "rgba(150, 132, 108, 0.2)",
+    vein: "#342c24",
+    gilt: "#6c6050",
+  };
+}
+
 function mapleAutumnPalette(random) {
+  return desertPalette(random);
+}
+
+function mapleAutumnPaletteLegacy(random) {
   const roll = random();
   if (roll < 0.12) {
     return {
@@ -962,30 +1015,83 @@ function drawRoseSprig(ctx, open, random) {
   ctx.restore();
 }
 
+function drawCreosote(ctx, open, random) {
+  const s = 6.1 * open;
+  const colors = desertPalette(random);
+  ctx.save();
+  ctx.strokeStyle = colors.vein;
+  ctx.lineWidth = 0.55;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, -s * 3.1);
+  ctx.stroke();
+  for (let i = 0; i < 4; i += 1) {
+    const y = -s * 0.55 * (i + 0.6);
+    ctx.fillStyle = colors.body;
+    ctx.beginPath();
+    ctx.ellipse(-s * 0.42, y, s * 0.22, s * 0.1, -0.45, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(s * 0.42, y, s * 0.22, s * 0.1, 0.45, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawSage(ctx, open, random) {
+  const len = 8.4 * open;
+  const colors = desertPalette(random);
+  ctx.save();
+  ctx.fillStyle = colors.mid;
+  for (let i = 0; i < 3; i += 1) {
+    ctx.save();
+    ctx.rotate((i - 1) * 0.22);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(len * 0.1, -len * 0.5, 0, -len);
+    ctx.quadraticCurveTo(-len * 0.08, -len * 0.5, 0, 0);
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+function drawDuneGrass(ctx, open, random) {
+  const colors = desertPalette(random);
+  ctx.save();
+  ctx.strokeStyle = colors.body;
+  ctx.lineWidth = 0.65;
+  ctx.lineCap = "round";
+  for (let i = 0; i < 4; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo((i - 1.5) * 0.55 * open, 0);
+    ctx.quadraticCurveTo((i - 1.4) * open, -6.2 * open, (i - 1.1) * 1.8 * open, -11 * open);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 const FLOWER_TYPES = [
-  drawMaple,
-  drawMaple,
-  drawMaple,
-  drawMaple,
-  drawMaple,
-  drawMaple,
-  drawMaple,
-  drawMaple,
+  drawCreosote,
+  drawSage,
+  drawDuneGrass,
+  drawCreosote,
+  drawSage,
+  drawDuneGrass,
+  drawSage,
+  drawCreosote,
 ];
 
 function drawLeaf(ctx, scale, side, seed) {
-  if (scale < 0.55) return;
+  if (scale < 0.4) return;
   ctx.save();
   ctx.scale(side, 1);
-  const colors = mapleAutumnPalette(mulberry32((seed || 1) ^ (side > 0 ? 19 : 41)));
-  const length = 8.4 * scale;
-  maplePath(ctx, length);
+  const colors = desertPalette(mulberry32((seed || 1) ^ (side > 0 ? 19 : 41)));
+  const length = 3.4 * scale;
+  ctx.beginPath();
+  ctx.ellipse(0, -length * 0.45, length * 0.22, length * 0.48, 0.15, 0, Math.PI * 2);
   ctx.fillStyle = colors.body;
   ctx.fill();
-  maplePath(ctx, length);
-  ctx.strokeStyle = colors.gilt;
-  ctx.lineWidth = 0.4;
-  ctx.stroke();
   ctx.restore();
 }
 
@@ -998,21 +1104,14 @@ function drawFlowStem(ctx, pts, stem, seed) {
   ctx.beginPath();
   ctx.moveTo(pts[0].x, pts[0].y);
   for (let i = 1; i < visible; i += 1) ctx.lineTo(pts[i].x, pts[i].y);
-  ctx.strokeStyle = "hsla(28, 62%, 22%, 0.88)";
-  ctx.lineWidth = 1.7;
-  ctx.stroke();
-  ctx.strokeStyle = "hsla(34, 78%, 38%, 0.4)";
-  ctx.lineWidth = 0.55;
+  ctx.strokeStyle = "hsla(32, 16%, 28%, 0.55)";
+  ctx.lineWidth = 0.8;
   ctx.stroke();
 
   const sideLeaves = [
-    { at: 0.16, side: 1, scale: 1.2, rot: 1.1 },
-    { at: 0.28, side: -1, scale: 1.38, rot: -1.04 },
-    { at: 0.4, side: 1, scale: 1.52, rot: 1.16 },
-    { at: 0.52, side: -1, scale: 1.6, rot: -1.12 },
-    { at: 0.64, side: 1, scale: 1.48, rot: 1.08 },
-    { at: 0.76, side: -1, scale: 1.32, rot: -1.02 },
-    { at: 0.86, side: 1, scale: 1.18, rot: 0.98 },
+    { at: 0.28, side: 1, scale: 0.72, rot: 1.05 },
+    { at: 0.52, side: -1, scale: 0.78, rot: -1.02 },
+    { at: 0.74, side: 1, scale: 0.64, rot: 0.96 },
   ];
   sideLeaves.forEach((leaf) => {
     if (stem < leaf.at) return;
@@ -1231,12 +1330,26 @@ function drawArrakis(ctx, width, height, now) {
     if (layer >= 2) {
       ctx.strokeStyle = lit ? "rgba(210, 120, 48, 0.16)" : "rgba(150, 150, 154, 0.1)";
       ctx.lineWidth = 0.7;
-      for (let i = 0; i < 22; i += 1) {
-        const y0 = height * (0.5 + layer * 0.06) + i * 6;
+      for (let i = 0; i < 34; i += 1) {
+        const y0 = height * (0.48 + layer * 0.05) + i * 4.2;
         ctx.beginPath();
-        for (let x = 0; x <= width; x += 12) {
-          const y = y0 + Math.sin(x * 0.028 + layer * 1.4 + i * 0.4) * 2.4 + noise3(x * 0.01, i * 0.2, layer) * 3;
+        for (let x = 0; x <= width; x += 8) {
+          const y = y0 + Math.sin(x * 0.034 + layer * 1.4 + i * 0.35) * 2.1 + noise3(x * 0.016, i * 0.18, layer) * 3.6;
           if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = lit ? "rgba(170, 86, 28, 0.1)" : "rgba(120, 120, 124, 0.07)";
+      ctx.lineWidth = 0.4;
+      for (let i = 0; i < 18; i += 1) {
+        const x0 = (i / 18) * width;
+        ctx.beginPath();
+        for (let k = 0; k < 22; k += 1) {
+          const x = x0 + k * 6;
+          const y = duneHeight(x, width, height, layer) + 10 + i * 2.4 + noise3(x * 0.03, i * 0.4, layer) * 5;
+          if (k === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
         ctx.stroke();
@@ -1272,13 +1385,13 @@ function drawArrakis(ctx, width, height, now) {
   }
 
   const grit = mulberry32(77);
-  for (let i = 0; i < 220; i += 1) {
+  for (let i = 0; i < 420; i += 1) {
     const x = grit() * width;
-    const y = height * (0.48 + grit() * 0.5);
+    const y = height * (0.46 + grit() * 0.52);
     ctx.fillStyle = lit
-      ? `rgba(232, 164, 72, ${0.06 + grit() * 0.16})`
-      : `rgba(186, 186, 190, ${0.04 + grit() * 0.1})`;
-    ctx.fillRect(x, y, 1 + grit(), 1);
+      ? `rgba(232, 164, 72, ${0.05 + grit() * 0.14})`
+      : `rgba(186, 186, 190, ${0.035 + grit() * 0.1})`;
+    ctx.fillRect(x, y, 1 + grit() * 2.2, 0.6 + grit());
   }
   for (let i = 0; i < 18; i += 1) {
     const x = grit() * width;
@@ -1473,6 +1586,57 @@ function drawDust(ctx) {
   }
 }
 
+function drawTorchFlame(ctx, now) {
+  const p = torchAnchor();
+  if (!p.width && p.x < 2) return;
+  const flicker = 0.7 + 0.3 * Math.abs(Math.sin(now * 0.018)) * (0.55 + 0.45 * Math.sin(now * 0.041));
+  const lean = Math.sin(now * 0.0075) * 0.14;
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotate(lean);
+
+  const glow = ctx.createRadialGradient(0, -16, 2, 0, -18, 48 * flicker);
+  glow.addColorStop(0, world.lit ? `rgba(255, 210, 140, ${0.34 * flicker})` : `rgba(236, 236, 242, ${0.28 * flicker})`);
+  glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(0, -16, 48 * flicker, 0, Math.PI * 2);
+  ctx.fill();
+
+  const h = 44 * flicker;
+  ctx.lineCap = "round";
+  ctx.lineWidth = 1.25;
+  for (const strand of [-1, 1]) {
+    ctx.beginPath();
+    for (let i = 0; i <= 30; i += 1) {
+      const t = i / 30;
+      const y = -t * h;
+      const x = strand * Math.sin(t * Math.PI * 4.2 + now * 0.006) * 6.4 * flicker;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = world.lit
+      ? `rgba(255, 214, 150, ${0.62 * flicker})`
+      : `rgba(224, 224, 230, ${0.5 * flicker})`;
+    ctx.stroke();
+  }
+
+  ctx.lineWidth = 0.7;
+  for (let i = 1; i < 8; i += 1) {
+    const t = i / 8;
+    const y = -t * h;
+    const a = t * Math.PI * 4.2 + now * 0.006;
+    const w = Math.sin(a) * 6.4 * flicker;
+    ctx.globalAlpha = 0.32 * flicker;
+    ctx.strokeStyle = world.lit ? "rgba(255, 196, 120, 0.8)" : "rgba(214, 214, 220, 0.75)";
+    ctx.beginPath();
+    ctx.moveTo(-w, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function drawCursor(ctx) {
   if (!mouse.inside) return;
   ctx.beginPath();
@@ -1487,13 +1651,11 @@ function drawCursor(ctx) {
 }
 
 const dropAnchors = [
-  { ox: 0.16, oy: 0.2, type: 0, scale: 1.85 },
-  { ox: 0.4, oy: 0.14, type: 0, scale: 2.05 },
-  { ox: 0.26, oy: 0.46, type: 0, scale: 1.75 },
-  { ox: 0.5, oy: 0.4, type: 0, scale: 1.95 },
-  { ox: 0.12, oy: 0.66, type: 0, scale: 1.15 },
-  { ox: 0.36, oy: 0.84, type: 2, scale: 1.55 },
-  { ox: 0.06, oy: 0.36, type: 0, scale: 1.1 },
+  { ox: 0.2, oy: 0.22, type: 0, scale: 0.62 },
+  { ox: 0.42, oy: 0.18, type: 0, scale: 0.7 },
+  { ox: 0.3, oy: 0.5, type: 0, scale: 0.58 },
+  { ox: 0.48, oy: 0.44, type: 0, scale: 0.64 },
+  { ox: 0.16, oy: 0.72, type: 0, scale: 0.48 },
 ];
 
 function drawGoldenSpiral(ctx, cx, cy, scale, now) {
@@ -1536,7 +1698,7 @@ function drawDropcap(ctx, now) {
     const seed = hash(index + 11, 97);
     const pts = integrateStream(sx, sy, seed, now * 0.18, 34, 0.46);
     const breathe = 0.76 + Math.sin(now * 0.000045 + index) * 0.035;
-    drawBloomAt(ctx, pts, breathe, 0.86 + Math.sin(now * 0.000028 + index * 0.6) * 0.025, seed, anchor.scale * 0.82);
+    drawBloomAt(ctx, pts, breathe, 0.86 + Math.sin(now * 0.000028 + index * 0.6) * 0.025, seed, anchor.scale);
   });
 }
 
@@ -1558,13 +1720,14 @@ function frame(now) {
   for (const node of blooms.values()) {
     if (node.stem < 0.01 && node.bloom < 0.01) continue;
     if (!node.pts) node.pts = integrateStream(node.x, node.y, node.seed, (node.seed % 997) + 40, 72, 1.05);
-    drawBloomAt(illumCtx, node.pts, node.bloom, node.stem, node.seed, 2.7);
+    drawBloomAt(illumCtx, node.pts, node.bloom, node.stem, node.seed, 1.15);
   }
 
   updateDust();
   drawDust(fieldCtx);
   drawCursor(fieldCtx);
   drawDropcap(illumCtx, now);
+  drawTorchFlame(illumCtx, now);
   requestAnimationFrame(frame);
 }
 
