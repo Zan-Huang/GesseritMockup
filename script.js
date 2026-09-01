@@ -212,7 +212,7 @@ function drawGrid(ctx) {
   ctx.beginPath();
   ctx.rect(minX, minY, REVEAL_RADIUS * 2, REVEAL_RADIUS * 2);
   ctx.clip();
-  ctx.strokeStyle = "rgba(32, 38, 46, 0.42)";
+  ctx.strokeStyle = "rgba(214, 196, 132, 0.28)";
   ctx.lineWidth = 0.65;
 
   for (let x = originX; x <= width + GRID; x += GRID) {
@@ -438,7 +438,7 @@ function hollyPath(ctx, length, width) {
 function willowPath(ctx, length, width) {
   profilePath(ctx, length, (t) => {
     const body = lanceWidth(t, width);
-    const tooth = 1 + 0.07 * Math.sin(t * Math.PI * 22);
+    const tooth = 1 + 0.02 * Math.sin(t * Math.PI * 14);
     return body * tooth;
   }, 56);
 }
@@ -775,7 +775,7 @@ function drawRoseSprig(ctx, open, random) {
       const length = 11 * open * pair.s * 2.2;
       const width = length * 0.36;
       paintModeledLeaf(ctx, () => {
-        profilePath(ctx, length, (t) => ovateWidth(t, width) * (1 + 0.08 * Math.sin(t * Math.PI * 16)));
+        profilePath(ctx, length, (t) => ovateWidth(t, width));
       }, colors, length, width, "crasp");
       ctx.restore();
     });
@@ -784,7 +784,7 @@ function drawRoseSprig(ctx, open, random) {
   ctx.translate(0, -14.5 * open);
   const tip = 13 * open;
   paintModeledLeaf(ctx, () => {
-    profilePath(ctx, tip, (t) => ovateWidth(t, tip * 0.34) * (1 + 0.08 * Math.sin(t * Math.PI * 16)));
+    profilePath(ctx, tip, (t) => ovateWidth(t, tip * 0.34));
   }, colors, tip, tip * 0.34, "crasp");
   ctx.restore();
   ctx.restore();
@@ -795,13 +795,12 @@ const FLOWER_TYPES = [
   drawOlive,
   drawWillow,
   drawOak,
-  drawHolly,
   drawIvy,
-  drawMaple,
-  drawFig,
-  drawHawthorn,
   drawGinkgo,
   drawRoseSprig,
+  drawBay,
+  drawOlive,
+  drawFig,
 ];
 
 function drawLeaf(ctx, scale, side) {
@@ -945,7 +944,7 @@ function drawHoverNodes(ctx, originX, originY) {
       const intensity = falloff(Math.hypot(x - mouse.x, y - mouse.y), REVEAL_RADIUS);
       if (intensity < 0.05) continue;
       ctx.beginPath();
-      ctx.fillStyle = `rgba(32, 38, 46, ${0.15 + intensity * 0.45})`;
+        ctx.fillStyle = `rgba(232, 215, 150, ${0.18 + intensity * 0.5})`;
       ctx.arc(x, y, 0.7, 0, Math.PI * 2);
       ctx.fill();
     }
@@ -955,12 +954,12 @@ function drawHoverNodes(ctx, originX, originY) {
 function drawCursor(ctx) {
   if (!mouse.inside) return;
   ctx.beginPath();
-  ctx.strokeStyle = "rgba(36, 46, 58, 0.35)";
+  ctx.strokeStyle = "rgba(232, 215, 150, 0.45)";
   ctx.lineWidth = 1;
   ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI * 2);
   ctx.stroke();
   ctx.beginPath();
-  ctx.fillStyle = "rgba(36, 46, 58, 0.7)";
+  ctx.fillStyle = "rgba(242, 220, 140, 0.85)";
   ctx.arc(mouse.x, mouse.y, 1.4, 0, Math.PI * 2);
   ctx.fill();
 }
