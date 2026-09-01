@@ -13,9 +13,9 @@ const STEM_LEAD = 180;
 const GRID_REVEAL_MS = 920;
 const BLOOM_SPEED_FAST = 0.012;
 const BLOOM_SPEED_SLOW = 0.0022;
-const FADE_SPEED = 0.0014;
-const PERSIST_MS = 9800;
-const MAX_BLOOMS = 20;
+const FADE_SPEED = 0.0007;
+const PERSIST_MS = 24000;
+const MAX_BLOOMS = 24;
 const GRID_STICK_MS = 16000;
 const GRID_STICK_FADE = 0.00055;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
@@ -31,10 +31,22 @@ const gust = [];
 const world = { lit: false };
 const torchBtn = document.querySelector(".torch");
 
+function sisterBox() {
+  const stage = document.querySelector(".sister-stage");
+  return stage ? stage.getBoundingClientRect() : new DOMRect();
+}
+
 function torchAnchor() {
-  if (!torchBtn) return { x: 72, y: window.innerHeight * 0.62 };
-  const box = torchBtn.getBoundingClientRect();
-  return { x: box.left + box.width * 0.55, y: box.top + box.height * 0.22 };
+  const box = sisterBox();
+  return { x: box.left + box.width * 0.82, y: box.top + box.height * 0.36 };
+}
+
+function hitTorch(x, y) {
+  const box = sisterBox();
+  if (box.width < 8 || box.height < 8) return false;
+  const rx = (x - box.left) / box.width;
+  const ry = (y - box.top) / box.height;
+  return rx >= 0.5 && rx <= 1.15 && ry >= 0.12 && ry <= 1.05;
 }
 
 function setWorldLit(on) {
@@ -46,14 +58,10 @@ function setWorldLit(on) {
   }
 }
 
-if (torchBtn) {
-  torchBtn.addEventListener("pointerdown", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setWorldLit(!world.lit);
-    const flame = torchAnchor();
-    spawnDust(flame.x, flame.y, world.lit ? 36 : 10);
-  });
+function toggleTorch() {
+  setWorldLit(!world.lit);
+  const flame = torchAnchor();
+  spawnDust(flame.x, flame.y, world.lit ? 36 : 10);
 }
 
 function resizeCanvas(canvas, ctx) {
@@ -200,11 +208,15 @@ function onPointer(event) {
   setPointer(event.clientX, event.clientY, true);
 }
 
+function onPointerDown(event) {
+  onPointer(event);
+  if (hitTorch(event.clientX, event.clientY)) toggleTorch();
+}
+
 document.addEventListener("pointermove", onPointer, { passive: true });
-document.addEventListener("pointerdown", onPointer, { passive: true });
+document.addEventListener("pointerdown", onPointerDown);
 document.addEventListener("pointerenter", onPointer, { passive: true });
 window.addEventListener("pointermove", onPointer, { passive: true });
-window.addEventListener("pointerdown", onPointer, { passive: true });
 
 window.addEventListener("pointerleave", () => {
   mouse.inside = false;
@@ -1073,6 +1085,7 @@ function updateHoverBlooms(now) {
           let farthestKey = null;
           let farthest = -1;
           for (const [key, existing] of blooms) {
+            if (existing.bloom > 0.18 || existing.stem > 0.28) continue;
             const away = Math.hypot(existing.x - mouse.x, existing.y - mouse.y);
             if (away > farthest) {
               farthest = away;
