@@ -245,243 +245,214 @@ function drawGrid(ctx) {
 }
 
 function leafPalette(random) {
-  const mix = random();
-  if (mix < 0.48) {
+  if (random() < 0.42) {
     return {
-      inner: `hsla(${38 + random() * 6}, ${90 + random() * 8}%, ${38 + random() * 6}%, 0.96)`,
-      outer: `hsla(${46 + random() * 5}, ${96 + random() * 4}%, ${66 + random() * 8}%, 0.95)`,
-      gleam: "hsla(48, 100%, 84%, 0.88)",
-      vein: "hsla(34, 72%, 26%, 0.7)",
-      rim: "hsla(45, 100%, 74%, 0.92)",
+      umber: "hsla(32, 62%, 18%, 0.78)",
+      body: "hsla(38, 82%, 36%, 0.94)",
+      mid: "hsla(42, 88%, 48%, 0.9)",
+      light: "hsla(46, 96%, 64%, 0.72)",
+      gleam: "hsla(48, 100%, 82%, 0.55)",
+      vein: "hsla(30, 48%, 22%, 0.4)",
+      gilt: "hsla(45, 100%, 72%, 0.7)",
     };
   }
   return {
-    inner: `hsla(${152 + random() * 6}, ${58 + random() * 8}%, ${12 + random() * 4}%, 0.96)`,
-    outer: `hsla(${148 + random() * 6}, ${46 + random() * 8}%, ${22 + random() * 5}%, 0.93)`,
-    gleam: "hsla(46, 92%, 62%, 0.45)",
-    vein: "hsla(43, 88%, 52%, 0.72)",
-    rim: "hsla(44, 94%, 58%, 0.8)",
+    umber: "hsla(150, 40%, 8%, 0.82)",
+    body: "hsla(152, 48%, 14%, 0.94)",
+    mid: "hsla(148, 38%, 22%, 0.9)",
+    light: "hsla(92, 28%, 34%, 0.55)",
+    gleam: "hsla(46, 86%, 62%, 0.32)",
+    vein: "hsla(42, 55%, 38%, 0.38)",
+    gilt: "hsla(44, 90%, 58%, 0.55)",
   };
 }
 
-function fillSimpleLeaf(ctx, length, width, colors) {
+function ovalLeafPath(ctx, length, width, lean) {
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  const teeth = 11;
-  for (let i = 1; i <= teeth; i += 1) {
-    const t = i / teeth;
-    const y = -length * t;
-    const base = width * (0.35 + Math.sin(t * Math.PI) * 0.75);
-    const notch = i % 2 === 0 ? 0.7 : 1;
-    ctx.lineTo(base * notch, y);
-  }
-  ctx.lineTo(0, -length);
-  for (let i = teeth; i >= 1; i -= 1) {
-    const t = i / teeth;
-    const y = -length * t;
-    const base = width * (0.35 + Math.sin(t * Math.PI) * 0.75);
-    const notch = i % 2 === 0 ? 0.7 : 1;
-    ctx.lineTo(-base * notch, y);
-  }
+  ctx.bezierCurveTo(width * 0.18, -length * 0.06, width + lean, -length * 0.3, width * 0.7 + lean, -length * 0.66);
+  ctx.bezierCurveTo(width * 0.22 + lean * 0.4, -length * 1.02, -width * 0.08, -length, lean * 0.12, -length);
+  ctx.bezierCurveTo(-width * 0.5 + lean, -length * 0.74, -width * 0.95, -length * 0.32, -width * 0.12, -length * 0.07);
+  ctx.quadraticCurveTo(-width * 0.04, -length * 0.02, 0, 0);
   ctx.closePath();
-  const grad = ctx.createLinearGradient(-width * 0.4, 0, width * 0.6, -length);
-  grad.addColorStop(0, colors.inner);
-  grad.addColorStop(0.45, colors.outer);
-  grad.addColorStop(0.78, colors.gleam);
-  grad.addColorStop(1, colors.outer);
-  ctx.fillStyle = grad;
-  ctx.fill();
-  ctx.strokeStyle = colors.rim;
-  ctx.lineWidth = 0.7;
-  ctx.stroke();
 }
 
-function drawVeinsOnLeaf(ctx, length, width, color) {
-  ctx.strokeStyle = color;
+function ivyLeafPath(ctx, size) {
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.bezierCurveTo(size * 0.95, size * 0.12, size * 1.2, -size * 0.28, size * 0.42, -size * 0.68);
+  ctx.quadraticCurveTo(size * 0.08, -size * 0.92, 0, -size);
+  ctx.quadraticCurveTo(-size * 0.08, -size * 0.92, -size * 0.42, -size * 0.68);
+  ctx.bezierCurveTo(-size * 1.2, -size * 0.28, -size * 0.95, size * 0.12, 0, 0);
+  ctx.closePath();
+}
+
+function acanthusLobePath(ctx, length, width, flip) {
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.bezierCurveTo(flip * width * 0.3, -length * 0.1, flip * width * 1.15, -length * 0.28, flip * width * 0.85, -length * 0.55);
+  ctx.bezierCurveTo(flip * width * 1.05, -length * 0.78, flip * width * 0.25, -length * 0.95, 0, -length);
+  ctx.bezierCurveTo(-flip * width * 0.15, -length * 0.7, -flip * width * 0.35, -length * 0.35, 0, 0);
+  ctx.closePath();
+}
+
+function paintModeledLeaf(ctx, pathFn, colors, length, width) {
+  ctx.save();
+  pathFn();
+  ctx.fillStyle = colors.umber;
+  ctx.fill();
+
+  ctx.save();
+  pathFn();
+  ctx.clip();
+  const shade = ctx.createLinearGradient(-width, 0, width * 0.7, -length);
+  shade.addColorStop(0, colors.umber);
+  shade.addColorStop(0.32, colors.body);
+  shade.addColorStop(0.62, colors.mid);
+  shade.addColorStop(1, colors.light);
+  ctx.fillStyle = shade;
+  ctx.fill();
+
+  const lamp = ctx.createRadialGradient(-width * 0.15, -length * 0.28, length * 0.04, 0, -length * 0.4, length * 0.85);
+  lamp.addColorStop(0, colors.gleam);
+  lamp.addColorStop(0.45, "hsla(45, 80%, 70%, 0)");
+  lamp.addColorStop(1, "hsla(150, 20%, 10%, 0)");
+  ctx.fillStyle = lamp;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(-width * 0.12, -length * 0.34, width * 0.22, length * 0.18, -0.4, 0, Math.PI * 2);
+  ctx.fillStyle = colors.gleam;
+  ctx.globalAlpha = 0.35;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.restore();
+
+  pathFn();
+  ctx.strokeStyle = colors.gilt;
   ctx.lineWidth = 0.55;
+  ctx.stroke();
+
+  ctx.globalAlpha = 0.45;
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.quadraticCurveTo(0, -length * 0.52, 0, -length * 0.94);
+  ctx.quadraticCurveTo(width * 0.06, -length * 0.5, 0, -length * 0.92);
+  ctx.strokeStyle = colors.vein;
+  ctx.lineWidth = 0.7;
   ctx.stroke();
-  ctx.lineWidth = 0.32;
-  for (let i = 1; i <= 5; i += 1) {
-    const t = i / 6.2;
+  ctx.beginPath();
+  ctx.moveTo(width * 0.04, -length * 0.04);
+  ctx.quadraticCurveTo(width * 0.1, -length * 0.48, width * 0.03, -length * 0.88);
+  ctx.strokeStyle = colors.gilt;
+  ctx.lineWidth = 0.28;
+  ctx.globalAlpha = 0.35;
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  for (let i = 1; i <= 4; i += 1) {
+    const t = i / 5.2;
     const y = -length * t;
-    const reach = width * (1 - t * 0.45) * 0.78;
+    const reach = width * (0.55 - t * 0.2);
+    ctx.globalAlpha = 0.28;
     ctx.beginPath();
     ctx.moveTo(0, y);
-    ctx.quadraticCurveTo(reach * 0.45, y - length * 0.05, reach, y - length * 0.09);
+    ctx.quadraticCurveTo(reach * 0.4, y - length * 0.04, reach, y - length * 0.08);
     ctx.moveTo(0, y);
-    ctx.quadraticCurveTo(-reach * 0.45, y - length * 0.05, -reach, y - length * 0.09);
+    ctx.quadraticCurveTo(-reach * 0.35, y - length * 0.03, -reach * 0.75, y - length * 0.05);
+    ctx.strokeStyle = colors.vein;
+    ctx.lineWidth = 0.28;
     ctx.stroke();
   }
-}
-
-function drawLaurel(ctx, open, random) {
-  const length = (17.5 + random() * 4) * open;
-  const width = (6.4 + random() * 1.4) * open;
-  const colors = leafPalette(random);
-  ctx.save();
-  fillSimpleLeaf(ctx, length, width, colors);
-  drawVeinsOnLeaf(ctx, length, width, colors.vein);
+  ctx.globalAlpha = 1;
   ctx.restore();
 }
 
-function drawOak(ctx, open, random) {
+function drawBay(ctx, open, random) {
   const length = (18 + random() * 3.5) * open;
-  const width = (8.2 + random() * 1.6) * open;
+  const width = (6.2 + random() * 1.2) * open;
+  const lean = (random() - 0.5) * width * 0.35;
   const colors = leafPalette(random);
   ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  for (let side of [1, -1]) {
-    if (side === -1) ctx.lineTo(0, 0);
-    for (let i = 1; i <= 4; i += 1) {
-      const t = i / 5;
-      const y = -length * t;
-      const bulge = width * (0.42 + Math.sin(t * Math.PI) * 0.7);
-      ctx.quadraticCurveTo(side * bulge, y + length * 0.05, side * bulge * 0.28, y);
-      ctx.quadraticCurveTo(side * bulge * 1.08, y - length * 0.04, side * bulge * 0.22, y - length * 0.07);
-    }
-    ctx.quadraticCurveTo(side * width * 0.12, -length, 0, -length);
-  }
-  ctx.closePath();
-  const grad = ctx.createLinearGradient(-width, 0, width, -length);
-  grad.addColorStop(0, colors.inner);
-  grad.addColorStop(0.45, colors.outer);
-  grad.addColorStop(0.8, colors.gleam);
-  grad.addColorStop(1, colors.outer);
-  ctx.fillStyle = grad;
-  ctx.fill();
-  ctx.strokeStyle = colors.rim;
-  ctx.lineWidth = 0.7;
-  ctx.stroke();
-  drawVeinsOnLeaf(ctx, length, width * 0.7, colors.vein);
+  ctx.rotate((random() - 0.5) * 0.2);
+  paintModeledLeaf(ctx, () => ovalLeafPath(ctx, length, width, lean), colors, length, width);
   ctx.restore();
 }
 
-function drawMaple(ctx, open, random) {
-  const length = (16.5 + random() * 3) * open;
+function drawIvy(ctx, open, random) {
+  const size = (16 + random() * 3) * open;
   const colors = leafPalette(random);
   ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  const lobes = [
-    [-0.95, -0.28, 0.55],
-    [-0.55, -0.72, 0.82],
-    [0, -1, 1],
-    [0.55, -0.72, 0.82],
-    [0.95, -0.28, 0.55],
-  ];
-  lobes.forEach((lobe, i) => {
-    const x = lobe[0] * length * 0.72;
-    const y = lobe[1] * length;
-    const w = lobe[2] * 5.2 * open;
-    if (i === 0) ctx.quadraticCurveTo(x * 0.4, y * 0.2, x - w * 0.2, y * 0.7);
-    ctx.quadraticCurveTo(x + (i < 2 ? -w : w) * 0.15, y, x, y);
-    ctx.quadraticCurveTo(x * 0.55, y * 0.72, 0, y * 0.35);
-  });
-  ctx.closePath();
-  const grad = ctx.createLinearGradient(-length * 0.4, 0, length * 0.3, -length);
-  grad.addColorStop(0, colors.inner);
-  grad.addColorStop(0.5, colors.outer);
-  grad.addColorStop(0.82, colors.gleam);
-  grad.addColorStop(1, colors.outer);
-  ctx.fillStyle = grad;
-  ctx.fill();
-  ctx.strokeStyle = colors.rim;
-  ctx.lineWidth = 0.7;
-  ctx.stroke();
-  ctx.strokeStyle = colors.vein;
-  ctx.lineWidth = 0.45;
-  lobes.forEach((lobe) => {
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(lobe[0] * length * 0.25, lobe[1] * length * 0.45, lobe[0] * length * 0.62, lobe[1] * length * 0.92);
-    ctx.stroke();
-  });
+  ctx.rotate((random() - 0.5) * 0.25);
+  paintModeledLeaf(ctx, () => ivyLeafPath(ctx, size), colors, size, size * 0.7);
   ctx.restore();
 }
 
-function drawGinkgo(ctx, open, random) {
-  const radius = (13.5 + random() * 2.4) * open;
+function drawAcanthus(ctx, open, random) {
   const colors = leafPalette(random);
   ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(-radius * 0.15, -radius * 0.2, -radius * 1.05, -radius * 0.15, -radius, -radius * 0.72);
-  ctx.quadraticCurveTo(-radius * 0.2, -radius * 1.12, 0, -radius * 0.78);
-  ctx.quadraticCurveTo(radius * 0.2, -radius * 1.12, radius, -radius * 0.72);
-  ctx.bezierCurveTo(radius * 1.05, -radius * 0.15, radius * 0.15, -radius * 0.2, 0, 0);
-  ctx.closePath();
-  const grad = ctx.createLinearGradient(-radius, 0, radius, -radius);
-  grad.addColorStop(0, colors.inner);
-  grad.addColorStop(0.5, colors.outer);
-  grad.addColorStop(1, colors.gleam);
-  ctx.fillStyle = grad;
-  ctx.fill();
-  ctx.strokeStyle = colors.rim;
-  ctx.lineWidth = 0.7;
-  ctx.stroke();
-  ctx.strokeStyle = colors.vein;
-  ctx.lineWidth = 0.32;
-  for (let i = -5; i <= 5; i += 1) {
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(i * radius * 0.08, -radius * 0.4, i * radius * 0.18, -radius * 0.86);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function drawWillow(ctx, open, random) {
-  const length = (20 + random() * 4) * open;
-  const width = (3.4 + random() * 0.8) * open;
-  const colors = leafPalette(random);
-  ctx.save();
-  fillSimpleLeaf(ctx, length, width, colors);
-  drawVeinsOnLeaf(ctx, length, width, colors.vein);
-  ctx.restore();
-}
-
-function drawSpray(ctx, open, random) {
-  const count = 5;
-  ctx.save();
-  for (let i = 0; i < count; i += 1) {
+  ctx.rotate((random() - 0.5) * 0.15);
+  for (let i = 0; i < 3; i += 1) {
     ctx.save();
-    ctx.rotate((-0.7 + i * 0.35) * open);
-    ctx.translate(0, -2.2 * open);
-    drawLaurel(ctx, open * (0.55 + (i % 2) * 0.18), random);
+    ctx.rotate((-0.55 + i * 0.55) * 0.9);
+    const length = (13 + i * 2.4) * open;
+    const width = (5.4 + i * 0.6) * open;
+    const flip = i === 2 ? -1 : 1;
+    paintModeledLeaf(ctx, () => acanthusLobePath(ctx, length, width, flip), colors, length, width);
     ctx.restore();
   }
   ctx.restore();
 }
 
-const FLOWER_TYPES = [drawLaurel, drawOak, drawMaple, drawGinkgo, drawWillow, drawSpray, drawLaurel];
+function drawVineLeaf(ctx, open, random) {
+  const length = (16 + random() * 2.8) * open;
+  const colors = leafPalette(random);
+  ctx.save();
+  ctx.rotate((random() - 0.5) * 0.18);
+  paintModeledLeaf(
+    ctx,
+    () => {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(length * 0.55, -length * 0.05, length * 0.72, -length * 0.42, length * 0.22, -length * 0.58);
+      ctx.bezierCurveTo(length * 0.35, -length * 0.82, length * 0.08, -length * 1.02, 0, -length);
+      ctx.bezierCurveTo(-length * 0.08, -length * 1.02, -length * 0.35, -length * 0.82, -length * 0.22, -length * 0.58);
+      ctx.bezierCurveTo(-length * 0.72, -length * 0.42, -length * 0.55, -length * 0.05, 0, 0);
+      ctx.closePath();
+    },
+    colors,
+    length,
+    length * 0.55,
+  );
+  ctx.restore();
+}
+
+function drawSprig(ctx, open, random) {
+  ctx.save();
+  for (let i = 0; i < 4; i += 1) {
+    ctx.save();
+    ctx.rotate((-0.55 + i * 0.36) * open);
+    ctx.translate(0, -1.6 * open);
+    if (i % 2 === 0) drawBay(ctx, open * 0.62, random);
+    else drawIvy(ctx, open * 0.55, random);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+const FLOWER_TYPES = [drawBay, drawIvy, drawAcanthus, drawVineLeaf, drawBay, drawSprig, drawIvy];
 
 function drawLeaf(ctx, scale, side) {
   ctx.save();
   ctx.scale(side, 1);
   const colors = leafPalette(() => (side > 0 ? 0.7 : 0.2));
-  const grad = ctx.createLinearGradient(0, 0, 5 * scale, -6 * scale);
-  grad.addColorStop(0, colors.inner);
-  grad.addColorStop(0.6, colors.outer);
-  grad.addColorStop(1, colors.gleam);
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.bezierCurveTo(3.4 * scale, -1.2 * scale, 5.2 * scale, -4.2 * scale, 0.3 * scale, -6.8 * scale);
-  ctx.bezierCurveTo(1.4 * scale, -3.6 * scale, 0.5 * scale, -1.6 * scale, 0, 0);
-  ctx.fill();
-  ctx.strokeStyle = colors.rim;
-  ctx.lineWidth = 0.45;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.strokeStyle = colors.vein;
-  ctx.lineWidth = 0.35;
-  ctx.moveTo(0.15 * scale, 0);
-  ctx.quadraticCurveTo(1.6 * scale, -2.6 * scale, 0.35 * scale, -6.2 * scale);
-  ctx.stroke();
+  paintModeledLeaf(
+    ctx,
+    () => ovalLeafPath(ctx, 7.2 * scale, 2.8 * scale, 0.4 * scale),
+    colors,
+    7.2 * scale,
+    2.8 * scale,
+  );
   ctx.restore();
 }
 
@@ -525,7 +496,7 @@ function drawFlowStem(ctx, pts, stem, seed) {
     ctx.save();
     ctx.translate(a.x, a.y);
     ctx.rotate(tangentOnPath(pts, 0.52).x);
-    drawLaurel(ctx, stem * 0.72, random);
+    drawBay(ctx, stem * 0.72, random);
     ctx.restore();
   }
   ctx.restore();
