@@ -102,7 +102,7 @@ body.lit {
   position: relative;
   display: inline-flex;
   align-items: flex-end;
-  margin-right: 0.2em;
+  margin-right: 0.05em;
   font-size: clamp(6.4rem, 20vw, 17rem);
   line-height: 0.86;
   letter-spacing: 0;

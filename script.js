@@ -1608,8 +1608,8 @@ function drawGust(ctx) {
 function spawnDust(x, y, amount) {
   for (let i = 0; i < amount; i += 1) {
     const roll = Math.random();
-    const gilt = roll < 0.28;
-    const cinnamon = roll >= 0.28 && roll < 0.7;
+    const rust = roll < 0.35;
+    const umber = roll >= 0.35 && roll < 0.78;
     dust.push({
       x: x + (Math.random() - 0.5) * 7,
       y: y + 2 + (Math.random() - 0.4) * 5,
@@ -1618,9 +1618,9 @@ function spawnDust(x, y, amount) {
       life: 1,
       decay: 0.001 + Math.random() * 0.0016,
       r: 0.45 + Math.random() * 1.35,
-      hue: gilt ? 40 + Math.random() * 10 : cinnamon ? 22 + Math.random() * 12 : 32 + Math.random() * 10,
-      sat: gilt ? 88 + Math.random() * 12 : 78 + Math.random() * 18,
-      light: gilt ? 58 + Math.random() * 16 : cinnamon ? 38 + Math.random() * 14 : 46 + Math.random() * 12,
+      hue: rust ? 8 + Math.random() * 10 : umber ? 16 + Math.random() * 10 : 12 + Math.random() * 8,
+      sat: rust ? 74 + Math.random() * 16 : 68 + Math.random() * 16,
+      light: rust ? 30 + Math.random() * 12 : umber ? 26 + Math.random() * 12 : 34 + Math.random() * 10,
     });
   }
 }
