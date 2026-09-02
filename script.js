@@ -70,9 +70,11 @@ function paintedSister() {
   return sisterBox;
 }
 
+// Measured against the silhouette's alpha: the staff head spans x 606..670 and
+// its tip starts at y 208 of the 691x1432 source, so the flame rises from there.
 function torchAnchor() {
   const box = paintedSister();
-  return { x: box.left + box.width * 0.887, y: box.top + box.height * 0.164 };
+  return { x: box.left + box.width * 0.9204, y: box.top + box.height * 0.1453 };
 }
 
 function hitTorch(x, y) {
@@ -1956,16 +1958,21 @@ function drawTorchFlame(ctx, now) {
       ctx.fill();
     });
 
-    // white-hot heart at the wick
-    const heart = ctx.createRadialGradient(0, -h * 0.06, 0, 0, -h * 0.06, h * 0.22);
-    heart.addColorStop(0, `rgba(255, 255, 246, ${0.85 * (0.8 + breath * 0.3)})`);
-    heart.addColorStop(0.55, "rgba(255, 214, 132, 0.35)");
+    // White-hot heart at the wick, drawn tall rather than round so the base
+    // reads as flame instead of a glowing bulb.
+    const heartY = -h * 0.12;
+    const heartR = h * 0.26;
+    ctx.save();
+    ctx.translate(0, heartY);
+    ctx.scale(0.42, 1);
+    const heart = ctx.createRadialGradient(0, 0, 0, 0, 0, heartR);
+    heart.addColorStop(0, `rgba(255, 255, 246, ${0.9 * (0.8 + breath * 0.3)})`);
+    heart.addColorStop(0.42, "rgba(255, 226, 158, 0.42)");
     heart.addColorStop(1, "rgba(255, 150, 50, 0)");
     ctx.globalAlpha = 1;
     ctx.fillStyle = heart;
-    ctx.beginPath();
-    ctx.ellipse(0, -h * 0.06, h * 0.15, h * 0.24, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect(-heartR, -heartR, heartR * 2, heartR * 2);
+    ctx.restore();
 
     // embers peeling off the crown, looped by phase so they need no state
     for (let i = 0; i < 8; i += 1) {
