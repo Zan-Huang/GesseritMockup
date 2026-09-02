@@ -3,10 +3,11 @@ const fieldCtx = field.getContext("2d", { alpha: true });
 const illum = document.getElementById("illumination");
 const illumCtx = illum.getContext("2d", { alpha: true });
 const dropLetter = document.querySelector(".drop-letter");
+const restLetter = document.querySelector(".rest");
 
-const GRID = 16;
-const REVEAL_RADIUS = 52;
-const BLOOM_RADIUS = 68;
+const GRID = 14;
+const REVEAL_RADIUS = 74;
+const BLOOM_RADIUS = 132;
 const BLOOM_DELAY = 180;
 const SPRAWL_STAGGER = 980;
 const STEM_LEAD = 180;
@@ -15,7 +16,7 @@ const BLOOM_SPEED_FAST = 0.012;
 const BLOOM_SPEED_SLOW = 0.0022;
 const FADE_SPEED = 0.0007;
 const PERSIST_MS = 24000;
-const MAX_BLOOMS = 24;
+const MAX_BLOOMS = 46;
 const GRID_STICK_MS = 16000;
 const GRID_STICK_FADE = 0.00055;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
@@ -1177,9 +1178,12 @@ function drawFlowStem(ctx, pts, stem, seed) {
   ctx.stroke();
 
   const sideLeaves = [
-    { at: 0.28, side: 1, scale: 0.72, rot: 1.05 },
-    { at: 0.52, side: -1, scale: 0.78, rot: -1.02 },
-    { at: 0.74, side: 1, scale: 0.64, rot: 0.96 },
+    { at: 0.16, side: 1, scale: 0.7, rot: 1.08 },
+    { at: 0.3, side: -1, scale: 0.76, rot: -1.02 },
+    { at: 0.44, side: 1, scale: 0.8, rot: 1.12 },
+    { at: 0.58, side: -1, scale: 0.74, rot: -0.98 },
+    { at: 0.72, side: 1, scale: 0.68, rot: 0.94 },
+    { at: 0.86, side: -1, scale: 0.62, rot: -0.9 },
   ];
   sideLeaves.forEach((leaf) => {
     if (stem < leaf.at) return;
@@ -1730,11 +1734,18 @@ function drawCursor(ctx) {
 }
 
 const dropAnchors = [
-  { ox: 0.2, oy: 0.22, type: 0, scale: 0.62 },
-  { ox: 0.42, oy: 0.18, type: 0, scale: 0.7 },
-  { ox: 0.3, oy: 0.5, type: 0, scale: 0.58 },
-  { ox: 0.48, oy: 0.44, type: 0, scale: 0.64 },
-  { ox: 0.16, oy: 0.72, type: 0, scale: 0.48 },
+  { el: "drop", ox: 0.18, oy: 0.18, scale: 0.62 },
+  { el: "drop", ox: 0.42, oy: 0.16, scale: 0.7 },
+  { el: "drop", ox: 0.28, oy: 0.46, scale: 0.58 },
+  { el: "drop", ox: 0.52, oy: 0.42, scale: 0.64 },
+  { el: "drop", ox: 0.14, oy: 0.7, scale: 0.5 },
+  { el: "drop", ox: 0.6, oy: 0.78, scale: 0.48 },
+  { el: "rest", ox: 0.08, oy: 0.28, scale: 0.5 },
+  { el: "rest", ox: 0.22, oy: 0.72, scale: 0.46 },
+  { el: "rest", ox: 0.38, oy: 0.2, scale: 0.52 },
+  { el: "rest", ox: 0.54, oy: 0.64, scale: 0.48 },
+  { el: "rest", ox: 0.7, oy: 0.3, scale: 0.5 },
+  { el: "rest", ox: 0.86, oy: 0.76, scale: 0.46 },
 ];
 
 function drawGoldenSpiral(ctx, cx, cy, scale, now) {
@@ -1768,17 +1779,33 @@ function drawGoldenSpiral(ctx, cx, cy, scale, now) {
 }
 
 function drawDropcap(ctx, now) {
-  const box = dropLetter.getBoundingClientRect();
-  if (box.width < 8) return;
-
   dropAnchors.forEach((anchor, index) => {
+    const el = anchor.el === "rest" ? restLetter : dropLetter;
+    if (!el) return;
+    const box = el.getBoundingClientRect();
+    if (box.width < 8) return;
     const sx = box.left + box.width * anchor.ox;
     const sy = box.top + box.height * anchor.oy;
     const seed = hash(index + 11, 97);
-    const pts = integrateStream(sx, sy, seed, now * 0.18, 34, 0.46);
+    const pts = integrateStream(sx, sy, seed, now * 0.18, 40, 0.5);
     const breathe = 0.76 + Math.sin(now * 0.000045 + index) * 0.035;
     drawBloomAt(ctx, pts, breathe, 0.86 + Math.sin(now * 0.000028 + index * 0.6) * 0.025, seed, anchor.scale);
   });
+}
+
+function drawDuneSprigs(ctx, width, height) {
+  const rng = mulberry32(404);
+  for (let i = 0; i < 32; i += 1) {
+    const x = rng() * width;
+    const layer = 2 + (i % 3);
+    const y = duneHeight(x, width, height, layer) + 6 + rng() * 36;
+    ctx.save();
+    ctx.globalAlpha = 0.55 + rng() * 0.3;
+    ctx.translate(x, y);
+    ctx.rotate((rng() - 0.5) * 0.7);
+    FLOWER_TYPES[i % FLOWER_TYPES.length](ctx, 0.52 + rng() * 0.4, rng);
+    ctx.restore();
+  }
 }
 
 function frame(now) {
@@ -1788,6 +1815,7 @@ function frame(now) {
   illumCtx.clearRect(0, 0, width, height);
 
   drawArrakis(fieldCtx, width, height, now);
+  drawDuneSprigs(fieldCtx, width, height);
   drawDuneMatrix(fieldCtx, width, height, now);
   updatePointerField(now);
   updateStuckGrid(now);
@@ -1798,7 +1826,7 @@ function frame(now) {
 
   for (const node of blooms.values()) {
     if (node.stem < 0.01 && node.bloom < 0.01) continue;
-    if (!node.pts) node.pts = integrateStream(node.x, node.y, node.seed, (node.seed % 997) + 40, 72, 1.05);
+    if (!node.pts) node.pts = integrateStream(node.x, node.y, node.seed, (node.seed % 997) + 40, 96, 1.08);
     drawBloomAt(illumCtx, node.pts, node.bloom, node.stem, node.seed, 1.45);
   }
 
