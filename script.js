@@ -26,6 +26,8 @@ const mouse = { x: -9999, y: -9999, inside: false };
 const lastMouse = { x: -9999, y: -9999 };
 const pointerField = { since: 0, leftAt: 0 };
 const blooms = new Map();
+let bloomSeq = 0;
+let lastPlantAt = 0;
 const stuckGrid = new Map();
 const dust = [];
 const gust = [];
@@ -1222,6 +1224,20 @@ function drawBloomAt(ctx, pts, bloom, stem, seed, scale) {
   }
 }
 
+function evictBloom() {
+  let worstKey = null;
+  let worst = -1;
+  for (const [key, existing] of blooms) {
+    const away = Math.hypot(existing.x - mouse.x, existing.y - mouse.y);
+    const score = away + (existing.bloom >= 0.95 ? 90 : 0) + (existing.leftAt ? 40 : 0);
+    if (score > worst) {
+      worst = score;
+      worstKey = key;
+    }
+  }
+  if (worstKey) blooms.delete(worstKey);
+}
+
 function updateHoverBlooms(now) {
   const width = window.innerWidth;
   const height = window.innerHeight;
@@ -1230,48 +1246,36 @@ function updateHoverBlooms(now) {
   const active = new Set();
 
   if (mouse.inside) {
-    const minX = Math.floor((mouse.x - BLOOM_RADIUS - originX) / GRID);
-    const maxX = Math.ceil((mouse.x + BLOOM_RADIUS - originX) / GRID);
-    const minY = Math.floor((mouse.y - BLOOM_RADIUS - originY) / GRID);
-    const maxY = Math.ceil((mouse.y + BLOOM_RADIUS - originY) / GRID);
-    const candidates = [];
-
-    for (let ix = minX; ix <= maxX; ix += 1) {
-      for (let iy = minY; iy <= maxY; iy += 1) {
-        const x = originX + ix * GRID;
-        const y = originY + iy * GRID;
-        const dist = Math.hypot(x - mouse.x, y - mouse.y);
-        if (dist > BLOOM_RADIUS) continue;
-        candidates.push({ key: `${ix},${iy}`, x, y, dist, seed: hash(ix, iy) });
+    if (now - lastPlantAt > 26) {
+      lastPlantAt = now;
+      const plantCount = 3;
+      for (let i = 0; i < plantCount; i += 1) {
+        if (blooms.size >= MAX_BLOOMS) evictBloom();
+        const angle = Math.random() * Math.PI * 2;
+        const reach = Math.sqrt(Math.random()) * BLOOM_RADIUS;
+        const x = mouse.x + Math.cos(angle) * reach;
+        const y = mouse.y + Math.sin(angle) * reach;
+        const key = `p${bloomSeq}`;
+        bloomSeq += 1;
+        blooms.set(key, {
+          x,
+          y,
+          seed: hash((x * 17) | 0, (y * 19) | 0) ^ bloomSeq,
+          revealedAt: now,
+          bloom: 0,
+          stem: 0,
+          leftAt: 0,
+          dist: reach,
+        });
       }
     }
 
-    candidates.sort((a, b) => a.dist - b.dist);
-
-    for (const cell of candidates) {
-      active.add(cell.key);
-      let node = blooms.get(cell.key);
-      if (!node) {
-        if (blooms.size >= MAX_BLOOMS) {
-          let farthestKey = null;
-          let farthest = -1;
-          for (const [key, existing] of blooms) {
-            if (existing.bloom > 0.18 || existing.stem > 0.28) continue;
-            const away = Math.hypot(existing.x - mouse.x, existing.y - mouse.y);
-            if (away > farthest) {
-              farthest = away;
-              farthestKey = key;
-            }
-          }
-          if (farthestKey && farthest > cell.dist + GRID) blooms.delete(farthestKey);
-          else continue;
-        }
-        node = { x: cell.x, y: cell.y, seed: cell.seed, revealedAt: now, bloom: 0, stem: 0, leftAt: 0 };
-        blooms.set(cell.key, node);
-      }
+    for (const [key, node] of blooms) {
+      const dist = Math.hypot(node.x - mouse.x, node.y - mouse.y);
+      if (dist > BLOOM_RADIUS * 1.15) continue;
+      active.add(key);
       node.leftAt = 0;
-
-      const wait = BLOOM_DELAY + (cell.dist / BLOOM_RADIUS) * SPRAWL_STAGGER;
+      const wait = BLOOM_DELAY + ((node.dist || dist) / BLOOM_RADIUS) * SPRAWL_STAGGER * 0.45;
       const elapsed = now - node.revealedAt;
       if (elapsed > wait - STEM_LEAD) node.stem = Math.min(1, node.stem + growthRate(node.stem) * 1.2);
       if (elapsed > wait) node.bloom = Math.min(1, node.bloom + growthRate(node.bloom));
