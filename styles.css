@@ -33,8 +33,8 @@ body.lit {
   position: fixed;
   left: 0;
   bottom: 0;
-  z-index: 3;
-  width: 36vw;
+  z-index: 6;
+  width: 34vw;
   height: 100%;
   margin: 0;
   pointer-events: none;
@@ -44,10 +44,11 @@ body.lit {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: 40% 8%;
+  object-fit: contain;
+  object-position: left bottom;
   user-select: none;
-  opacity: 0.96;
+  opacity: 1;
+  filter: drop-shadow(0 0 0.8px rgba(220, 220, 226, 0.55)) brightness(1.55) contrast(1.2);
 }
 
 .torch {
@@ -64,7 +65,8 @@ body.lit {
 }
 
 #field,
-#illumination {
+#illumination,
+#ember {
   position: fixed;
   inset: 0;
   width: 100%;
@@ -79,6 +81,11 @@ body.lit {
 
 #illumination {
   z-index: 5;
+  pointer-events: none;
+}
+
+#ember {
+  z-index: 7;
   pointer-events: none;
 }
 

@@ -2,6 +2,8 @@ const field = document.getElementById("field");
 const fieldCtx = field.getContext("2d", { alpha: true });
 const illum = document.getElementById("illumination");
 const illumCtx = illum.getContext("2d", { alpha: true });
+const ember = document.getElementById("ember");
+const emberCtx = ember.getContext("2d", { alpha: true });
 const dropLetter = document.querySelector(".drop-letter");
 const restLetter = document.querySelector(".rest");
 
@@ -16,7 +18,7 @@ const BLOOM_SPEED_FAST = 0.012;
 const BLOOM_SPEED_SLOW = 0.0022;
 const FADE_SPEED = 0.0007;
 const PERSIST_MS = 24000;
-const MAX_BLOOMS = 72;
+const MAX_BLOOMS = 32;
 const GRID_STICK_MS = 16000;
 const GRID_STICK_FADE = 0.00055;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
@@ -40,14 +42,12 @@ function paintedSister() {
   const box = img.getBoundingClientRect();
   const nw = img.naturalWidth || 1024;
   const nh = img.naturalHeight || 1536;
-  const scale = Math.max(box.width / nw, box.height / nh);
+  const scale = Math.min(box.width / nw, box.height / nh);
   const width = nw * scale;
   const height = nh * scale;
-  const extraX = width - box.width;
-  const extraY = height - box.height;
   return {
-    left: box.left - extraX * 0.4,
-    top: box.top - extraY * 0.08,
+    left: box.left,
+    top: box.bottom - height,
     width,
     height,
   };
@@ -95,6 +95,7 @@ function resizeCanvas(canvas, ctx) {
 function resize() {
   resizeCanvas(field, fieldCtx);
   resizeCanvas(illum, illumCtx);
+  resizeCanvas(ember, emberCtx);
 }
 
 function hash(x, y) {
@@ -1183,9 +1184,7 @@ function drawFlowStem(ctx, pts, stem, seed) {
     { at: 0.16, side: 1, scale: 0.7, rot: 1.08 },
     { at: 0.3, side: -1, scale: 0.76, rot: -1.02 },
     { at: 0.44, side: 1, scale: 0.8, rot: 1.12 },
-    { at: 0.58, side: -1, scale: 0.74, rot: -0.98 },
-    { at: 0.72, side: 1, scale: 0.68, rot: 0.94 },
-    { at: 0.86, side: -1, scale: 0.62, rot: -0.9 },
+    { at: 0.62, side: -1, scale: 0.7, rot: -0.96 },
   ];
   sideLeaves.forEach((leaf) => {
     if (stem < leaf.at) return;
@@ -1246,9 +1245,9 @@ function updateHoverBlooms(now) {
   const active = new Set();
 
   if (mouse.inside) {
-    if (now - lastPlantAt > 26) {
+    if (now - lastPlantAt > 90) {
       lastPlantAt = now;
-      const plantCount = 3;
+      const plantCount = 1;
       for (let i = 0; i < plantCount; i += 1) {
         if (blooms.size >= MAX_BLOOMS) evictBloom();
         const angle = Math.random() * Math.PI * 2;
@@ -1782,6 +1781,8 @@ function drawGoldenSpiral(ctx, cx, cy, scale, now) {
   ctx.restore();
 }
 
+const dropCache = [];
+
 function drawDropcap(ctx, now) {
   dropAnchors.forEach((anchor, index) => {
     const el = anchor.el === "rest" ? restLetter : dropLetter;
@@ -1791,15 +1792,19 @@ function drawDropcap(ctx, now) {
     const sx = box.left + box.width * anchor.ox;
     const sy = box.top + box.height * anchor.oy;
     const seed = hash(index + 11, 97);
-    const pts = integrateStream(sx, sy, seed, now * 0.18, 40, 0.5);
+    let cached = dropCache[index];
+    if (!cached || Math.abs(cached.sx - sx) > 2 || Math.abs(cached.sy - sy) > 2) {
+      cached = { sx, sy, pts: integrateStream(sx, sy, seed, 80, 28, 0.5) };
+      dropCache[index] = cached;
+    }
     const breathe = 0.76 + Math.sin(now * 0.000045 + index) * 0.035;
-    drawBloomAt(ctx, pts, breathe, 0.86 + Math.sin(now * 0.000028 + index * 0.6) * 0.025, seed, anchor.scale);
+    drawBloomAt(ctx, cached.pts, breathe, 0.86 + Math.sin(now * 0.000028 + index * 0.6) * 0.025, seed, anchor.scale);
   });
 }
 
 function drawDuneSprigs(ctx, width, height) {
   const rng = mulberry32(404);
-  for (let i = 0; i < 78; i += 1) {
+  for (let i = 0; i < 28; i += 1) {
     const x = rng() * width;
     const layer = 2 + (i % 3);
     const y = duneHeight(x, width, height, layer) + 6 + rng() * 36;
@@ -1817,6 +1822,7 @@ function frame(now) {
   const height = window.innerHeight;
   fieldCtx.clearRect(0, 0, width, height);
   illumCtx.clearRect(0, 0, width, height);
+  emberCtx.clearRect(0, 0, width, height);
 
   drawArrakis(fieldCtx, width, height, now);
   drawDuneSprigs(fieldCtx, width, height);
@@ -1830,7 +1836,7 @@ function frame(now) {
 
   for (const node of blooms.values()) {
     if (node.stem < 0.01 && node.bloom < 0.01) continue;
-    if (!node.pts) node.pts = integrateStream(node.x, node.y, node.seed, (node.seed % 997) + 40, 96, 1.08);
+    if (!node.pts) node.pts = integrateStream(node.x, node.y, node.seed, (node.seed % 997) + 40, 48, 1.1);
     drawBloomAt(illumCtx, node.pts, node.bloom, node.stem, node.seed, 1.45);
   }
 
@@ -1838,7 +1844,7 @@ function frame(now) {
   drawDust(fieldCtx);
   drawCursor(fieldCtx);
   drawDropcap(illumCtx, now);
-  drawTorchFlame(illumCtx, now);
+  drawTorchFlame(emberCtx, now);
   requestAnimationFrame(frame);
 }
 
