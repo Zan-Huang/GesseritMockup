@@ -5,9 +5,9 @@ const illumCtx = illum.getContext("2d", { alpha: true });
 const dropLetter = document.querySelector(".drop-letter");
 const restLetter = document.querySelector(".rest");
 
-const GRID = 14;
-const REVEAL_RADIUS = 74;
-const BLOOM_RADIUS = 132;
+const GRID = 12;
+const REVEAL_RADIUS = 86;
+const BLOOM_RADIUS = 168;
 const BLOOM_DELAY = 180;
 const SPRAWL_STAGGER = 980;
 const STEM_LEAD = 180;
@@ -16,7 +16,7 @@ const BLOOM_SPEED_FAST = 0.012;
 const BLOOM_SPEED_SLOW = 0.0022;
 const FADE_SPEED = 0.0007;
 const PERSIST_MS = 24000;
-const MAX_BLOOMS = 46;
+const MAX_BLOOMS = 72;
 const GRID_STICK_MS = 16000;
 const GRID_STICK_FADE = 0.00055;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
@@ -1661,23 +1661,20 @@ function drawDust(ctx) {
 function drawTorchFlame(ctx, now) {
   const p = torchAnchor();
   if (p.x < 2) return;
-  const flicker = 0.82 + 0.18 * Math.sin(now * 0.021) * Math.sin(now * 0.049);
-  const lean = Math.sin(now * 0.0084) * 0.2;
-  const spin = now * 0.0072;
-  const h = 118 * flicker;
-  const envelope = (t) => Math.sin(Math.PI * Math.pow(Math.max(0, Math.min(1, t)), 0.62)) * 18 * flicker;
+  const glowPulse = 0.92 + 0.08 * Math.sin(now * 0.006);
+  const h = 112;
+  const envelope = (t) => Math.sin(Math.PI * Math.pow(Math.max(0, Math.min(1, t)), 0.62)) * 16.5;
 
   ctx.save();
   ctx.translate(p.x, p.y);
-  ctx.rotate(lean);
 
-  const glow = ctx.createRadialGradient(0, -h * 0.32, 2, 0, -h * 0.38, h * 0.78);
-  glow.addColorStop(0, world.lit ? `rgba(255, 196, 110, ${0.32 * flicker})` : `rgba(232, 232, 238, ${0.2 * flicker})`);
-  glow.addColorStop(0.45, world.lit ? `rgba(255, 140, 50, ${0.1 * flicker})` : `rgba(210, 210, 216, ${0.06 * flicker})`);
+  const glow = ctx.createRadialGradient(0, -h * 0.34, 2, 0, -h * 0.4, h * 0.72);
+  glow.addColorStop(0, world.lit ? `rgba(255, 196, 110, ${0.28 * glowPulse})` : `rgba(232, 232, 238, ${0.18 * glowPulse})`);
+  glow.addColorStop(0.5, world.lit ? `rgba(255, 140, 50, ${0.08 * glowPulse})` : `rgba(210, 210, 216, ${0.05 * glowPulse})`);
   glow.addColorStop(1, "rgba(0, 0, 0, 0)");
   ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.ellipse(0, -h * 0.38, 18 * flicker, h * 0.52, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, -h * 0.4, 16, h * 0.5, 0, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.lineCap = "round";
@@ -1687,11 +1684,11 @@ function drawTorchFlame(ctx, now) {
     for (let i = 0; i <= 56; i += 1) {
       const t = i / 56;
       const y = -t * h;
-      const x = strand * Math.sin(t * Math.PI * 6.2 + spin) * envelope(t);
+      const x = strand * Math.sin(t * Math.PI * 5.6) * envelope(t);
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
-    ctx.globalAlpha = 0.55 + 0.25 * flicker;
+    ctx.globalAlpha = 0.82;
     ctx.strokeStyle = world.lit ? "rgba(255, 220, 160, 0.92)" : "rgba(230, 230, 236, 0.88)";
     ctx.lineWidth = 1.7 - strand * 0.15;
     ctx.stroke();
@@ -1701,8 +1698,7 @@ function drawTorchFlame(ctx, now) {
   for (let i = 1; i < 14; i += 1) {
     const t = i / 14;
     const y = -t * h;
-    const a = t * Math.PI * 6.2 + spin;
-    const w = Math.sin(a) * envelope(t);
+    const w = Math.sin(t * Math.PI * 5.6) * envelope(t);
     if (Math.abs(w) < 0.6) continue;
     ctx.globalAlpha = 0.22 + 0.2 * (1 - t);
     ctx.strokeStyle = world.lit ? "rgba(255, 186, 96, 0.85)" : "rgba(214, 214, 220, 0.7)";
@@ -1712,7 +1708,7 @@ function drawTorchFlame(ctx, now) {
     ctx.stroke();
   }
 
-  ctx.globalAlpha = 0.35 * flicker;
+  ctx.globalAlpha = 0.4;
   ctx.fillStyle = world.lit ? "rgba(255, 230, 180, 0.9)" : "rgba(240, 240, 244, 0.85)";
   ctx.beginPath();
   ctx.arc(0, 0, 1.6, 0, Math.PI * 2);
@@ -1734,18 +1730,22 @@ function drawCursor(ctx) {
 }
 
 const dropAnchors = [
-  { el: "drop", ox: 0.18, oy: 0.18, scale: 0.62 },
-  { el: "drop", ox: 0.42, oy: 0.16, scale: 0.7 },
-  { el: "drop", ox: 0.28, oy: 0.46, scale: 0.58 },
-  { el: "drop", ox: 0.52, oy: 0.42, scale: 0.64 },
-  { el: "drop", ox: 0.14, oy: 0.7, scale: 0.5 },
-  { el: "drop", ox: 0.6, oy: 0.78, scale: 0.48 },
-  { el: "rest", ox: 0.08, oy: 0.28, scale: 0.5 },
-  { el: "rest", ox: 0.22, oy: 0.72, scale: 0.46 },
-  { el: "rest", ox: 0.38, oy: 0.2, scale: 0.52 },
-  { el: "rest", ox: 0.54, oy: 0.64, scale: 0.48 },
-  { el: "rest", ox: 0.7, oy: 0.3, scale: 0.5 },
-  { el: "rest", ox: 0.86, oy: 0.76, scale: 0.46 },
+  { el: "drop", ox: 0.14, oy: 0.14, scale: 0.62 },
+  { el: "drop", ox: 0.36, oy: 0.12, scale: 0.7 },
+  { el: "drop", ox: 0.58, oy: 0.2, scale: 0.6 },
+  { el: "drop", ox: 0.24, oy: 0.4, scale: 0.58 },
+  { el: "drop", ox: 0.48, oy: 0.46, scale: 0.64 },
+  { el: "drop", ox: 0.12, oy: 0.64, scale: 0.52 },
+  { el: "drop", ox: 0.4, oy: 0.72, scale: 0.5 },
+  { el: "drop", ox: 0.66, oy: 0.8, scale: 0.48 },
+  { el: "rest", ox: 0.05, oy: 0.22, scale: 0.5 },
+  { el: "rest", ox: 0.16, oy: 0.68, scale: 0.46 },
+  { el: "rest", ox: 0.28, oy: 0.18, scale: 0.52 },
+  { el: "rest", ox: 0.4, oy: 0.76, scale: 0.48 },
+  { el: "rest", ox: 0.52, oy: 0.28, scale: 0.5 },
+  { el: "rest", ox: 0.64, oy: 0.7, scale: 0.46 },
+  { el: "rest", ox: 0.76, oy: 0.2, scale: 0.5 },
+  { el: "rest", ox: 0.88, oy: 0.64, scale: 0.46 },
 ];
 
 function drawGoldenSpiral(ctx, cx, cy, scale, now) {
@@ -1795,7 +1795,7 @@ function drawDropcap(ctx, now) {
 
 function drawDuneSprigs(ctx, width, height) {
   const rng = mulberry32(404);
-  for (let i = 0; i < 32; i += 1) {
+  for (let i = 0; i < 78; i += 1) {
     const x = rng() * width;
     const layer = 2 + (i % 3);
     const y = duneHeight(x, width, height, layer) + 6 + rng() * 36;
