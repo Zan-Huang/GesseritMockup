@@ -1871,27 +1871,121 @@ function drawDust(ctx) {
   }
 }
 
+// Smooth, seedless flicker: incommensurate sines stay temporally coherent, so
+// the flame breathes without the frame-to-frame jitter of random sampling.
+function flicker(now, phase, speed = 1) {
+  const a = Math.sin(now * 0.0105 * speed + phase);
+  const b = Math.sin(now * 0.0231 * speed + phase * 2.3);
+  const c = Math.sin(now * 0.0437 * speed + phase * 3.7);
+  return 0.5 + 0.5 * (0.54 * a + 0.31 * b + 0.15 * c);
+}
+
+// One flame tongue, base at the origin, rising along -y.
+function tonguePath(ctx, height, width, taper, lean, wobble, now, phase) {
+  ctx.beginPath();
+  const steps = 26;
+  for (let side = 0; side < 2; side += 1) {
+    const dir = side === 0 ? 1 : -1;
+    for (let i = 0; i <= steps; i += 1) {
+      const k = side === 0 ? i : steps - i;
+      const t = k / steps;
+      const swell = Math.sin(Math.PI * Math.pow(t, taper));
+      const curl = Math.sin(t * 5.2 + now * 0.006 * (1 + phase * 0.3) + phase) * wobble * t;
+      const x = dir * (width * swell + curl) + lean * t * t;
+      const y = -height * t;
+      if (side === 0 && i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+  }
+  ctx.closePath();
+}
+
 function drawTorchFlame(ctx, now) {
   const p = torchAnchor();
   if (p.x < 2) return;
-  const glowPulse = 0.92 + 0.08 * Math.sin(now * 0.006);
-  const h = 112;
+  const lit = world.lit;
+  const breath = flicker(now, 0, lit ? 1.35 : 0.7);
+  const surge = flicker(now, 2.4, lit ? 1.7 : 0.55);
+  const h = (lit ? 132 : 112) * (0.93 + breath * 0.14);
   const envelope = (t) => Math.sin(Math.PI * Math.pow(Math.max(0, Math.min(1, t)), 0.62)) * 16.5;
 
   ctx.save();
   ctx.translate(p.x, p.y);
 
-  const glow = ctx.createRadialGradient(0, -h * 0.34, 2, 0, -h * 0.4, h * 0.72);
-  glow.addColorStop(0, world.lit ? `rgba(255, 196, 110, ${0.28 * glowPulse})` : `rgba(232, 232, 238, ${0.18 * glowPulse})`);
-  glow.addColorStop(0.5, world.lit ? `rgba(255, 140, 50, ${0.08 * glowPulse})` : `rgba(210, 210, 216, ${0.05 * glowPulse})`);
+  // Squash a circular gradient instead of clipping one to an ellipse path, so
+  // the halo fades out completely rather than ending on a visible rim.
+  const glowPulse = 0.86 + breath * 0.26;
+  const glowR = h * (lit ? 0.66 : 0.52);
+  const glowSquash = lit ? 0.46 : 0.32;
+  ctx.save();
+  ctx.translate(0, -h * 0.4);
+  ctx.scale(glowSquash, 1);
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, glowR);
+  if (lit) {
+    glow.addColorStop(0, `rgba(255, 236, 186, ${0.58 * glowPulse})`);
+    glow.addColorStop(0.26, `rgba(255, 172, 66, ${0.3 * glowPulse})`);
+    glow.addColorStop(0.58, `rgba(226, 96, 24, ${0.12 * glowPulse})`);
+  } else {
+    glow.addColorStop(0, `rgba(232, 232, 238, ${0.2 * glowPulse})`);
+    glow.addColorStop(0.5, `rgba(210, 210, 216, ${0.06 * glowPulse})`);
+  }
   glow.addColorStop(1, "rgba(0, 0, 0, 0)");
   ctx.fillStyle = glow;
-  ctx.beginPath();
-  ctx.ellipse(0, -h * 0.4, 16, h * 0.5, 0, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.fillRect(-glowR, -glowR, glowR * 2, glowR * 2);
+  ctx.restore();
+
+  // Once the day comes the helix burns: real fire, stacked additively so the
+  // overlaps read as white-hot.
+  if (lit) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    const tongues = [
+      { hs: 1.0, ws: 15.5, taper: 0.62, phase: 0.0, alpha: 0.5, stops: [[0, "rgba(255, 244, 214, 0.95)"], [0.3, "rgba(255, 186, 74, 0.8)"], [0.72, "rgba(232, 104, 26, 0.4)"], [1, "rgba(176, 48, 12, 0)"]] },
+      { hs: 0.78, ws: 10.5, taper: 0.58, phase: 1.7, alpha: 0.62, stops: [[0, "rgba(255, 250, 234, 0.98)"], [0.38, "rgba(255, 208, 104, 0.82)"], [1, "rgba(240, 128, 32, 0)"]] },
+      { hs: 0.5, ws: 6.4, taper: 0.54, phase: 3.1, alpha: 0.8, stops: [[0, "rgba(255, 255, 250, 1)"], [0.5, "rgba(255, 236, 168, 0.85)"], [1, "rgba(255, 176, 64, 0)"]] },
+    ];
+    tongues.forEach((tongue, index) => {
+      const f = flicker(now, tongue.phase, 1.5 + index * 0.4);
+      const height = h * tongue.hs * (0.9 + f * 0.2);
+      const width = tongue.ws * (0.88 + surge * 0.24);
+      const grad = ctx.createLinearGradient(0, 0, 0, -height);
+      tongue.stops.forEach(([at, color]) => grad.addColorStop(at, color));
+      ctx.globalAlpha = tongue.alpha * (0.82 + f * 0.28);
+      ctx.fillStyle = grad;
+      tonguePath(ctx, height, width, tongue.taper, (f - 0.5) * 5, 1.6, now, tongue.phase);
+      ctx.fill();
+    });
+
+    // white-hot heart at the wick
+    const heart = ctx.createRadialGradient(0, -h * 0.06, 0, 0, -h * 0.06, h * 0.22);
+    heart.addColorStop(0, `rgba(255, 255, 246, ${0.85 * (0.8 + breath * 0.3)})`);
+    heart.addColorStop(0.55, "rgba(255, 214, 132, 0.35)");
+    heart.addColorStop(1, "rgba(255, 150, 50, 0)");
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = heart;
+    ctx.beginPath();
+    ctx.ellipse(0, -h * 0.06, h * 0.15, h * 0.24, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // embers peeling off the crown, looped by phase so they need no state
+    for (let i = 0; i < 8; i += 1) {
+      const life = (now * 0.00042 + i * 0.373) % 1;
+      const drift = Math.sin(i * 2.7 + now * 0.0016) * 9;
+      const x = drift * life;
+      const y = -h * (0.52 + life * 0.86);
+      ctx.globalAlpha = (1 - life) * (1 - life) * 0.75;
+      ctx.fillStyle = i % 3 === 0 ? "rgba(255, 240, 200, 0.95)" : "rgba(255, 176, 74, 0.9)";
+      ctx.beginPath();
+      ctx.arc(x, y, 0.7 + (1 - life) * 1.1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
 
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
+  if (lit) ctx.globalCompositeOperation = "lighter";
+
   for (const strand of [-1, 1]) {
     ctx.beginPath();
     for (let i = 0; i <= 56; i += 1) {
@@ -1901,9 +1995,9 @@ function drawTorchFlame(ctx, now) {
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
-    ctx.globalAlpha = 0.82;
-    ctx.strokeStyle = world.lit ? "rgba(255, 220, 160, 0.92)" : "rgba(230, 230, 236, 0.88)";
-    ctx.lineWidth = 1.7 - strand * 0.15;
+    ctx.globalAlpha = lit ? 0.5 + breath * 0.34 : 0.68 + breath * 0.24;
+    ctx.strokeStyle = lit ? "rgba(255, 252, 236, 0.95)" : "rgba(230, 230, 236, 0.88)";
+    ctx.lineWidth = (lit ? 1.5 : 1.7) - strand * 0.15;
     ctx.stroke();
   }
 
@@ -1913,18 +2007,19 @@ function drawTorchFlame(ctx, now) {
     const y = -t * h;
     const w = Math.sin(t * Math.PI * 5.6) * envelope(t);
     if (Math.abs(w) < 0.6) continue;
-    ctx.globalAlpha = 0.22 + 0.2 * (1 - t);
-    ctx.strokeStyle = world.lit ? "rgba(255, 186, 96, 0.85)" : "rgba(214, 214, 220, 0.7)";
+    const rung = flicker(now, i * 0.8, 1.2);
+    ctx.globalAlpha = (0.22 + 0.2 * (1 - t)) * (lit ? 0.7 + rung * 0.8 : 0.72 + rung * 0.5);
+    ctx.strokeStyle = lit ? "rgba(255, 226, 150, 0.9)" : "rgba(214, 214, 220, 0.7)";
     ctx.beginPath();
     ctx.moveTo(-w, y);
     ctx.lineTo(w, y);
     ctx.stroke();
   }
 
-  ctx.globalAlpha = 0.4;
-  ctx.fillStyle = world.lit ? "rgba(255, 230, 180, 0.9)" : "rgba(240, 240, 244, 0.85)";
+  ctx.globalAlpha = lit ? 0.6 + breath * 0.4 : 0.34 + breath * 0.22;
+  ctx.fillStyle = lit ? "rgba(255, 246, 214, 0.95)" : "rgba(240, 240, 244, 0.85)";
   ctx.beginPath();
-  ctx.arc(0, 0, 1.6, 0, Math.PI * 2);
+  ctx.arc(0, 0, lit ? 2.3 : 1.6, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
