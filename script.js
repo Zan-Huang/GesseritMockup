@@ -1015,83 +1015,151 @@ function drawRoseSprig(ctx, open, random) {
   ctx.restore();
 }
 
-function drawCreosote(ctx, open, random) {
-  const s = 6.1 * open;
-  const colors = desertPalette(random);
+function paintSpecimen(ctx, pathFn, fill, edge) {
   ctx.save();
-  ctx.strokeStyle = colors.vein;
-  ctx.lineWidth = 0.55;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(0, -s * 3.1);
+  pathFn();
+  ctx.fillStyle = fill;
+  ctx.fill();
+  pathFn();
+  ctx.strokeStyle = edge;
+  ctx.lineWidth = 0.35;
   ctx.stroke();
-  for (let i = 0; i < 4; i += 1) {
-    const y = -s * 0.55 * (i + 0.6);
-    ctx.fillStyle = colors.body;
-    ctx.beginPath();
-    ctx.ellipse(-s * 0.42, y, s * 0.22, s * 0.1, -0.45, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(s * 0.42, y, s * 0.22, s * 0.1, 0.45, 0, Math.PI * 2);
-    ctx.fill();
-  }
   ctx.restore();
 }
 
-function drawSage(ctx, open, random) {
-  const len = 8.4 * open;
-  const colors = desertPalette(random);
+function drawLeafCrescent(ctx, open) {
+  const s = 5.2 * open;
   ctx.save();
-  ctx.fillStyle = colors.mid;
-  for (let i = 0; i < 3; i += 1) {
-    ctx.save();
-    ctx.rotate((i - 1) * 0.22);
+  paintSpecimen(ctx, () => {
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(len * 0.1, -len * 0.5, 0, -len);
-    ctx.quadraticCurveTo(-len * 0.08, -len * 0.5, 0, 0);
-    ctx.fill();
-    ctx.restore();
-  }
+    ctx.bezierCurveTo(s * 0.9, -s * 0.15, s * 1.05, -s * 0.75, 0, -s);
+    ctx.bezierCurveTo(s * 0.28, -s * 0.62, s * 0.18, -s * 0.22, 0, 0);
+    ctx.closePath();
+  }, "#1e3d24", "#142616");
   ctx.restore();
 }
 
-function drawDuneGrass(ctx, open, random) {
-  const colors = desertPalette(random);
+function drawLeafTeardrop(ctx, open) {
+  const s = 7.4 * open;
   ctx.save();
-  ctx.strokeStyle = colors.body;
-  ctx.lineWidth = 0.65;
-  ctx.lineCap = "round";
-  for (let i = 0; i < 4; i += 1) {
+  paintSpecimen(ctx, () => {
     ctx.beginPath();
-    ctx.moveTo((i - 1.5) * 0.55 * open, 0);
-    ctx.quadraticCurveTo((i - 1.4) * open, -6.2 * open, (i - 1.1) * 1.8 * open, -11 * open);
-    ctx.stroke();
-  }
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(s * 0.38, -s * 0.08, s * 0.42, -s * 0.55, 0, -s);
+    ctx.bezierCurveTo(-s * 0.42, -s * 0.55, -s * 0.38, -s * 0.08, 0, 0);
+    ctx.closePath();
+  }, "#8a9a4a", "#5c6828");
+  ctx.restore();
+}
+
+function drawLeafSageRound(ctx, open) {
+  const s = 6.8 * open;
+  ctx.save();
+  paintSpecimen(ctx, () => {
+    ctx.beginPath();
+    ctx.moveTo(0, s * 0.08);
+    ctx.bezierCurveTo(s * 0.62, s * 0.02, s * 0.7, -s * 0.55, 0, -s * 0.95);
+    ctx.bezierCurveTo(-s * 0.7, -s * 0.55, -s * 0.62, s * 0.02, 0, s * 0.08);
+    ctx.closePath();
+  }, "#9aa394", "#6e766c");
+  ctx.restore();
+}
+
+function drawLeafSerrate(ctx, open) {
+  const s = 8.2 * open;
+  ctx.save();
+  paintSpecimen(ctx, () => {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    const teeth = 6;
+    for (let i = 0; i <= teeth; i += 1) {
+      const t = i / teeth;
+      const y = -s * t;
+      const w = s * 0.28 * Math.sin(Math.PI * t);
+      ctx.lineTo(w * (i % 2 ? 1.18 : 0.72), y);
+    }
+    for (let i = teeth; i >= 0; i -= 1) {
+      const t = i / teeth;
+      const y = -s * t;
+      const w = s * 0.28 * Math.sin(Math.PI * t);
+      ctx.lineTo(-w * (i % 2 ? 1.18 : 0.72), y);
+    }
+    ctx.closePath();
+  }, "#2d4a32", "#1a2e1e");
+  ctx.restore();
+}
+
+function drawLeafNarrow(ctx, open) {
+  const s = 7.6 * open;
+  ctx.save();
+  paintSpecimen(ctx, () => {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(s * 0.2, -s * 0.12, s * 0.22, -s * 0.7, 0, -s);
+    ctx.bezierCurveTo(-s * 0.22, -s * 0.7, -s * 0.2, -s * 0.12, 0, 0);
+    ctx.closePath();
+  }, "#2a4530", "#173022");
+  ctx.restore();
+}
+
+function drawLeafWedge(ctx, open) {
+  const s = 8.6 * open;
+  ctx.save();
+  paintSpecimen(ctx, () => {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(s * 0.42, -s * 0.22);
+    ctx.quadraticCurveTo(s * 0.12, -s * 0.62, 0, -s);
+    ctx.quadraticCurveTo(-s * 0.12, -s * 0.62, -s * 0.42, -s * 0.22);
+    ctx.closePath();
+  }, "#c8c8b8", "#9a9a8c");
+  ctx.restore();
+}
+
+function drawLeafNeedle(ctx, open) {
+  const s = 14.5 * open;
+  ctx.save();
+  ctx.strokeStyle = "#a89068";
+  ctx.lineWidth = 0.85;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(s * 0.06, -s * 0.45, 0, -s);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawLeafOlive(ctx, open) {
+  const s = 9.6 * open;
+  ctx.save();
+  paintSpecimen(ctx, () => {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(s * 0.32, -s * 0.06, s * 0.36, -s * 0.62, 0, -s);
+    ctx.bezierCurveTo(-s * 0.36, -s * 0.62, -s * 0.32, -s * 0.06, 0, 0);
+    ctx.closePath();
+  }, "#6a7054", "#454a36");
   ctx.restore();
 }
 
 const FLOWER_TYPES = [
-  drawCreosote,
-  drawSage,
-  drawDuneGrass,
-  drawCreosote,
-  drawSage,
-  drawDuneGrass,
-  drawSage,
-  drawCreosote,
+  drawLeafCrescent,
+  drawLeafTeardrop,
+  drawLeafSageRound,
+  drawLeafSerrate,
+  drawLeafNarrow,
+  drawLeafWedge,
+  drawLeafNeedle,
+  drawLeafOlive,
 ];
 
 function drawLeaf(ctx, scale, side, seed) {
   if (scale < 0.4) return;
   ctx.save();
   ctx.scale(side, 1);
-  const colors = desertPalette(mulberry32((seed || 1) ^ (side > 0 ? 19 : 41)));
-  const length = 3.4 * scale;
-  ctx.beginPath();
-  ctx.ellipse(0, -length * 0.45, length * 0.22, length * 0.48, 0.15, 0, Math.PI * 2);
-  ctx.fillStyle = colors.body;
-  ctx.fill();
+  const type = FLOWER_TYPES[seed % FLOWER_TYPES.length];
+  type(ctx, 0.42 * scale, mulberry32(seed));
   ctx.restore();
 }
 
@@ -1588,52 +1656,63 @@ function drawDust(ctx) {
 
 function drawTorchFlame(ctx, now) {
   const p = torchAnchor();
-  if (!p.width && p.x < 2) return;
-  const flicker = 0.7 + 0.3 * Math.abs(Math.sin(now * 0.018)) * (0.55 + 0.45 * Math.sin(now * 0.041));
-  const lean = Math.sin(now * 0.0075) * 0.14;
+  if (p.x < 2) return;
+  const flicker = 0.82 + 0.18 * Math.sin(now * 0.021) * Math.sin(now * 0.049);
+  const lean = Math.sin(now * 0.0084) * 0.2;
+  const spin = now * 0.0072;
+  const h = 118 * flicker;
+  const envelope = (t) => Math.sin(Math.PI * Math.pow(Math.max(0, Math.min(1, t)), 0.62)) * 18 * flicker;
+
   ctx.save();
   ctx.translate(p.x, p.y);
   ctx.rotate(lean);
 
-  const glow = ctx.createRadialGradient(0, -16, 2, 0, -18, 48 * flicker);
-  glow.addColorStop(0, world.lit ? `rgba(255, 210, 140, ${0.34 * flicker})` : `rgba(236, 236, 242, ${0.28 * flicker})`);
+  const glow = ctx.createRadialGradient(0, -h * 0.32, 2, 0, -h * 0.38, h * 0.78);
+  glow.addColorStop(0, world.lit ? `rgba(255, 196, 110, ${0.32 * flicker})` : `rgba(232, 232, 238, ${0.2 * flicker})`);
+  glow.addColorStop(0.45, world.lit ? `rgba(255, 140, 50, ${0.1 * flicker})` : `rgba(210, 210, 216, ${0.06 * flicker})`);
   glow.addColorStop(1, "rgba(0, 0, 0, 0)");
   ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.arc(0, -16, 48 * flicker, 0, Math.PI * 2);
+  ctx.ellipse(0, -h * 0.38, 18 * flicker, h * 0.52, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  const h = 44 * flicker;
   ctx.lineCap = "round";
-  ctx.lineWidth = 1.25;
+  ctx.lineJoin = "round";
   for (const strand of [-1, 1]) {
     ctx.beginPath();
-    for (let i = 0; i <= 30; i += 1) {
-      const t = i / 30;
+    for (let i = 0; i <= 56; i += 1) {
+      const t = i / 56;
       const y = -t * h;
-      const x = strand * Math.sin(t * Math.PI * 4.2 + now * 0.006) * 6.4 * flicker;
+      const x = strand * Math.sin(t * Math.PI * 6.2 + spin) * envelope(t);
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = world.lit
-      ? `rgba(255, 214, 150, ${0.62 * flicker})`
-      : `rgba(224, 224, 230, ${0.5 * flicker})`;
+    ctx.globalAlpha = 0.55 + 0.25 * flicker;
+    ctx.strokeStyle = world.lit ? "rgba(255, 220, 160, 0.92)" : "rgba(230, 230, 236, 0.88)";
+    ctx.lineWidth = 1.7 - strand * 0.15;
     ctx.stroke();
   }
 
-  ctx.lineWidth = 0.7;
-  for (let i = 1; i < 8; i += 1) {
-    const t = i / 8;
+  ctx.lineWidth = 0.65;
+  for (let i = 1; i < 14; i += 1) {
+    const t = i / 14;
     const y = -t * h;
-    const a = t * Math.PI * 4.2 + now * 0.006;
-    const w = Math.sin(a) * 6.4 * flicker;
-    ctx.globalAlpha = 0.32 * flicker;
-    ctx.strokeStyle = world.lit ? "rgba(255, 196, 120, 0.8)" : "rgba(214, 214, 220, 0.75)";
+    const a = t * Math.PI * 6.2 + spin;
+    const w = Math.sin(a) * envelope(t);
+    if (Math.abs(w) < 0.6) continue;
+    ctx.globalAlpha = 0.22 + 0.2 * (1 - t);
+    ctx.strokeStyle = world.lit ? "rgba(255, 186, 96, 0.85)" : "rgba(214, 214, 220, 0.7)";
     ctx.beginPath();
     ctx.moveTo(-w, y);
     ctx.lineTo(w, y);
     ctx.stroke();
   }
+
+  ctx.globalAlpha = 0.35 * flicker;
+  ctx.fillStyle = world.lit ? "rgba(255, 230, 180, 0.9)" : "rgba(240, 240, 244, 0.85)";
+  ctx.beginPath();
+  ctx.arc(0, 0, 1.6, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 }
 
@@ -1720,7 +1799,7 @@ function frame(now) {
   for (const node of blooms.values()) {
     if (node.stem < 0.01 && node.bloom < 0.01) continue;
     if (!node.pts) node.pts = integrateStream(node.x, node.y, node.seed, (node.seed % 997) + 40, 72, 1.05);
-    drawBloomAt(illumCtx, node.pts, node.bloom, node.stem, node.seed, 1.15);
+    drawBloomAt(illumCtx, node.pts, node.bloom, node.stem, node.seed, 1.45);
   }
 
   updateDust();

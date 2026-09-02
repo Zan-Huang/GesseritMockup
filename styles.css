@@ -102,7 +102,7 @@ body.lit {
   position: relative;
   display: inline-flex;
   align-items: flex-end;
-  margin-right: -0.22em;
+  margin-right: 0.2em;
   font-size: clamp(6.4rem, 20vw, 17rem);
   line-height: 0.86;
   letter-spacing: 0;
@@ -118,8 +118,7 @@ body.lit {
 .rest {
   font-size: clamp(3.2rem, 10.5vw, 9.2rem);
   line-height: 1;
-  letter-spacing: 0.03em;
-  margin-left: -0.04em;
+  letter-spacing: 0.045em;
   color: #ffffff;
 }
 
@@ -130,7 +129,7 @@ body.lit {
 
   .drop {
     font-size: clamp(4.6rem, 28vw, 8.5rem);
-    margin-right: -0.07em;
+    margin-right: 0.04em;
   }
 
   .rest {
