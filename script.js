@@ -18,8 +18,12 @@ const BLOOM_SPEED_FAST = 0.012;
 const BLOOM_SPEED_SLOW = 0.0022;
 const FADE_SPEED = 0.0007;
 const PERSIST_MS = 24000;
-const MAX_BLOOMS = 32;
+const MAX_BLOOMS = 80;
+const PLANT_INTERVAL = 55;
+const PLANT_PER_TICK = 2;
 const GRID_STICK_MS = 16000;
+const STUCK_LIMIT = 340;
+const DUST_LIMIT = 260;
 const GRID_STICK_FADE = 0.00055;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 const PHI = (1 + Math.sqrt(5)) / 2;
@@ -36,21 +40,34 @@ const gust = [];
 const world = { lit: false };
 const torchBtn = document.querySelector(".torch");
 
+const sisterImg = document.querySelector(".sister");
+let sisterBox = null;
+
+function invalidateSister() {
+  sisterBox = null;
+  invalidateScene();
+}
+
+if (sisterImg && !sisterImg.complete) sisterImg.addEventListener("load", invalidateSister);
+
+// Reading layout inside the render loop is expensive, and this box only moves
+// when the viewport does.
 function paintedSister() {
-  const img = document.querySelector(".sister");
-  if (!img) return { left: 0, top: 0, width: 0, height: 0 };
-  const box = img.getBoundingClientRect();
-  const nw = img.naturalWidth || 1024;
-  const nh = img.naturalHeight || 1536;
+  if (sisterBox) return sisterBox;
+  if (!sisterImg) return { left: 0, top: 0, width: 0, height: 0 };
+  const box = sisterImg.getBoundingClientRect();
+  const nw = sisterImg.naturalWidth || 1024;
+  const nh = sisterImg.naturalHeight || 1536;
   const scale = Math.min(box.width / nw, box.height / nh);
   const width = nw * scale;
   const height = nh * scale;
-  return {
+  sisterBox = {
     left: box.left,
     top: box.bottom - height,
     width,
     height,
   };
+  return sisterBox;
 }
 
 function torchAnchor() {
@@ -68,6 +85,7 @@ function hitTorch(x, y) {
 
 function setWorldLit(on) {
   world.lit = on;
+  invalidateScene();
   document.body.classList.toggle("lit", on);
   if (torchBtn) {
     torchBtn.classList.toggle("is-lit", on);
@@ -96,6 +114,19 @@ function resize() {
   resizeCanvas(field, fieldCtx);
   resizeCanvas(illum, illumCtx);
   resizeCanvas(ember, emberCtx);
+  sisterBox = null;
+  invalidateScene();
+  dropCache.length = 0;
+}
+
+let resizePending = 0;
+
+function queueResize() {
+  if (resizePending) return;
+  resizePending = requestAnimationFrame(() => {
+    resizePending = 0;
+    resize();
+  });
 }
 
 function hash(x, y) {
@@ -244,7 +275,7 @@ window.addEventListener("blur", () => {
   mouse.inside = false;
 });
 
-window.addEventListener("resize", resize);
+window.addEventListener("resize", queueResize);
 
 function gridOrigin(size, extent) {
   return ((extent / 2) % size) - size;
@@ -335,39 +366,69 @@ function updateStuckGrid(now) {
     if (cell.strength <= 0) stuckGrid.delete(key);
   }
 
-  if (stuckGrid.size > 520) {
-    const extra = stuckGrid.size - 520;
-    let dropped = 0;
+  if (stuckGrid.size > STUCK_LIMIT) {
+    let extra = stuckGrid.size - STUCK_LIMIT;
+    // Map iteration is insertion-ordered, so the oldest departed cells go first.
     for (const [key, cell] of stuckGrid) {
-      if (cell.leftAt && dropped < extra) {
-        stuckGrid.delete(key);
-        dropped += 1;
-      }
+      if (extra <= 0) break;
+      if (!cell.leftAt) continue;
+      stuckGrid.delete(key);
+      extra -= 1;
     }
   }
 }
 
+const STUCK_BUCKETS = 6;
+
 function drawStuckGrid(ctx) {
   if (stuckGrid.size === 0) return;
+  const ticks = [];
+  const dots = [];
+  for (let i = 0; i < STUCK_BUCKETS; i += 1) {
+    ticks.push(null);
+    dots.push(null);
+  }
+
+  for (const cell of stuckGrid.values()) {
+    if (cell.strength < 0.03) continue;
+    const bucket = Math.min(STUCK_BUCKETS - 1, (cell.strength * STUCK_BUCKETS) | 0);
+    const strength = (bucket + 0.5) / STUCK_BUCKETS;
+    let tick = ticks[bucket];
+    if (!tick) {
+      tick = new Path2D();
+      ticks[bucket] = tick;
+    }
+    const span = GRID * (0.35 + strength * 0.65);
+    tick.moveTo(cell.x, cell.y);
+    tick.lineTo(cell.x + span, cell.y);
+    tick.moveTo(cell.x, cell.y);
+    tick.lineTo(cell.x, cell.y + span);
+
+    let dot = dots[bucket];
+    if (!dot) {
+      dot = new Path2D();
+      dots[bucket] = dot;
+    }
+    const r = 0.45 + strength * 0.35;
+    dot.moveTo(cell.x + r, cell.y);
+    dot.arc(cell.x, cell.y, r, 0, Math.PI * 2);
+  }
+
   ctx.save();
   ctx.lineCap = "round";
   ctx.lineWidth = 0.65;
-  for (const cell of stuckGrid.values()) {
-    if (cell.strength < 0.03) continue;
-    const a = cell.strength * 0.38;
-    ctx.globalAlpha = a;
-    ctx.strokeStyle = "rgba(214, 214, 220, 0.95)";
-    const span = GRID * (0.35 + cell.strength * 0.65);
-    ctx.beginPath();
-    ctx.moveTo(cell.x, cell.y);
-    ctx.lineTo(cell.x + span, cell.y);
-    ctx.moveTo(cell.x, cell.y);
-    ctx.lineTo(cell.x, cell.y + span);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.fillStyle = `rgba(226, 226, 232, ${0.18 + cell.strength * 0.4})`;
-    ctx.arc(cell.x, cell.y, 0.45 + cell.strength * 0.35, 0, Math.PI * 2);
-    ctx.fill();
+  ctx.strokeStyle = "rgba(214, 214, 220, 0.95)";
+  for (let bucket = 0; bucket < STUCK_BUCKETS; bucket += 1) {
+    const strength = (bucket + 0.5) / STUCK_BUCKETS;
+    if (ticks[bucket]) {
+      ctx.globalAlpha = strength * 0.38;
+      ctx.stroke(ticks[bucket]);
+    }
+    if (dots[bucket]) {
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = `rgba(226, 226, 232, ${0.18 + strength * 0.4})`;
+      ctx.fill(dots[bucket]);
+    }
   }
   ctx.restore();
 }
@@ -388,13 +449,21 @@ function drawGrid(ctx, now) {
   const minY = my - radius;
   const maxY = my + radius;
 
+  const ix0 = Math.floor((minX - originX) / GRID);
+  const ix1 = Math.ceil((maxX - originX) / GRID);
+  const iy0 = Math.floor((minY - originY) / GRID) - 1;
+  const iy1 = Math.ceil((maxY - originY) / GRID);
+
   ctx.save();
   ctx.lineCap = "round";
   ctx.lineWidth = 0.7;
 
-  for (let x = originX; x <= width + GRID; x += GRID) {
-    if (x < minX || x > maxX) continue;
-    for (let y = originY; y <= height; y += GRID) {
+  for (let i = ix0; i <= ix1; i += 1) {
+    const x = originX + i * GRID;
+    if (x < minX || x > maxX || x > width + GRID) continue;
+    for (let j = iy0; j <= iy1; j += 1) {
+      const y = originY + j * GRID;
+      if (y > height) continue;
       const y2 = y + GRID;
       if (y2 < minY || y > maxY) continue;
       const midY = y + GRID * 0.5;
@@ -414,9 +483,12 @@ function drawGrid(ctx, now) {
     }
   }
 
-  for (let y = originY; y <= height + GRID; y += GRID) {
-    if (y < minY || y > maxY) continue;
-    for (let x = originX; x <= width; x += GRID) {
+  for (let j = iy0; j <= iy1; j += 1) {
+    const y = originY + j * GRID;
+    if (y < minY || y > maxY || y > height + GRID) continue;
+    for (let i = ix0 - 1; i <= ix1; i += 1) {
+      const x = originX + i * GRID;
+      if (x > width) continue;
       const x2 = x + GRID;
       if (x2 < minX || x > maxX) continue;
       const midX = x + GRID * 0.5;
@@ -1158,12 +1230,16 @@ const FLOWER_TYPES = [
   drawLeafOlive,
 ];
 
+function leafFor(seed) {
+  const span = FLOWER_TYPES.length;
+  return FLOWER_TYPES[(((seed % span) + span) % span) | 0];
+}
+
 function drawLeaf(ctx, scale, side, seed) {
   if (scale < 0.4) return;
   ctx.save();
   ctx.scale(side, 1);
-  const type = FLOWER_TYPES[seed % FLOWER_TYPES.length];
-  type(ctx, 0.42 * scale, mulberry32(seed));
+  leafFor(seed)(ctx, 0.42 * scale, mulberry32(seed));
   ctx.restore();
 }
 
@@ -1202,7 +1278,7 @@ function drawFlowStem(ctx, pts, stem, seed) {
 
 function drawBloomAt(ctx, pts, bloom, stem, seed, scale) {
   const random = mulberry32(seed);
-  const type = FLOWER_TYPES[seed % FLOWER_TYPES.length];
+  const type = leafFor(seed);
   const fade = easeOutCubic(Math.max(bloom, stem * 0.55));
   const open = easeOutCubic(Math.min(1, bloom)) * scale;
   const tipT = Math.max(0.12, easeInOut(stem));
@@ -1245,10 +1321,9 @@ function updateHoverBlooms(now) {
   const active = new Set();
 
   if (mouse.inside) {
-    if (now - lastPlantAt > 90) {
+    if (now - lastPlantAt > PLANT_INTERVAL) {
       lastPlantAt = now;
-      const plantCount = 1;
-      for (let i = 0; i < plantCount; i += 1) {
+      for (let i = 0; i < PLANT_PER_TICK; i += 1) {
         if (blooms.size >= MAX_BLOOMS) evictBloom();
         const angle = Math.random() * Math.PI * 2;
         const reach = Math.sqrt(Math.random()) * BLOOM_RADIUS;
@@ -1259,7 +1334,7 @@ function updateHoverBlooms(now) {
         blooms.set(key, {
           x,
           y,
-          seed: hash((x * 17) | 0, (y * 19) | 0) ^ bloomSeq,
+          seed: (hash((x * 17) | 0, (y * 19) | 0) ^ bloomSeq) >>> 0,
           revealedAt: now,
           bloom: 0,
           stem: 0,
@@ -1304,9 +1379,16 @@ function drawHoverNodes(ctx, originX, originY, now) {
   const minY = my - radius;
   const maxY = my + radius;
 
-  for (let x = originX; x <= maxX + GRID; x += GRID) {
+  const ix0 = Math.floor((minX - originX) / GRID);
+  const ix1 = Math.ceil((maxX - originX) / GRID) + 1;
+  const iy0 = Math.floor((minY - originY) / GRID);
+  const iy1 = Math.ceil((maxY - originY) / GRID) + 1;
+
+  for (let i = ix0; i <= ix1; i += 1) {
+    const x = originX + i * GRID;
     if (x < minX) continue;
-    for (let y = originY; y <= maxY + GRID; y += GRID) {
+    for (let j = iy0; j <= iy1; j += 1) {
+      const y = originY + j * GRID;
       if (y < minY) continue;
       const dist = Math.hypot(x - mx, y - my);
       const local = cellAppear(progress, dist);
@@ -1320,7 +1402,12 @@ function drawHoverNodes(ctx, originX, originY, now) {
   }
 }
 
-function duneHeight(x, width, height, layer) {
+const DUNE_LAYERS = 5;
+let duneTable = null;
+let duneTableW = 0;
+let duneTableH = 0;
+
+function duneHeightRaw(x, width, height, layer) {
   const t = x / width;
   const crest = Math.sin(t * Math.PI * (1.35 + layer * 0.28) + layer * 1.35);
   const slip = Math.sin(t * Math.PI * 2.8 + layer * 2.4) * 0.32;
@@ -1329,7 +1416,42 @@ function duneHeight(x, width, height, layer) {
   return height * base + crest * height * 0.07 + slip * height * 0.028 + (n - 0.5) * height * 0.04;
 }
 
-function drawArrakis(ctx, width, height, now) {
+// The dune profile only changes on resize, so sample it once per pixel column
+// instead of re-running the noise field on every lookup.
+function buildDuneTable(width, height) {
+  const span = Math.max(2, Math.ceil(width) + 2);
+  duneTable = [];
+  for (let layer = 0; layer < DUNE_LAYERS; layer += 1) {
+    const row = new Float32Array(span);
+    for (let x = 0; x < span; x += 1) row[x] = duneHeightRaw(x, width, height, layer);
+    duneTable.push(row);
+  }
+  duneTableW = width;
+  duneTableH = height;
+}
+
+function duneHeight(x, width, height, layer) {
+  if (!duneTable || duneTableW !== width || duneTableH !== height) buildDuneTable(width, height);
+  const row = duneTable[layer < 0 ? 0 : layer >= DUNE_LAYERS ? DUNE_LAYERS - 1 : layer];
+  const i = x <= 0 ? 0 : x >= row.length - 1 ? row.length - 1 : x | 0;
+  return row[i];
+}
+
+function drawSky(ctx, width, height, now) {
+  const lit = world.lit;
+  const stars = mulberry32(2024);
+  for (let i = 0; i < 70; i += 1) {
+    const x = stars() * width;
+    const y = stars() * height * 0.4;
+    const twinkle = 0.6 + 0.4 * Math.sin(now * 0.00045 + i * 1.7);
+    ctx.fillStyle = lit
+      ? `rgba(255, 226, 170, ${(0.1 + stars() * 0.22) * twinkle})`
+      : `rgba(220, 220, 224, ${(0.07 + stars() * 0.18) * twinkle})`;
+    ctx.fillRect(x, y, 0.8, 0.8);
+  }
+}
+
+function drawDesert(ctx, width, height) {
   const lit = world.lit;
   const moonA = { x: width * 0.74, y: height * 0.13, r: 34 };
   const moonB = { x: width * 0.83, y: height * 0.2, r: 16 };
@@ -1353,17 +1475,6 @@ function drawArrakis(ctx, width, height, now) {
   ctx.fillStyle = lit ? "rgba(255, 210, 150, 0.55)" : "rgba(200, 200, 204, 0.18)";
   ctx.arc(moonB.x, moonB.y, 3.2, 0, Math.PI * 2);
   ctx.fill();
-
-  const stars = mulberry32(2024);
-  for (let i = 0; i < 70; i += 1) {
-    const x = stars() * width;
-    const y = stars() * height * 0.4;
-    const twinkle = 0.6 + 0.4 * Math.sin(now * 0.00045 + i * 1.7);
-    ctx.fillStyle = lit
-      ? `rgba(255, 226, 170, ${(0.1 + stars() * 0.22) * twinkle})`
-      : `rgba(220, 220, 224, ${(0.07 + stars() * 0.18) * twinkle})`;
-    ctx.fillRect(x, y, 0.8, 0.8);
-  }
 
   const layers = lit
     ? [
@@ -1478,78 +1589,177 @@ function drawArrakis(ctx, width, height, now) {
   }
 }
 
-function drawDuneMatrix(ctx, width, height, now) {
-  const originX = gridOrigin(GRID, width);
-  const originY = gridOrigin(GRID, height);
-  ctx.save();
-  ctx.lineWidth = 0.55;
-  for (let x = originX; x <= width; x += GRID) {
-    for (let y = originY; y <= height; y += GRID) {
-      const ground = duneHeight(x, width, height, 1);
-      if (y < ground - 6) continue;
-      const pulse = noise3(x * 0.018, y * 0.018, now * 0.00007);
-      const wave = 0.5 + 0.5 * Math.sin(now * 0.00055 + x * 0.012 + y * 0.008);
-      const fade = Math.max(0, pulse * wave - 0.42);
-      if (fade < 0.04) continue;
-      ctx.strokeStyle = world.lit
-        ? `rgba(255, 186, 92, ${0.04 + fade * 0.16})`
-        : `rgba(210, 210, 216, ${0.02 + fade * 0.1})`;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + GRID, y);
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + GRID);
-      ctx.stroke();
-    }
-  }
-  ctx.restore();
-  drawEmergedHill(ctx, width, height, now, originX, originY);
+// The desert never animates, so it is painted once into an offscreen canvas and
+// blitted each frame. Repainting it live cost several milliseconds per frame.
+const scene = document.createElement("canvas");
+const sceneCtx = scene.getContext("2d", { alpha: true });
+let sceneKey = "";
+
+function invalidateScene() {
+  sceneKey = "";
 }
 
-function drawEmergedHill(ctx, width, height, now, originX, originY) {
+function drawScene(ctx, width, height) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const flame = torchAnchor();
+  const key = `${width}|${height}|${dpr}|${world.lit ? 1 : 0}|${flame.x | 0}|${flame.y | 0}`;
+  if (key !== sceneKey) {
+    sceneKey = key;
+    scene.width = Math.max(1, Math.floor(width * dpr));
+    scene.height = Math.max(1, Math.floor(height * dpr));
+    sceneCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    sceneCtx.clearRect(0, 0, width, height);
+    drawDesert(sceneCtx, width, height);
+    drawDuneSprigs(sceneCtx, width, height);
+  }
+  ctx.drawImage(scene, 0, 0, width, height);
+}
+
+// Only the cells that actually sit on the sand can light up, and that set is
+// fixed per viewport, so resolve it once instead of scanning the whole screen.
+let matrixCells = [];
+let matrixKey = "";
+const MATRIX_STEP = GRID;
+const MATRIX_LIMIT = 7000;
+
+function buildMatrixCells(width, height) {
+  const key = `${width}|${height}`;
+  if (key === matrixKey) return;
+  matrixKey = key;
+  matrixCells = [];
+  const originX = gridOrigin(GRID, width);
+  const originY = gridOrigin(GRID, height);
+  for (let x = originX; x <= width && matrixCells.length < MATRIX_LIMIT; x += MATRIX_STEP) {
+    const ground = duneHeight(x, width, height, 1) - 6;
+    for (let y = originY; y <= height; y += MATRIX_STEP) {
+      if (y < ground) continue;
+      if (matrixCells.length >= MATRIX_LIMIT) break;
+      matrixCells.push({ x, y, base: noise3(x * 0.018, y * 0.018, 0) });
+    }
+  }
+}
+
+// Cells are grouped into a few alpha steps so the whole matrix is a handful of
+// strokes rather than one styled stroke per cell.
+const MATRIX_BUCKETS = 8;
+const MATRIX_FADE_MIN = 0.04;
+const MATRIX_FADE_SPAN = 0.56;
+
+function drawDuneMatrix(ctx, width, height, now) {
+  buildMatrixCells(width, height);
+  const paths = [];
+  for (let i = 0; i < MATRIX_BUCKETS; i += 1) paths.push(null);
+
+  for (let i = 0; i < matrixCells.length; i += 1) {
+    const cell = matrixCells[i];
+    const wave = 0.5 + 0.5 * Math.sin(now * 0.00055 + cell.x * 0.012 + cell.y * 0.008);
+    const fade = cell.base * wave - 0.42;
+    if (fade < MATRIX_FADE_MIN) continue;
+    const step = ((fade - MATRIX_FADE_MIN) / MATRIX_FADE_SPAN) * MATRIX_BUCKETS;
+    const bucket = step >= MATRIX_BUCKETS - 1 ? MATRIX_BUCKETS - 1 : step < 0 ? 0 : step | 0;
+    let path = paths[bucket];
+    if (!path) {
+      path = new Path2D();
+      paths[bucket] = path;
+    }
+    path.moveTo(cell.x, cell.y);
+    path.lineTo(cell.x + GRID, cell.y);
+    path.moveTo(cell.x, cell.y);
+    path.lineTo(cell.x, cell.y + GRID);
+  }
+
+  ctx.save();
+  ctx.lineWidth = 0.55;
+  for (let bucket = 0; bucket < MATRIX_BUCKETS; bucket += 1) {
+    const path = paths[bucket];
+    if (!path) continue;
+    const fade = MATRIX_FADE_MIN + ((bucket + 0.5) / MATRIX_BUCKETS) * MATRIX_FADE_SPAN;
+    ctx.strokeStyle = world.lit
+      ? `rgba(255, 186, 92, ${0.04 + fade * 0.16})`
+      : `rgba(210, 210, 216, ${0.02 + fade * 0.1})`;
+    ctx.stroke(path);
+  }
+  ctx.restore();
+  drawEmergedHill(ctx, width, height, now);
+}
+
+// The hill band is fixed geometry too: bake the cells and their edge falloff
+// once, then each frame is a handful of strokes instead of a screen-wide scan.
+const HILL_BUCKETS = 8;
+let hillBands = [];
+let hillClips = null;
+let hillKey = "";
+
+function buildHillBands(width, height) {
+  const key = `${width}|${height}`;
+  if (key === hillKey) return;
+  hillKey = key;
   const layer = 2;
   const next = 3;
   const x0 = width * 0.56;
   const x1 = width * 0.9;
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(x0, height);
-  ctx.lineTo(x0, duneHeight(x0, width, height, layer));
-  for (let x = x0; x <= x1; x += 8) {
-    ctx.lineTo(x, duneHeight(x, width, height, layer));
-  }
-  ctx.lineTo(x1, height);
-  ctx.closePath();
-  ctx.clip();
+  const originX = gridOrigin(GRID, width);
+  const originY = gridOrigin(GRID, height);
 
-  ctx.beginPath();
-  ctx.moveTo(x0, duneHeight(x0, width, height, next));
-  for (let x = x0; x <= x1; x += 8) {
-    ctx.lineTo(x, duneHeight(x, width, height, next));
-  }
-  ctx.lineTo(x1, height);
-  ctx.lineTo(x0, height);
-  ctx.closePath();
-  ctx.clip();
+  // The two clip polygons that carve the hill out of the dunes are static.
+  const crestClip = new Path2D();
+  crestClip.moveTo(x0, height);
+  crestClip.lineTo(x0, duneHeight(x0, width, height, layer));
+  for (let x = x0; x <= x1; x += 8) crestClip.lineTo(x, duneHeight(x, width, height, layer));
+  crestClip.lineTo(x1, height);
+  crestClip.closePath();
 
-  const pulse = 0.72 + 0.28 * Math.sin(now * 0.00035);
-  ctx.lineWidth = 0.85;
+  const footClip = new Path2D();
+  footClip.moveTo(x0, duneHeight(x0, width, height, next));
+  for (let x = x0; x <= x1; x += 8) footClip.lineTo(x, duneHeight(x, width, height, next));
+  footClip.lineTo(x1, height);
+  footClip.lineTo(x0, height);
+  footClip.closePath();
+  hillClips = [crestClip, footClip];
+
+  const paths = [];
+  const used = [];
+  for (let b = 0; b < HILL_BUCKETS; b += 1) {
+    paths.push(new Path2D());
+    used.push(false);
+  }
+
   for (let x = originX; x <= width; x += GRID) {
     if (x < x0 - GRID || x > x1 + GRID) continue;
+    const crest = duneHeight(x, width, height, layer) - 4;
+    const foot = duneHeight(x, width, height, next) + 10;
+    const edge = Math.max(0, Math.min((x - x0) / (width * 0.08), (x1 - x) / (width * 0.08), 1));
+    const b = Math.min(HILL_BUCKETS - 1, (edge * HILL_BUCKETS) | 0);
     for (let y = originY; y <= height; y += GRID) {
-      const crest = duneHeight(x, width, height, layer);
-      const foot = duneHeight(x, width, height, next);
-      if (y < crest - 4 || y > foot + 10) continue;
-      const edge = Math.min((x - x0) / (width * 0.08), (x1 - x) / (width * 0.08), 1);
-      const alpha = 0.1 + pulse * 0.22 * Math.max(0, edge);
-      ctx.strokeStyle = world.lit ? `rgba(255, 206, 120, ${alpha + 0.08})` : `rgba(228, 228, 234, ${alpha})`;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + GRID, y);
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + GRID);
-      ctx.stroke();
+      if (y < crest || y > foot) continue;
+      const path = paths[b];
+      used[b] = true;
+      path.moveTo(x, y);
+      path.lineTo(x + GRID, y);
+      path.moveTo(x, y);
+      path.lineTo(x, y + GRID);
     }
+  }
+
+  hillBands = [];
+  for (let b = 0; b < HILL_BUCKETS; b += 1) {
+    if (used[b]) hillBands.push({ path: paths[b], edge: (b + 0.5) / HILL_BUCKETS });
+  }
+}
+
+function drawEmergedHill(ctx, width, height, now) {
+  buildHillBands(width, height);
+  if (hillBands.length === 0) return;
+  const pulse = 0.72 + 0.28 * Math.sin(now * 0.00035);
+  ctx.save();
+  ctx.clip(hillClips[0]);
+  ctx.clip(hillClips[1]);
+  ctx.lineWidth = 0.85;
+  for (let i = 0; i < hillBands.length; i += 1) {
+    const band = hillBands[i];
+    const alpha = 0.1 + pulse * 0.22 * band.edge;
+    ctx.strokeStyle = world.lit ? `rgba(255, 206, 120, ${alpha + 0.08})` : `rgba(228, 228, 234, ${alpha})`;
+    ctx.stroke(band.path);
   }
   ctx.restore();
 }
@@ -1649,7 +1859,7 @@ function updateDust() {
     grain.life -= grain.decay;
     if (grain.life <= 0 || grain.y > window.innerHeight + 8) dust.splice(i, 1);
   }
-  if (dust.length > 420) dust.splice(0, dust.length - 420);
+  if (dust.length > DUST_LIMIT) dust.splice(0, dust.length - DUST_LIMIT);
 }
 
 function drawDust(ctx) {
@@ -1784,11 +1994,11 @@ function drawGoldenSpiral(ctx, cx, cy, scale, now) {
 const dropCache = [];
 
 function drawDropcap(ctx, now) {
+  const dropBox = dropLetter ? dropLetter.getBoundingClientRect() : null;
+  const restBox = restLetter ? restLetter.getBoundingClientRect() : null;
   dropAnchors.forEach((anchor, index) => {
-    const el = anchor.el === "rest" ? restLetter : dropLetter;
-    if (!el) return;
-    const box = el.getBoundingClientRect();
-    if (box.width < 8) return;
+    const box = anchor.el === "rest" ? restBox : dropBox;
+    if (!box || box.width < 8) return;
     const sx = box.left + box.width * anchor.ox;
     const sy = box.top + box.height * anchor.oy;
     const seed = hash(index + 11, 97);
@@ -1817,15 +2027,15 @@ function drawDuneSprigs(ctx, width, height) {
   }
 }
 
-function frame(now) {
+function render(now) {
   const width = window.innerWidth;
   const height = window.innerHeight;
   fieldCtx.clearRect(0, 0, width, height);
   illumCtx.clearRect(0, 0, width, height);
   emberCtx.clearRect(0, 0, width, height);
 
-  drawArrakis(fieldCtx, width, height, now);
-  drawDuneSprigs(fieldCtx, width, height);
+  drawSky(fieldCtx, width, height, now);
+  drawScene(fieldCtx, width, height);
   drawDuneMatrix(fieldCtx, width, height, now);
   updatePointerField(now);
   updateStuckGrid(now);
@@ -1845,6 +2055,15 @@ function frame(now) {
   drawCursor(fieldCtx);
   drawDropcap(illumCtx, now);
   drawTorchFlame(emberCtx, now);
+}
+
+function frame(now) {
+  try {
+    render(now);
+  } catch (error) {
+    // A thrown frame must never break the loop, or the page freezes for good.
+    if (console && console.error) console.error(error);
+  }
   requestAnimationFrame(frame);
 }
 
