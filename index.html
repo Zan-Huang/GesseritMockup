@@ -8,10 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=9" />
+    <link rel="stylesheet" href="styles.css?v=13" />
   </head>
   <body>
     <div class="page">
@@ -28,41 +28,34 @@
 
       <main class="folio">
         <h1 class="wordmark">
-          <img class="wordmark__initial" src="assets/initial-g.svg?v=9" alt="" aria-hidden="true" />
+          <!-- Two layers of EB Garamond Initials: F1 is the ornament, F2 the letter -->
+          <span class="initial" aria-hidden="true">
+            <span class="initial__ornament">G</span>
+            <span class="initial__letter">G</span>
+          </span>
           <span class="wordmark__rest">esserit</span>
           <span class="visually-hidden">Gesserit</span>
         </h1>
-
-        <form
-          class="subscribe"
-          action="https://gesserit.substack.com/api/v1/free"
-          method="post"
-          target="gesserit-subscribe"
-          novalidate
-        >
-          <label class="visually-hidden" for="email">Email address</label>
-          <input
-            class="subscribe__field"
-            id="email"
-            type="email"
-            name="email"
-            placeholder="Enter your email"
-            autocomplete="email"
-            required
-          />
-          <input type="hidden" name="first_url" value="https://gesserit.substack.com/" />
-          <input type="hidden" name="first_referrer" value="" />
-          <input type="hidden" name="current_url" value="https://gesserit.substack.com/" />
-          <input type="hidden" name="current_referrer" value="" />
-          <input type="hidden" name="referral_code" value="" />
-          <input type="hidden" name="source" value="embed" />
-          <button class="subscribe__button" type="submit">Subscribe</button>
-          <p class="subscribe__note" role="status" aria-live="polite"></p>
-        </form>
       </main>
-    </div>
 
-    <iframe name="gesserit-subscribe" title="Subscription" class="sink"></iframe>
-    <script src="script.js?v=9"></script>
+      <footer class="colophon">
+        <span class="colophon__rule" aria-hidden="true"></span>
+        <a
+          class="substack"
+          href="https://gesserit.substack.com/subscribe"
+          target="_blank"
+          rel="noopener"
+          aria-label="Subscribe to Gesserit on Substack"
+        >
+          <svg class="substack__mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.539 24V10.812H1.46zM22.539 0H1.46v2.836h21.08V0z"
+            />
+          </svg>
+        </a>
+        <p class="colophon__lede">Subscribe on Substack</p>
+        <p class="colophon__meta">gesserit.substack.com</p>
+      </footer>
+    </div>
   </body>
 </html>

@@ -1,9 +1,28 @@
+/*
+ * EB Garamond Initials (Georg Duffner, SIL OFL 1.1 — see assets/fonts/OFL.txt).
+ * The decorative initials come in two layers: F1 draws the ornament and F2 the
+ * letter, so they can be coloured separately and superimposed.
+ */
+@font-face {
+  font-family: "EB Garamond Initials Ornament";
+  src: url("assets/fonts/EBGaramond-InitialsF1.otf") format("opentype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "EB Garamond Initials Letter";
+  src: url("assets/fonts/EBGaramond-InitialsF2.otf") format("opentype");
+  font-display: swap;
+}
+
 :root {
   --ink: #1c1a17;
-  --ink-soft: #6b6559;
-  --rule: #e2ded6;
-  --border-width: 124px;
-  --wordmark: clamp(3.1rem, 9.5vw, 7rem);
+  --ink-soft: #6f6759;
+  --gold: #b8922a;
+  --rule: #e4e0d7;
+  --substack: #ff6719;
+  --border-width: 120px;
+  --wordmark: clamp(3rem, 9vw, 6.6rem);
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
 }
 
@@ -41,7 +60,9 @@ body {
 .page {
   position: relative;
   min-height: 100vh;
-  padding: clamp(1.5rem, 4vw, 3rem) 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.25rem, 3.5vw, 2.5rem) 0 clamp(2rem, 4vw, 3rem);
   overflow: hidden;
   background: #ffffff;
 }
@@ -69,7 +90,7 @@ body {
 
 .vine {
   flex: 1 1 auto;
-  background-image: url("assets/vine.svg?v=9");
+  background-image: url("assets/vine.svg?v=13");
   background-repeat: repeat-y;
   background-position: center top;
   background-size: var(--border-width) auto;
@@ -78,7 +99,7 @@ body {
 .vine-tip {
   flex: 0 0 auto;
   height: calc(var(--border-width) * 1.07);
-  background-image: url("assets/vine-tip.svg?v=9");
+  background-image: url("assets/vine-tip.svg?v=13");
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: var(--border-width) auto;
@@ -88,149 +109,144 @@ body {
   transform: scaleY(-1);
 }
 
-/* the page block --------------------------------------------------------- */
+/* the wordmark ----------------------------------------------------------- */
 
 .folio {
   position: relative;
   z-index: 1;
-  min-height: calc(100vh - clamp(3rem, 8vw, 6rem));
-  margin: 0 auto;
-  padding: clamp(1rem, 4vw, 3rem) calc(var(--border-width) + clamp(0.9rem, 3vw, 3.5rem));
-  max-width: 66rem;
+  flex: 1 1 auto;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(2.25rem, 5vw, 3.5rem);
+  padding: clamp(1rem, 4vw, 3rem) calc(var(--border-width) + clamp(0.9rem, 3vw, 3.5rem));
 }
-
-/* wordmark --------------------------------------------------------------- */
 
 .wordmark {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
   margin: 0;
   line-height: 1;
-  font-weight: 500;
+  font-weight: 400;
 }
 
-.wordmark__initial {
-  flex: 0 0 auto;
+/* the two initial layers are stacked, so the box is sized by the first and
+   the second is pulled back over it */
+.initial {
+  position: relative;
+  display: inline-block;
+  font-size: calc(var(--wordmark) * 1.42);
+  line-height: 1;
+  margin-right: calc(var(--wordmark) * 0.05);
+}
+
+.initial__ornament,
+.initial__letter {
   display: block;
-  width: calc(var(--wordmark) * 1.9);
-  height: calc(var(--wordmark) * 1.9);
-  /* the drawn letter is inset in its box: pull the word in, then drop the
-     letter onto the baseline */
-  margin: 0 calc(var(--wordmark) * -0.1) 0 calc(var(--wordmark) * -0.06);
-  transform: translateY(calc(var(--wordmark) * 0.05));
+  font-weight: 400;
+}
+
+.initial__ornament {
+  font-family: "EB Garamond Initials Ornament", "EB Garamond", serif;
+  color: var(--gold);
+}
+
+.initial__letter {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: "EB Garamond Initials Letter", "EB Garamond", serif;
+  color: var(--ink);
 }
 
 .wordmark__rest {
   font-family: "EB Garamond", Garamond, serif;
-  /* light enough to sit with the fine gold strokes of the initial */
   font-weight: 400;
   font-size: var(--wordmark);
   letter-spacing: 0.008em;
   color: var(--ink);
 }
 
-/* subscribe -------------------------------------------------------------- */
+/* the foot of the page --------------------------------------------------- */
 
-.subscribe {
+.colophon {
+  position: relative;
+  z-index: 1;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: min(27rem, 100%);
-}
-
-.subscribe__field {
-  flex: 1 1 12rem;
-  min-width: 0;
-  padding: 0.72rem 0.9rem;
-  font-family: var(--sans);
-  font-size: 0.95rem;
-  color: var(--ink);
-  background: #ffffff;
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-  transition: border-color 140ms ease;
-}
-
-.subscribe__field::placeholder {
-  color: #a8a29a;
-}
-
-.subscribe__field:hover {
-  border-color: #cfc9bf;
-}
-
-.subscribe__field:focus {
-  outline: none;
-  border-color: var(--ink);
-}
-
-.subscribe__button {
-  flex: 0 0 auto;
-  padding: 0.72rem 1.35rem;
-  font-family: var(--sans);
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #ffffff;
-  cursor: pointer;
-  background: var(--ink);
-  border: 1px solid var(--ink);
-  border-radius: 6px;
-  transition: background-color 140ms ease;
-}
-
-.subscribe__button:hover {
-  background: #38332c;
-  border-color: #38332c;
-}
-
-.subscribe__button:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
-}
-
-.subscribe__note {
-  flex: 1 0 100%;
-  min-height: 1.35em;
-  margin: 0;
+  gap: 0.85rem;
+  padding: 0 calc(var(--border-width) + clamp(0.9rem, 3vw, 3.5rem));
   text-align: center;
+}
+
+.colophon__rule {
+  width: 4.5rem;
+  height: 1px;
+  margin-bottom: 0.35rem;
+  background: linear-gradient(90deg, transparent, var(--rule) 22%, var(--rule) 78%, transparent);
+}
+
+.substack {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--substack);
+  color: #ffffff;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.substack__mark {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: currentColor;
+  /* the mark's own shapes sit slightly high in the 24-unit box */
+  margin-top: 0.05rem;
+}
+
+.substack:hover,
+.substack:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(255, 103, 25, 0.32);
+}
+
+.substack:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.colophon__lede {
+  margin: 0;
+  font-family: "EB Garamond", Garamond, serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.colophon__meta {
+  margin: -0.35rem 0 0;
   font-family: var(--sans);
-  font-size: 0.84rem;
-  color: #9c2a5e;
-}
-
-.subscribe__note--ok {
-  color: #4a7040;
-}
-
-.sink {
-  position: absolute;
-  width: 0;
-  height: 0;
-  border: 0;
-  visibility: hidden;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
 }
 
 /* narrower pages --------------------------------------------------------- */
 
 @media (max-width: 960px) {
   :root {
-    --border-width: 88px;
+    --border-width: 86px;
   }
 }
 
 @media (max-width: 620px) {
   :root {
-    --border-width: 54px;
+    --border-width: 50px;
     /* keep the word on one line: a stacked G reads as a separate letter */
-    --wordmark: clamp(1.9rem, 10.5vw, 3.2rem);
+    --wordmark: clamp(1.85rem, 10vw, 3.1rem);
   }
 
   .border--left {
@@ -241,19 +257,19 @@ body {
     right: 0.15rem;
   }
 
-  .folio {
-    padding-left: calc(var(--border-width) + 0.75rem);
-    padding-right: calc(var(--border-width) + 0.75rem);
+  .folio,
+  .colophon {
+    padding-left: calc(var(--border-width) + 0.7rem);
+    padding-right: calc(var(--border-width) + 0.7rem);
   }
 
-  .subscribe {
-    width: 100%;
+  .colophon__lede {
+    font-size: 0.95rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .subscribe__field,
-  .subscribe__button {
+  .substack {
     transition: none;
   }
 }
