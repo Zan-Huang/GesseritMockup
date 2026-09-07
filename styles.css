@@ -90,7 +90,7 @@ body {
 
 .vine {
   flex: 1 1 auto;
-  background-image: url("assets/vine.svg?v=16");
+  background-image: url("assets/vine.svg?v=20");
   background-repeat: repeat-y;
   background-position: center top;
   background-size: var(--border-width) auto;
@@ -99,7 +99,7 @@ body {
 .vine-tip {
   flex: 0 0 auto;
   height: calc(var(--border-width) * 1.07);
-  background-image: url("assets/vine-tip.svg?v=16");
+  background-image: url("assets/vine-tip.svg?v=20");
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: var(--border-width) auto;
