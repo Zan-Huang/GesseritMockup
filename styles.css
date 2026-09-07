@@ -22,6 +22,11 @@
   --rule: #e4e0d7;
   --substack: #ff6719;
   --border-width: 120px;
+  /* the tile is 140x560 and the flourish 140x150, both drawn to the margin's
+     width; the stem repeats every half tile, which is the unit the vine's
+     height snaps to so it is never cut mid-ornament */
+  --half-tile: calc(var(--border-width) * 2);
+  --flourish: calc(var(--border-width) * 15 / 14);
   --wordmark: clamp(3rem, 9vw, 6.6rem);
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
 }
@@ -76,6 +81,9 @@ body {
   width: var(--border-width);
   display: flex;
   flex-direction: column;
+  /* the vine takes whole half-tiles, so the leftover is split above the head
+     flourish and below the foot one, as a margin rather than a broken stem */
+  justify-content: center;
   pointer-events: none;
 }
 
@@ -88,9 +96,16 @@ body {
   transform: scaleX(-1);
 }
 
+/* A repeating background is cut wherever its element ends, so the height is
+   rounded down to whole half-tiles: the cut then lands on a line where the
+   stem's position and tangent repeat, and the join is invisible. */
 .vine {
-  flex: 1 1 auto;
-  background-image: url("assets/vine.svg?v=20");
+  flex: 0 0 auto;
+  height: max(
+    var(--half-tile),
+    round(down, calc(100% - 2 * var(--flourish)), var(--half-tile))
+  );
+  background-image: url("assets/vine.svg?v=21");
   background-repeat: repeat-y;
   background-position: center top;
   background-size: var(--border-width) auto;
@@ -98,15 +113,17 @@ body {
 
 .vine-tip {
   flex: 0 0 auto;
-  height: calc(var(--border-width) * 1.07);
-  background-image: url("assets/vine-tip.svg?v=20");
+  height: var(--flourish);
+  background-image: url("assets/vine-tip.svg?v=21");
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: var(--border-width) auto;
 }
 
+/* turned rather than flipped: a vertical flip would reverse the stem's lean
+   and kink it where it meets the vine */
 .vine-tip--foot {
-  transform: scaleY(-1);
+  transform: rotate(180deg);
 }
 
 /* the wordmark ----------------------------------------------------------- */

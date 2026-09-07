@@ -74,17 +74,17 @@ function bezTan(p0, p1, p2, p3, t) {
 }
 
 /**
- * Smooth deterministic 2-D noise in [-1, 1], a small sum of sines. Its y terms
- * are all whole multiples of the tile height, so the field is periodic down the
- * margin: a point at y = 0 is displaced exactly as its twin at y = TILE_H, and
- * the stem still meets itself across the seam.
+ * Smooth deterministic 2-D noise in [-1, 1], a small sum of sines. Every y term
+ * completes a whole number of cycles over half a tile, so the field repeats on
+ * the same lines the margin is cut on and anything drawn in tile coordinates
+ * still meets itself across a seam.
  */
-const ky = (k) => (k * 2 * Math.PI) / TILE_H;
+const ky = (k) => (k * 2 * Math.PI) / (TILE_H / 2);
 function noise2(x, y) {
   return (
-    0.5 * Math.sin(0.31 * x + ky(11) * y + 1.7) +
-    0.3 * Math.sin(0.13 * x + ky(23) * y + 4.2) +
-    0.2 * Math.sin(0.67 * x + ky(41) * y + 2.9)
+    0.5 * Math.sin(0.31 * x + ky(6) * y + 1.7) +
+    0.3 * Math.sin(0.13 * x + ky(12) * y + 4.2) +
+    0.2 * Math.sin(0.67 * x + ky(21) * y + 2.9)
   );
 }
 
@@ -729,10 +729,14 @@ function aim(u, side, blend = 0) {
   return (Math.atan2(dx / m, -dy / m) * 180) / Math.PI;
 }
 
-/** a gilded stem: ink bed, gold body, burnished highlight */
-function stem(d, w = 5) {
+/**
+ * A gilded stem: ink bed, gold body, burnished highlight. The main stem is
+ * marked continuous because it is meant to cross the tile's cut lines — its
+ * geometry repeats every half tile, so it meets itself there.
+ */
+function stem(d, w = 5, continuous = false) {
   return (
-    `<g fill="none" stroke-linecap="round">` +
+    `<g fill="none" stroke-linecap="round"${continuous ? ` data-cut="continuous"` : ""}>` +
     `<path d="${d}" stroke="${INK}" stroke-width="${f(w)}"/>` +
     `<path d="${d}" stroke="${GILD.mid}" stroke-width="${f(w * 0.64)}"/>` +
     `<path d="${d}" stroke="${GILD.light}" stroke-width="${f(w * 0.2)}" opacity="0.75"/>` +
@@ -786,7 +790,7 @@ function buildVine() {
     ` C${f(S1[1][0])} ${f(S1[1][1])} ${f(S1[2][0])} ${f(S1[2][1])} ${f(S1[3][0])} ${f(S1[3][1])}` +
     ` C${f(S2[1][0])} ${f(S2[1][1])} ${f(S2[2][0])} ${f(S2[2][1])} ${f(S2[3][0])} ${f(S2[3][1])}`;
 
-  const body = [stem(stemD)];
+  const body = [stem(stemD, 5, true)];
   const at = (id, x, y, rot, scale, flip = 1) =>
     `<g transform="translate(${f(x)} ${f(y)}) rotate(${f(rot)}) scale(${f(scale * flip)} ${f(
       scale
@@ -823,7 +827,8 @@ function buildVine() {
     { u: 0.54, side: -1, id: leafGreen, s: 0.96 },
     { u: 0.7, side: 1, id: leafOlive, s: 0.86 },
     { u: 0.86, side: -1, id: leafGold, s: 0.94 },
-    { u: 1.04, side: 1, id: leafBlue, s: 1 },
+    // clear of y = 280: this leaf used to straddle the half-tile cut line
+    { u: 0.96, side: 1, id: leafBlue, s: 1 },
     { u: 1.24, side: -1, id: leafOlive, s: 0.88 },
     { u: 1.42, side: 1, id: leafGreen, s: 0.96 },
     { u: 1.6, side: -1, id: leafGold, s: 0.94 },
