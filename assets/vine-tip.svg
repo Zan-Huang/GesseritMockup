@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 150" width="140" height="150">
+  <!-- Terminal spray for the head and foot of the marginal vine. -->
+  <defs>
+    <linearGradient id="tGreen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7fa257" />
+      <stop offset="1" stop-color="#426b35" />
+    </linearGradient>
+    <linearGradient id="tGreenPale" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9cb872" />
+      <stop offset="1" stop-color="#5c8544" />
+    </linearGradient>
+    <g id="tPetals">
+      <ellipse cx="0" cy="-11" rx="7" ry="10.5" />
+      <ellipse cx="0" cy="-11" rx="7" ry="10.5" transform="rotate(72)" />
+      <ellipse cx="0" cy="-11" rx="7" ry="10.5" transform="rotate(144)" />
+      <ellipse cx="0" cy="-11" rx="7" ry="10.5" transform="rotate(216)" />
+      <ellipse cx="0" cy="-11" rx="7" ry="10.5" transform="rotate(288)" />
+    </g>
+    <g id="tLeaf">
+      <path d="M0 0 C 6 -11 17 -18 32 -21 C 25 -8 14 2 0 0 Z"
+        fill="url(#tGreen)" stroke="#3f6b38" stroke-width="1.1" />
+      <path d="M2 -1 C 10 -6 20 -12 29 -19" fill="none" stroke="#3f6b38" stroke-width="0.9" opacity="0.65" />
+    </g>
+    <g id="tLeafPale">
+      <path d="M0 0 C 4 -9 12 -15 24 -18 C 19 -7 11 1 0 0 Z"
+        fill="url(#tGreenPale)" stroke="#3f6b38" stroke-width="1" />
+    </g>
+  </defs>
+
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- the stem tapering up out of the repeating vine -->
+    <path d="M70 150 C70 128 70 104 70 74" fill="none" stroke="#5f6f34" stroke-width="4.6" />
+    <path d="M70 150 C70 128 70 104 70 74" fill="none" stroke="#87995a" stroke-width="1.8" opacity="0.8" />
+
+    <!-- a pair of side shoots -->
+    <g fill="none" stroke="#5f6f34" stroke-width="2.4">
+      <path d="M70 116 C82 110 92 112 98 120" />
+      <path d="M70 132 C58 126 48 128 42 136" />
+    </g>
+    <g fill="none" stroke="#8a7a3c" stroke-width="1.5">
+      <path d="M70 96 C82 92 92 96 94 104 C95 110 89 112 87 107" />
+      <path d="M70 82 C58 78 48 82 46 90" />
+    </g>
+
+    <g>
+      <use href="#tLeaf" transform="translate(72 106) rotate(-44)" />
+      <use href="#tLeaf" transform="translate(68 122) rotate(216) scale(0.94)" />
+      <use href="#tLeafPale" transform="translate(72 88) rotate(-62) scale(0.86)" />
+      <use href="#tLeafPale" transform="translate(68 100) rotate(232) scale(0.8)" />
+    </g>
+
+    <!-- crimson flower crowning the spray -->
+    <g transform="translate(70 62)">
+      <g fill="#c8384c" stroke="#8f2038" stroke-width="1.3">
+        <use href="#tPetals" transform="scale(1.08)" />
+      </g>
+      <circle r="4" fill="#79162c" />
+    </g>
+
+    <!-- flanking buds -->
+    <g transform="translate(100 122) rotate(24)">
+      <path d="M0 0 C -8 -3 -11 -13 -4 -17 C 5 -21 13 -14 10 -6 C 7 0 3 2 0 0 Z"
+        fill="#9c2a5e" stroke="#67173d" stroke-width="1.2" />
+    </g>
+    <g transform="translate(40 138) rotate(-22) scale(-1 1)">
+      <path d="M0 0 C -8 -3 -11 -13 -4 -17 C 5 -21 13 -14 10 -6 C 7 0 3 2 0 0 Z"
+        fill="#c8384c" stroke="#8f2038" stroke-width="1.2" />
+    </g>
+  </g>
+</svg>

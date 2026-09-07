@@ -1,167 +1,155 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 400" width="140" height="400">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 560" width="140" height="560">
   <!--
-    Tileable manuscript vine. The stem enters at (70,0) and leaves at (70,400)
-    with matching tangents, so the border repeats seamlessly at any height. The
-    two halves carry different ornaments (roundel above, lozenge below) so the
-    repetition is harder to read.
+    Tileable marginal vine. The stem enters at (70,0) and leaves at (70,560)
+    with matching tangents, so it repeats seamlessly at any page height. Palette
+    follows the initial: crimson, magenta, lapis, gold and leaf green.
   -->
   <defs>
-    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f6e6a8" />
-      <stop offset="0.42" stop-color="#c9a227" />
-      <stop offset="1" stop-color="#83621b" />
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7fa257" />
+      <stop offset="1" stop-color="#426b35" />
     </linearGradient>
-    <linearGradient id="goldRim" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#e8d488" />
-      <stop offset="1" stop-color="#9c7a1e" />
-    </linearGradient>
-    <linearGradient id="verdigris" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#82a058" />
-      <stop offset="1" stop-color="#2f4a24" />
-    </linearGradient>
-    <linearGradient id="lapis" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#4b6fa8" />
-      <stop offset="1" stop-color="#1b3160" />
-    </linearGradient>
-    <linearGradient id="vermilion" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#cd5a37" />
-      <stop offset="1" stop-color="#8d2413" />
+    <linearGradient id="greenPale" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9cb872" />
+      <stop offset="1" stop-color="#5c8544" />
     </linearGradient>
 
-    <path id="acanthus"
-      d="M0 0
-         C 7 -11 18 -19 34 -24
-         C 26 -15 23 -7 29 -1
-         C 21 3 13 4 7 2
-         C 13 7 21 10 29 10
-         C 19 16 6 12 0 0 Z" />
-    <path id="sprig"
-      d="M0 0
-         C 5 -8 13 -14 24 -17
-         C 18 -9 17 -3 21 2
-         C 13 6 5 5 0 0 Z" />
-    <path id="bud"
-      d="M0 0
-         C -7 -5 -7 -15 0 -19
-         C 7 -15 7 -5 0 0 Z" />
+    <g id="petals5">
+      <ellipse cx="0" cy="-9" rx="5.8" ry="8.6" />
+      <ellipse cx="0" cy="-9" rx="5.8" ry="8.6" transform="rotate(72)" />
+      <ellipse cx="0" cy="-9" rx="5.8" ry="8.6" transform="rotate(144)" />
+      <ellipse cx="0" cy="-9" rx="5.8" ry="8.6" transform="rotate(216)" />
+      <ellipse cx="0" cy="-9" rx="5.8" ry="8.6" transform="rotate(288)" />
+    </g>
 
-    <!-- a full leaf cluster: acanthus with a highlight and a small sprig -->
-    <g id="clusterGreen">
-      <use href="#acanthus" fill="url(#verdigris)" stroke="#2b4020" stroke-width="1.1" />
-      <use href="#acanthus" fill="#ffffff" opacity="0.17" transform="scale(0.62)" />
+    <g id="leafA">
+      <path d="M0 0 C 6 -10 16 -17 30 -19 C 23 -7 13 2 0 0 Z"
+        fill="url(#green)" stroke="#3f6b38" stroke-width="1" />
+      <path d="M2 -1 C 9 -6 18 -11 27 -17" fill="none" stroke="#3f6b38" stroke-width="0.8" opacity="0.6" />
     </g>
-    <g id="clusterBlue">
-      <use href="#acanthus" fill="url(#lapis)" stroke="#152a52" stroke-width="1.1" />
-      <use href="#acanthus" fill="#ffffff" opacity="0.17" transform="scale(0.62)" />
+    <g id="leafB">
+      <path d="M0 0 C 4 -8 11 -14 22 -16 C 17 -6 10 1 0 0 Z"
+        fill="url(#greenPale)" stroke="#3f6b38" stroke-width="0.9" />
+      <path d="M2 -1 C 7 -5 13 -9 20 -14" fill="none" stroke="#3f6b38" stroke-width="0.7" opacity="0.55" />
     </g>
-    <g id="clusterRed">
-      <use href="#acanthus" fill="url(#vermilion)" stroke="#6d1b0d" stroke-width="1.1" />
-      <use href="#acanthus" fill="#ffffff" opacity="0.17" transform="scale(0.62)" />
+
+    <g id="rosette">
+      <g stroke="#a5801d" stroke-width="0.9" fill="#e2c568">
+        <circle cx="0" cy="-6" r="4.6" />
+        <circle cx="6" cy="0" r="4.6" />
+        <circle cx="0" cy="6" r="4.6" />
+        <circle cx="-6" cy="0" r="4.6" />
+      </g>
+      <circle r="2.4" fill="#c9a227" stroke="#a5801d" stroke-width="0.7" />
+      <g stroke="#d9bb52" stroke-width="1.1" stroke-linecap="round">
+        <path d="M0 -12 v-4" />
+        <path d="M12 0 h4" />
+        <path d="M0 12 v4" />
+        <path d="M-12 0 h-4" />
+      </g>
+    </g>
+
+    <g id="lily">
+      <path d="M0 0 C -8 -8 -11 -20 -8 -31 C -1 -23 3 -11 0 0 Z"
+        fill="#3f6fc4" stroke="#22488f" stroke-width="1.1" />
+      <path d="M0 0 C 4 -11 2 -23 -3 -31 C 6 -26 12 -12 6 -1 Z"
+        fill="#5585d4" stroke="#22488f" stroke-width="1" />
+      <path d="M1 1 C 10 -3 20 -2 26 5 C 17 11 6 10 1 1 Z"
+        fill="#c8384c" stroke="#8f2038" stroke-width="1.1" />
+    </g>
+
+    <g id="bud">
+      <path d="M0 0 C -8 -3 -10 -12 -3 -16 C 5 -20 12 -13 9 -5 C 6 0 3 2 0 0 Z" />
     </g>
   </defs>
 
   <g stroke-linecap="round" stroke-linejoin="round">
-    <!-- stem: ink underdrawing, gilt spine, pale highlight -->
-    <path d="M70 0 C100 75 40 125 70 200 C100 275 40 325 70 400"
-      fill="none" stroke="#40301a" stroke-width="8.6" opacity="0.55" />
-    <path d="M70 0 C100 75 40 125 70 200 C100 275 40 325 70 400"
-      fill="none" stroke="url(#gold)" stroke-width="4.8" />
-    <path d="M70 0 C100 75 40 125 70 200 C100 275 40 325 70 400"
-      fill="none" stroke="#f7ecc4" stroke-width="1" opacity="0.5" />
+    <!-- the stem -->
+    <path d="M70 0 C104 105 36 175 70 280 C104 385 36 455 70 560"
+      fill="none" stroke="#5f6f34" stroke-width="3.6" />
+    <path d="M70 0 C104 105 36 175 70 280 C104 385 36 455 70 560"
+      fill="none" stroke="#8b9d5e" stroke-width="1.3" opacity="0.75" />
 
-    <!-- curling tendrils -->
-    <g fill="none" stroke="#6b5326" stroke-width="1.7">
-      <path d="M78 52 C93 47 102 56 98 67 C95 75 86 75 85 67 C84 61 90 59 93 63" />
-      <path d="M62 148 C47 143 38 152 42 163 C45 171 54 171 55 163 C56 157 50 155 47 159" />
-      <path d="M78 252 C93 247 102 256 98 267 C95 275 86 275 85 267 C84 261 90 259 93 263" />
-      <path d="M62 348 C47 343 38 352 42 363 C45 371 54 371 55 363 C56 357 50 355 47 359" />
-      <path d="M74 24 C84 20 90 26 88 33" />
-      <path d="M66 376 C56 372 50 378 52 385" />
+    <!-- offshoots carrying the flowers -->
+    <g fill="none" stroke="#5f6f34" stroke-width="2">
+      <path d="M79 73 C93 68 104 72 108 81" />
+      <path d="M60 207 C46 202 35 206 31 215" />
+      <path d="M80 353 C93 349 103 354 106 363" />
+      <path d="M60 487 C46 483 36 487 32 495" />
     </g>
 
-    <!-- node 1: right-hand cluster -->
-    <g transform="translate(78 52) rotate(-26)">
-      <use href="#clusterGreen" />
-    </g>
-    <g transform="translate(73 68) rotate(40) scale(0.82)">
-      <use href="#sprig" fill="url(#vermilion)" stroke="#6d1b0d" stroke-width="1.1" />
-    </g>
-    <g transform="translate(80 34) rotate(-58) scale(0.6)">
-      <use href="#sprig" fill="url(#verdigris)" stroke="#2b4020" stroke-width="1.2" />
+    <!-- fine gold tendrils -->
+    <g fill="none" stroke="#9a8640" stroke-width="1.3">
+      <path d="M75 30 C88 26 96 32 95 42 C94 49 87 50 86 44 C85 39 90 37 92 41" />
+      <path d="M64 110 C51 108 43 116 46 126 C48 133 56 132 57 125 C58 120 53 118 51 122" />
+      <path d="M76 172 C89 172 97 181 93 191 C90 198 83 197 82 191 C81 186 86 184 88 188" />
+      <path d="M63 253 C50 253 42 262 46 272 C49 279 56 278 57 272" />
+      <path d="M77 310 C90 307 98 314 96 324 C95 331 88 331 87 325 C86 320 91 318 93 322" />
+      <path d="M64 396 C51 395 43 403 46 413 C48 420 56 419 57 413" />
+      <path d="M78 440 C91 440 98 449 95 458 C92 465 85 464 84 458" />
+      <path d="M62 528 C49 528 41 537 45 546" />
+      <path d="M72 140 C82 136 90 139 92 146" />
+      <path d="M67 420 C57 416 49 419 47 426" />
     </g>
 
-    <!-- node 2: gilt roundel on lapis with a pearl quatrefoil -->
-    <g transform="translate(70 100)">
-      <circle r="18" fill="url(#lapis)" stroke="url(#goldRim)" stroke-width="3.8" />
-      <circle r="18" fill="none" stroke="#2a1d0c" stroke-width="0.8" opacity="0.5" />
-      <g fill="#f4ead0" opacity="0.92">
-        <circle cx="0" cy="-8" r="3.2" />
-        <circle cx="8" cy="0" r="3.2" />
-        <circle cx="0" cy="8" r="3.2" />
-        <circle cx="-8" cy="0" r="3.2" />
+    <!-- leaves -->
+    <g>
+      <use href="#leafA" transform="translate(77 52) rotate(-40)" />
+      <use href="#leafB" transform="translate(68 96) rotate(148) scale(0.9)" />
+      <use href="#leafA" transform="translate(60 158) rotate(174) scale(0.88)" />
+      <use href="#leafB" transform="translate(63 190) rotate(190) scale(0.78)" />
+      <use href="#leafA" transform="translate(66 238) rotate(-14) scale(0.86)" />
+      <use href="#leafB" transform="translate(76 288) rotate(-40) scale(0.8)" />
+      <use href="#leafA" transform="translate(79 330) rotate(-48) scale(0.9)" />
+      <use href="#leafB" transform="translate(72 378) rotate(-28) scale(0.78)" />
+      <use href="#leafA" transform="translate(64 438) rotate(158) scale(0.88)" />
+      <use href="#leafB" transform="translate(60 470) rotate(182) scale(0.76)" />
+      <use href="#leafA" transform="translate(66 512) rotate(-12) scale(0.84)" />
+      <use href="#leafB" transform="translate(84 128) rotate(-60) scale(0.72)" />
+      <use href="#leafA" transform="translate(52 222) rotate(196) scale(0.68)" />
+      <use href="#leafB" transform="translate(86 366) rotate(-64) scale(0.7)" />
+      <use href="#leafA" transform="translate(50 500) rotate(200) scale(0.66)" />
+    </g>
+
+    <!-- crimson flower on the first offshoot -->
+    <g transform="translate(110 83)">
+      <g fill="#c8384c" stroke="#8f2038" stroke-width="1.1">
+        <use href="#petals5" />
       </g>
-      <circle r="2.8" fill="url(#gold)" />
-    </g>
-    <g fill="url(#vermilion)" stroke="#6d1b0d" stroke-width="0.9">
-      <circle cx="90" cy="88" r="3.4" />
-      <circle cx="50" cy="112" r="3.4" />
+      <circle r="3.1" fill="#79162c" />
     </g>
 
-    <!-- node 3: left-hand cluster -->
-    <g transform="translate(62 148) rotate(-154) scale(1.05)">
-      <use href="#clusterGreen" />
-    </g>
-    <g transform="translate(67 164) rotate(140) scale(0.82)">
-      <use href="#sprig" fill="url(#lapis)" stroke="#152a52" stroke-width="1.1" />
-    </g>
-    <g transform="translate(60 130) rotate(-122) scale(0.6)">
-      <use href="#sprig" fill="url(#verdigris)" stroke="#2b4020" stroke-width="1.2" />
+    <!-- gold rosette at the first turn -->
+    <use href="#rosette" transform="translate(70 140)" />
+
+    <!-- magenta flower on the left offshoot -->
+    <g transform="translate(29 217) rotate(-14)">
+      <g fill="#9c2a5e" stroke="#67173d" stroke-width="1.1">
+        <use href="#petals5" />
+      </g>
+      <circle r="3" fill="#4c1029" />
     </g>
 
-    <!-- node 4: bud pair and berries at the waist -->
-    <g transform="translate(70 200)">
-      <use href="#bud" fill="url(#vermilion)" stroke="#6d1b0d" stroke-width="1" transform="rotate(-24)" />
-      <use href="#bud" fill="url(#gold)" stroke="#6b5326" stroke-width="1" transform="rotate(24) scale(0.84)" />
-    </g>
-    <g fill="url(#vermilion)" stroke="#6d1b0d" stroke-width="0.9">
-      <circle cx="85" cy="188" r="3.6" />
-      <circle cx="92" cy="197" r="3" />
-      <circle cx="55" cy="212" r="3.6" />
-      <circle cx="48" cy="203" r="3" />
+    <!-- a small crimson bud between the flowers -->
+    <g transform="translate(72 280) rotate(14)">
+      <use href="#bud" fill="#c8384c" stroke="#8f2038" stroke-width="1.1" />
     </g>
 
-    <!-- node 5: right-hand cluster, blue leaf -->
-    <g transform="translate(78 252) rotate(-26)">
-      <use href="#clusterBlue" />
-    </g>
-    <g transform="translate(73 268) rotate(40) scale(0.82)">
-      <use href="#sprig" fill="url(#verdigris)" stroke="#2b4020" stroke-width="1.1" />
-    </g>
-    <g transform="translate(80 234) rotate(-58) scale(0.6)">
-      <use href="#sprig" fill="url(#vermilion)" stroke="#6d1b0d" stroke-width="1.2" />
+    <!-- lapis and crimson lily -->
+    <use href="#lily" transform="translate(108 366) rotate(12)" />
+
+    <!-- magenta bud at the lower turn -->
+    <g transform="translate(70 420) rotate(-8)">
+      <use href="#bud" fill="#9c2a5e" stroke="#67173d" stroke-width="1.1" />
     </g>
 
-    <!-- node 6: lozenge knot on lapis -->
-    <g transform="translate(70 300)">
-      <rect x="-16" y="-16" width="32" height="32" transform="rotate(45)" rx="3"
-        fill="url(#lapis)" stroke="url(#goldRim)" stroke-width="3.4" />
-      <path d="M0 -12 L12 0 L0 12 L-12 0 Z" fill="none" stroke="#f4ead0" stroke-width="1.7" opacity="0.85" />
-      <circle r="3.2" fill="url(#gold)" />
+    <!-- crimson flower at the foot -->
+    <g transform="translate(30 496) rotate(10)">
+      <g fill="#c8384c" stroke="#8f2038" stroke-width="1.1">
+        <use href="#petals5" />
+      </g>
+      <circle r="3" fill="#79162c" />
     </g>
-    <g fill="url(#verdigris)" stroke="#2b4020" stroke-width="0.9">
-      <circle cx="92" cy="288" r="3.2" />
-      <circle cx="48" cy="312" r="3.2" />
-    </g>
-
-    <!-- node 7: left-hand cluster, red leaf -->
-    <g transform="translate(62 348) rotate(-154) scale(1.05)">
-      <use href="#clusterRed" />
-    </g>
-    <g transform="translate(67 364) rotate(140) scale(0.82)">
-      <use href="#sprig" fill="url(#verdigris)" stroke="#2b4020" stroke-width="1.1" />
-    </g>
-    <g transform="translate(60 330) rotate(-122) scale(0.6)">
-      <use href="#sprig" fill="url(#lapis)" stroke="#152a52" stroke-width="1.2" />
-    </g>
+    <use href="#rosette" transform="translate(92 466) scale(0.78)" />
   </g>
 </svg>

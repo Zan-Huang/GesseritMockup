@@ -27,11 +27,11 @@ if (form && field) {
   form.addEventListener("submit", (event) => {
     if (!field.value.trim() || !field.checkValidity()) {
       event.preventDefault();
-      say("A legible address, if you please.", false);
+      say("Please enter a valid email address.", false);
       field.focus();
       return;
     }
-    say("Your name is entered in the register.", true);
+    say("Thanks — check your inbox to confirm.", true);
     // The browser serialises the form after this handler returns, so clearing
     // the field here would post an empty address. Wait for the post to leave.
     window.setTimeout(() => {
