@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 130" width="140" height="130">
+  <!--
+    Terminal flourish for the head and foot of the border. The boss at the
+    bottom edge sits over the seam where the repeating vine begins.
+  -->
+  <defs>
+    <linearGradient id="fGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6e6a8" />
+      <stop offset="0.42" stop-color="#c9a227" />
+      <stop offset="1" stop-color="#83621b" />
+    </linearGradient>
+    <linearGradient id="fGoldRim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e8d488" />
+      <stop offset="1" stop-color="#9c7a1e" />
+    </linearGradient>
+    <linearGradient id="fVerdigris" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7e9a55" />
+      <stop offset="1" stop-color="#2f4a24" />
+    </linearGradient>
+    <linearGradient id="fLapis" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4b6fa8" />
+      <stop offset="1" stop-color="#1b3160" />
+    </linearGradient>
+    <linearGradient id="fVermilion" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#cd5a37" />
+      <stop offset="1" stop-color="#8d2413" />
+    </linearGradient>
+    <path id="fLeaf"
+      d="M0 0
+         C 7 -11 18 -19 34 -24
+         C 26 -15 23 -7 29 -1
+         C 21 3 13 4 7 2
+         C 13 7 21 10 29 10
+         C 19 16 6 12 0 0 Z" />
+    <path id="fPetal"
+      d="M0 0
+         C -9 -12 -6 -30 0 -40
+         C 6 -30 9 -12 0 0 Z" />
+  </defs>
+
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <!-- stem up to the crown -->
+    <path d="M70 130 C70 110 70 84 70 62" fill="none" stroke="#40301a" stroke-width="8.4" opacity="0.55" />
+    <path d="M70 130 C70 110 70 84 70 62" fill="none" stroke="url(#fGold)" stroke-width="4.6" />
+
+    <!-- paired leaves falling away from the crown -->
+    <g transform="translate(70 96) rotate(28)">
+      <use href="#fLeaf" fill="url(#fVerdigris)" stroke="#2b4020" stroke-width="1.1" />
+      <use href="#fLeaf" fill="#ffffff" opacity="0.16" transform="scale(0.62)" />
+    </g>
+    <g transform="translate(70 96) rotate(-28) scale(-1 1)">
+      <use href="#fLeaf" fill="url(#fVerdigris)" stroke="#2b4020" stroke-width="1.1" />
+      <use href="#fLeaf" fill="#ffffff" opacity="0.16" transform="scale(0.62)" />
+    </g>
+
+    <!-- palmette crown -->
+    <g transform="translate(70 62)">
+      <use href="#fPetal" fill="url(#fVerdigris)" stroke="#2b4020" stroke-width="1.1" transform="rotate(-52) scale(0.9)" />
+      <use href="#fPetal" fill="url(#fVerdigris)" stroke="#2b4020" stroke-width="1.1" transform="rotate(52) scale(0.9)" />
+      <use href="#fPetal" fill="url(#fLapis)" stroke="#152a52" stroke-width="1.1" transform="rotate(-26) scale(1.02)" />
+      <use href="#fPetal" fill="url(#fLapis)" stroke="#152a52" stroke-width="1.1" transform="rotate(26) scale(1.02)" />
+      <use href="#fPetal" fill="url(#fVermilion)" stroke="#6d1b0d" stroke-width="1.1" transform="scale(1.12)" />
+      <use href="#fPetal" fill="#ffffff" opacity="0.18" transform="scale(0.6)" />
+    </g>
+
+    <!-- crown berries -->
+    <g fill="url(#fVermilion)" stroke="#6d1b0d" stroke-width="0.9">
+      <circle cx="52" cy="52" r="3.4" />
+      <circle cx="88" cy="52" r="3.4" />
+      <circle cx="70" cy="16" r="4" />
+    </g>
+
+    <!-- gilt boss over the seam -->
+    <g transform="translate(70 126)">
+      <circle r="14" fill="url(#fLapis)" stroke="url(#fGoldRim)" stroke-width="3.4" />
+      <circle r="14" fill="none" stroke="#2a1d0c" stroke-width="0.8" opacity="0.5" />
+      <g fill="#f4ead0" opacity="0.92">
+        <circle cx="0" cy="-6.4" r="2.7" />
+        <circle cx="6.4" cy="0" r="2.7" />
+        <circle cx="0" cy="6.4" r="2.7" />
+        <circle cx="-6.4" cy="0" r="2.7" />
+      </g>
+      <circle r="2.3" fill="url(#fGold)" />
+    </g>
+  </g>
+</svg>
